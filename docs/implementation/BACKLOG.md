@@ -14,8 +14,10 @@ specific decision or predecessor, not a generic "waiting."
 **Current state (20 October 2026):** B.C. approved the scoped G00 baseline and
 owns integration and all backlog packages. B.C. is the F01/F02 reviewer and merge
 approver; later reviewers and release commitments remain held under DEC-11.
-F01 and F02 are the authorized synthetic-data wave and are `ready`, not dispatched.
-No engineering package has started; no implementation or issue/PR creation is implied.
+F01 and F02 are the authorized synthetic-data wave. F01 is `active` under B.C.,
+dispatched on 20 October 2026 with the exclusive F01 shared-file write window.
+F02 remains `ready`, not dispatched. No implementation completion or issue/PR
+creation is implied.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
 dependency. Decision gates still apply as specified by the package.
 
@@ -29,7 +31,7 @@ only after assigning non-overlapping shared-file write windows. Move each to
 | ID | Phase | Package | Prerequisites | Status | Owner | PR/commit and evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
 | G00 | 0 | [Approve implementation baseline](01-FOUNDATIONS.md#g00-approve-implementation-baseline) | - | done | B.C. | [Scoped approval, 20 October 2026](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026); DEC-01 through DEC-05 approved; DEC-06/07 holds explicit; F01/F02 assigned |
-| F01 | 1 | [Database and integration-test foundation](01-FOUNDATIONS.md#f01-database-and-integration-test-foundation) | G00 | ready | B.C. | DEC-07 persistence tools approved; [dispatch prompt](AGENT-HANDOFF.md#f01-dispatch-prompt); no implementation evidence yet |
+| F01 | 1 | [Database and integration-test foundation](01-FOUNDATIONS.md#f01-database-and-integration-test-foundation) | G00 | active | B.C. | Dispatched 20 October 2026 by explicit user direction; exclusive F01 shared-file write window; DEC-07 persistence tools approved; [dispatch prompt](AGENT-HANDOFF.md#f01-dispatch-prompt); no implementation evidence yet |
 | F02 | 1 | [Contract and error foundation](01-FOUNDATIONS.md#f02-contract-and-error-foundation) | G00 | ready | B.C. | DEC-05/07 contract tools approved; [dispatch prompt](AGENT-HANDOFF.md#f02-dispatch-prompt); no implementation evidence yet |
 | F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | blocked | B.C. | DEC-06 and DEC-07 session storage implementation held; F01/F02 not integrated |
 | I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | blocked | B.C. | DEC-06 realm/client, JWT libraries and privileges held; F01/F02 not integrated |

@@ -12,13 +12,15 @@
   ],
   "scripts": {
     "dev:web": "npm run dev --workspace @quezo/web",
-    "dev:api": "uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --host 127.0.0.1 --port 4000 --no-server-header --reload",
-    "start:api": "uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --host 127.0.0.1 --port 4000 --no-server-header",
+    "dev:api": "uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --loop quezo_api.database:database_loop_factory --host 127.0.0.1 --port 4000 --no-server-header --reload",
+    "start:api": "uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --loop quezo_api.database:database_loop_factory --host 127.0.0.1 --port 4000 --no-server-header",
     "build": "npm run build --workspace @quezo/web",
     "typecheck": "npm run typecheck:web && npm run typecheck:api",
     "typecheck:web": "npm run typecheck --workspace @quezo/web",
     "typecheck:api": "uv run --directory postgres --locked mypy",
-    "test": "uv run --directory postgres --locked pytest"
+    "test": "uv run --directory postgres --locked pytest",
+    "db:upgrade": "uv run --directory postgres --locked alembic upgrade head",
+    "test:db": "uv run --directory postgres --locked pytest tests/test_migrations.py tests/test_database.py tests/test_database_isolation.py tests/test_app.py"
   },
   "devDependencies": {
     "typescript": "5.9.3"
