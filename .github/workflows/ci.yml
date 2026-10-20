@@ -38,6 +38,25 @@ jobs:
     defaults:
       run:
         working-directory: postgres
+    env:
+      # Synthetic credentials for this job's disposable, loopback-only service.
+      QUEZO_TEST_ADMIN_URL: postgresql://quezo_test_admin:ci-test-admin@127.0.0.1:5432/quezo_test_control
+      QUEZO_TEST_MIGRATION_PASSWORD: ci-test-migrator
+      QUEZO_TEST_RUNTIME_PASSWORD: ci-test-runtime
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: quezo_test_control
+          POSTGRES_USER: quezo_test_admin
+          POSTGRES_PASSWORD: ci-test-admin
+          QUEZO_MIGRATION_PASSWORD: ci-test-migrator
+          QUEZO_RUNTIME_PASSWORD: ci-test-runtime
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U quezo_test_admin -d quezo_test_control"
+          --health-interval 2s --health-timeout 5s --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -47,5 +66,9 @@ jobs:
           cache-dependency-glob: postgres/uv.lock
       - run: uv python install "${{ matrix.python }}"
       - run: uv sync --locked --python "${{ matrix.python }}"
+      - name: Bootstrap isolated database identities and safety marker
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" psql -U quezo_test_admin -d quezo_test_control < bootstrap/roles.sql
+          docker exec -i "${{ job.services.postgres.id }}" psql -U quezo_test_admin -d quezo_test_control < tests/bootstrap.sql
       - run: uv run --locked --python "${{ matrix.python }}" mypy
       - run: uv run --locked --python "${{ matrix.python }}" pytest

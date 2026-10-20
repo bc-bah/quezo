@@ -5,15 +5,40 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-quezo}
       POSTGRES_USER: ${POSTGRES_USER:-quezo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env}
+      QUEZO_MIGRATION_PASSWORD: ${QUEZO_MIGRATION_PASSWORD:-}
+      QUEZO_RUNTIME_PASSWORD: ${QUEZO_RUNTIME_PASSWORD:-}
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./postgres/bootstrap/roles.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 5s
       retries: 10
+
+  postgres-test:
+    image: postgres:17
+    profiles: ["test"]
+    environment:
+      POSTGRES_DB: quezo_test_control
+      POSTGRES_USER: quezo_test_admin
+      POSTGRES_PASSWORD: ${QUEZO_TEST_ADMIN_PASSWORD:-}
+      QUEZO_MIGRATION_PASSWORD: ${QUEZO_TEST_MIGRATION_PASSWORD:-}
+      QUEZO_RUNTIME_PASSWORD: ${QUEZO_TEST_RUNTIME_PASSWORD:-}
+    ports:
+      - "127.0.0.1:${QUEZO_TEST_PORT:-55432}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./postgres/bootstrap/roles.sql:/docker-entrypoint-initdb.d/10-roles.sql:ro
+      - ./postgres/tests/bootstrap.sql:/docker-entrypoint-initdb.d/20-test.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quezo_test_admin -d quezo_test_control"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.7

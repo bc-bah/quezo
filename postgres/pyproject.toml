@@ -4,8 +4,11 @@ version = "0.0.0"
 description = "Quezo FastAPI prototype scaffold"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic==1.20.0",
     "fastapi==0.156.1",
+    "psycopg[binary,pool]==3.3.6",
     "pydantic==2.14.1",
+    "sqlalchemy==2.1.5",
     "uvicorn==0.54.0",
 ]
 
@@ -21,7 +24,7 @@ addopts = "-q"
 python_version = "3.12"
 strict = true
 mypy_path = "src"
-files = ["src", "tests"]
+files = ["src", "tests", "migrations"]
 
 [dependency-groups]
 dev = [
