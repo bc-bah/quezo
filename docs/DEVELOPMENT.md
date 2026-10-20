@@ -160,12 +160,18 @@ Do not remove volumes as routine cleanup; they persist database and identity dat
 Never use these bootstrap database credentials or Keycloak `start-dev` settings
 in a shared or production environment.
 
-## Review stop and next implementation step
+## Approved first wave and remaining review gates
 
-Review [scope](PROTOTYPE-SCOPE.md) and [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md),
-especially proposed assignment, timing, grading, disclosure and identity rules.
-Use the [software specification](SOFTWARE-SPECIFICATION.md) for detailed behavior
-and decision approvals, then select an explicitly assigned, dependency-ready item
+B.C. approved the [scoped G00 baseline](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+on 20 October 2026. F01/F02 are ready for synthetic-data development, not started.
+Use their [prepared handoff prompts](implementation/AGENT-HANDOFF.md#4-approved-first-wave-prompts);
+B.C. owns integration and review, and moves each item to `active` at dispatch.
+The selected persistence/contract tools are not installed by this documentation.
+Identity/session implementation and later gates remain held.
+
+Read [scope](PROTOTYPE-SCOPE.md), [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md)
+and the [software specification](SOFTWARE-SPECIFICATION.md) for behavior and
+decision approvals. Select only an explicitly assigned, dependency-ready item
 from the [implementation backlog](implementation/BACKLOG.md). Follow its phase
 package and [agent handoff](implementation/AGENT-HANDOFF.md), including required
 real migrations, identity, contracts, UI and tests.

@@ -2,7 +2,8 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Proposed implementation baseline; behavioral decisions await approval.  
+**Status:** Scoped G00 approval recorded; synthetic-data F01/F02 authorized, not started.
+
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
 ## 1. Purpose and authority
@@ -34,27 +35,49 @@ a general audit-management product is not.
 ## 2. Decision register
 
 Confirmed: P0 scope, one organization, low-stakes use, Next.js/React + Python/FastAPI,
-PostgreSQL, Keycloak and Docker. All decisions below are **proposed/open**.
+PostgreSQL, Keycloak and Docker. Decision approval is scoped as recorded below.
 Record approval date, approver and any amendments in the final column. An empty
 approval means the decision is not approved.
 
 | ID | Proposed baseline / unresolved choice | Required before | Owner | Approval |
 | --- | --- | --- | --- | --- |
-| DEC-01 | Named-learner assignments; one assignment per learner/version; no self-enrollment; one active attempt per assignment; starts and expirations consume allowance | Domain implementation | Product | Pending |
-| DEC-02 | Availability end caps duration; no grace period or late offline answers; close blocks new starts but preserves active deadlines; archived quizzes are read-only and retain history | Domain implementation | Product | Pending |
-| DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | Product | Pending |
-| DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | Product | Pending |
-| DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | Product + Engineering | Pending |
-| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; review realm/client, session/JWT libraries and administration privileges | Identity implementation | Identity + Engineering | Pending |
-| DEC-07 | Select PostgreSQL driver, migration runner, session storage implementation and TypeScript contract generator; no ORM is assumed | Foundation implementation | Engineering | Pending |
-| DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | Engineering + Operations | Pending |
-| DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | Product + Accessibility | Pending |
-| DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | Product + Privacy + Operations | Pending |
-| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | Product + Engineering | Pending |
+| DEC-01 | Named-learner assignments; one assignment per learner/version; no self-enrollment; one active attempt per assignment; starts and expirations consume allowance | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-02 | Availability end caps duration; no grace period or late offline answers; close blocks new starts but preserves active deadlines; archived quizzes are read-only and retain history | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; review realm/client, session/JWT libraries and administration privileges | Identity implementation | B.C. | Held by B.C., 20 October 2026; F03/I01 cannot start until identity/session choices are approved |
+| DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; session storage implementation still unselected | Foundation implementation; session choice before F03 | B.C. | Scoped approval by B.C., 20 October 2026: F01/F02 tool selection approved; session storage implementation held |
+| DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
+| DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
+| DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
+| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped approval by B.C., 20 October 2026: B.C. owns integration and F01/F02 review/merge; later reviewers, release approval, dates and budget held |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
 The initial baseline work item identifies exactly which decisions each wave needs.
+
+### G00 approval record: 20 October 2026
+
+B.C. explicitly approved this scoped baseline and first-wave tool selection.
+B.C. is the backlog and integration owner, accountable owner for every package,
+and reviewer/merge approver for F01 and F02. Later package reviewers and release
+commitments remain unassigned under DEC-11; ownership alone is not approval.
+
+**Authorized wave:** F01 database/integration-test foundation and F02
+contract/error foundation, using synthetic data only. Both are ready for dispatch,
+not active or implemented. Use the [prepared prompts](implementation/AGENT-HANDOFF.md#4-approved-first-wave-prompts).
+B.C. coordinates shared-file writes; separate sessions do not receive concurrent
+permission to edit shared manifests, CI, application wiring or documentation.
+Select compatible library versions and lock them during implementation; this
+approval selects tools, not unverified package versions.
+
+**Explicit holds:** DEC-06 and the session-storage portion of DEC-07 block F03/I01
+as applicable. DEC-08 through DEC-11 remain open except for first-wave ownership
+and review/merge authority above; B.C. owns obtaining the relevant reviews at the
+listed gates. No successors, deployment, external resources, real learner data,
+shared pilot, delivery date or budget are authorized by G00. Domain decisions
+DEC-01 through DEC-05 are approved but do not dispatch their future packages.
 
 ## 3. Actors and authorization
 
@@ -309,7 +332,7 @@ Stable public IDs are UUIDs. Wire fields use camelCase, timestamps are RFC 3339
 UTC strings, duration is integer seconds, points and revisions are integers.
 Python models may use snake_case internally with explicit aliases.
 
-These bounds are proposed under DEC-05; test both boundaries, not just typical
+These bounds are approved under DEC-05; test both boundaries, not just typical
 values. Trim required text for emptiness while preserving intentional content.
 
 | Input | Proposed bound |

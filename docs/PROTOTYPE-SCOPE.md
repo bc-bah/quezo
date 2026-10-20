@@ -1,8 +1,8 @@
 # Prototype scope
 
 **Date:** 20 October 2026  
-**Status:** Scope direction confirmed; detailed behavior and architecture proposed
-for review. This is not a production-readiness claim.
+**Status:** Scope direction confirmed; scoped G00 approval authorizes F01/F02 only.
+Remaining decisions are held in the specification. This is not a production-readiness claim.
 
 ## 1. Source and decision precedence
 
@@ -120,12 +120,15 @@ creation of these documents.
 | --- | --- | --- |
 | Audience, organization scope, priority coverage | Single-organization, low-stakes, all P0; confirmed by user | Product; confirmed 20 October 2026 |
 | Technology stack | Next.js/React, Python/FastAPI, PostgreSQL, Keycloak and Docker; two-language stack explicitly accepted | Confirmed 20 October 2026 |
-| Exact versions, packages, module layout | Locked scaffold defaults; production suitability remains subject to review | Engineering review |
-| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | Proposed in HLA sections 5-7 | Product + Engineering before feature code |
-| Keycloak realm/provider, login claims, administration privileges | Local test realm first; not configured | Identity owner before identity slice |
-| First customer, pilot data policy, retention/deletion obligations | Unresolved; synthetic data only meanwhile | Product + privacy owner before pilot |
-| Hosting, workload, recovery objectives, availability commitment | Unresolved; local Docker is not hosting approval | Engineering + operations before pilot |
-| Delivery date, budget, release approver | Unresolved | Product before backlog commitment |
+| Exact versions, packages, module layout | F01/F02 tools selected under DEC-07; compatible versions to be locked during implementation; session storage implementation held | B.C.; scoped approval 20 October 2026; production suitability still requires review |
+| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01 through DEC-05 approved as written in the specification; domain packages not yet dispatched | B.C.; approved 20 October 2026 |
+| Keycloak realm/provider, login claims, administration privileges | DEC-06 held; local test realm first, not configured | B.C. to obtain identity review before F03/I01 |
+| First customer, pilot data policy, retention/deletion obligations | DEC-10 held; synthetic data only meanwhile | B.C. to obtain product/privacy review before pilot |
+| Hosting, workload, recovery objectives, availability commitment | DEC-08/10 held; local Docker is not hosting approval | B.C. to obtain engineering/operations review before applicable operational gates |
+| Delivery date, budget, release approver | DEC-11 later commitments held; B.C. owns first-wave integration/review/merge only | B.C. before scheduling/release commitment |
 
-**Stop here for user review.** Approve or revise this scope and the linked HLA
-before implementing domain schemas, identity integration, or product workflows.
+**Scoped review gate passed:** B.C.'s [G00 approval](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+authorizes synthetic-data F01/F02 only. Use the [prepared prompts](implementation/AGENT-HANDOFF.md#4-approved-first-wave-prompts)
+and update the tracker at dispatch. Domain schemas, identity integration and
+product workflows still require their own ready packages and applicable decisions;
+this approval does not start them or authorize deployment.
