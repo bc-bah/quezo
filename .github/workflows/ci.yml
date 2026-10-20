@@ -1,0 +1,51 @@
+name: Scaffold checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:web
+      - run: npm run build
+      - name: Validate local dependency configuration
+        run: docker compose --profile identity config --quiet
+        env:
+          POSTGRES_PASSWORD: ci-config-validation-only
+          KEYCLOAK_ADMIN_PASSWORD: ci-config-validation-only
+
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.12", "3.14"]
+    defaults:
+      run:
+        working-directory: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.17"
+          enable-cache: true
+          cache-dependency-glob: postgres/uv.lock
+      - run: uv python install "${{ matrix.python }}"
+      - run: uv sync --locked --python "${{ matrix.python }}"
+      - run: uv run --locked --python "${{ matrix.python }}" mypy
+      - run: uv run --locked --python "${{ matrix.python }}" pytest
