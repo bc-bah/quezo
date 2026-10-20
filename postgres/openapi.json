@@ -1,0 +1,265 @@
+{
+  "components": {
+    "schemas": {
+      "AccessStatus": {
+        "enum": [
+          "active",
+          "disabled"
+        ],
+        "title": "AccessStatus",
+        "type": "string"
+      },
+      "Actor": {
+        "additionalProperties": false,
+        "properties": {
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AccessStatus"
+          },
+          "userId": {
+            "format": "uuid",
+            "title": "Userid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "roles",
+          "status"
+        ],
+        "title": "Actor",
+        "type": "object"
+      },
+      "ErrorCode": {
+        "enum": [
+          "UNAUTHENTICATED",
+          "FORBIDDEN",
+          "ACCOUNT_DISABLED",
+          "CSRF_REJECTED",
+          "NOT_FOUND",
+          "METHOD_NOT_ALLOWED",
+          "RESPONSE_REVISION_CONFLICT",
+          "DRAFT_REVISION_CONFLICT",
+          "IDEMPOTENCY_CONFLICT",
+          "ATTEMPT_FINALIZED",
+          "DEADLINE_PASSED",
+          "ATTEMPT_LIMIT_REACHED",
+          "ASSESSMENT_UNAVAILABLE",
+          "INVALID_STATE",
+          "PAYLOAD_TOO_LARGE",
+          "VALIDATION_FAILED",
+          "RATE_LIMITED",
+          "DEPENDENCY_UNAVAILABLE",
+          "INTERNAL_ERROR"
+        ],
+        "title": "ErrorCode",
+        "type": "string"
+      },
+      "ErrorEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "title": "Requestid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "requestId"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "FieldError": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Path",
+            "type": "array"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/ValidationReason"
+          }
+        },
+        "required": [
+          "path",
+          "reason"
+        ],
+        "title": "FieldError",
+        "type": "object"
+      },
+      "LivenessResponse": {
+        "properties": {
+          "scope": {
+            "const": "process-only",
+            "default": "process-only",
+            "title": "Scope",
+            "type": "string"
+          },
+          "status": {
+            "const": "ok",
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "scope"
+        ],
+        "title": "LivenessResponse",
+        "type": "object"
+      },
+      "PaginationParams": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          },
+          "pageSize": {
+            "default": 25,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Pagesize",
+            "type": "integer"
+          }
+        },
+        "title": "PaginationParams",
+        "type": "object"
+      },
+      "Role": {
+        "enum": [
+          "administrator",
+          "author",
+          "learner"
+        ],
+        "title": "Role",
+        "type": "string"
+      },
+      "ValidationDetails": {
+        "additionalProperties": false,
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "title": "ValidationDetails",
+        "type": "object"
+      },
+      "ValidationReason": {
+        "enum": [
+          "required",
+          "unknown_field",
+          "invalid_value"
+        ],
+        "title": "ValidationReason",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "Process liveness only. Assessment features await architecture review.",
+    "title": "Quezo API scaffold",
+    "version": "0.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health/live": {
+      "get": {
+        "operationId": "liveness_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Sanitized error",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness"
+      }
+    }
+  }
+}
