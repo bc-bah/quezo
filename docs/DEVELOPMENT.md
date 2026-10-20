@@ -7,6 +7,8 @@ Python/FastAPI backend with a typed liveness endpoint, generated OpenAPI, pytest
 checks and strict mypy configuration. F01 adds real PostgreSQL connectivity,
 ordered migrations, restricted database roles and isolated database tests.
 Separate frontend/backend CI jobs are included. No assessment feature is implemented.
+F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
+bounded request bodies and a generated TypeScript client for implemented routes.
 
 Authentication, domain schemas, business routes,
 background expiration, grading, real readiness checks, application containers,
@@ -48,7 +50,9 @@ Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
 no `/health/ready` or `/api/v1` routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
-`http://localhost:4000/openapi.json`; only liveness is described. This is not the
+`http://localhost:4000/openapi.json`; only liveness is exposed as an operation.
+Shared actor, error and pagination schemas are also exported, without `/me` or
+business endpoints. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
 To choose another backend port:
@@ -65,7 +69,7 @@ Backend developers do not need npm to run the Python application. The equivalent
 direct command from the repository root is:
 
 ```powershell
-uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --loop quezo_api.database:database_loop_factory --host 127.0.0.1 --port 4000 --no-server-header --reload
+uv run --directory postgres --locked uvicorn --app-dir src quezo_api.app:create_app --factory --loop quezo_api.database:database_loop_factory --host 127.0.0.1 --port 4000 --no-server-header --no-access-log --reload
 ```
 
 ## Checks and starting without reload
@@ -110,10 +114,225 @@ npm run start:api
 ```
 
 The backend start command omits reload and suppresses Uvicorn's server banner.
+Both launch scripts disable raw Uvicorn access logs, which otherwise include
+untrusted paths/query strings. Retain `--no-access-log` in custom launchers;
+do not enable request/body/token logging in HTTP clients, proxies or dependencies.
 These are local-only shells, not a production deployment. Build output, virtual
 environments, Python bytecode and test/type-check caches are ignored by Git.
 No linting tool or browser test runner is selected yet; add them deliberately
 with the approved implementation conventions.
+
+## F02 HTTP contracts and generated client
+
+Server Pydantic models remain authoritative. `postgres/src/quezo_api/schemas.py`
+defines `ApiModel`, `PublicId` (UUID), `NonNegativeInteger` (strict, no boolean,
+string or fractional coercion), `UtcTimestamp`, `Actor`, `PaginationParams` and
+`Page[T]`. Wire names are camelCase; Python attributes are snake_case. Use
+`model_validate` with wire aliases when constructing DTOs. Unknown fields and
+snake_case substitutes are rejected, including nested write fields. Timestamps
+require an explicit UTC offset and serialize as RFC 3339 UTC strings; naive,
+non-UTC and epoch inputs are rejected. Feature owners add their approved domain
+fields/bounds/enums when implementing the corresponding routes, not here.
+
+**Actor agreement:** B.C. explicitly approved the minimal F03/I01 DTO during
+F02 dispatch on 20 October 2026:
+
+```json
+{
+  "userId": "b852a646-70ed-4ab9-aae4-d7fc2e0ca313",
+  "roles": ["author", "learner"],
+  "status": "active"
+}
+```
+
+`userId` is the application UUID, not an identity-provider subject.
+`Role` contains `administrator`, `author`, `learner`; roles may be combined or
+empty. `AccessStatus` contains `active`, `disabled`. No token, email, issuer,
+subject, session secret, permission bitmap or storage field is included.
+This is a descriptive DTO, **not** authentication or authorization. I01 must
+resolve current application roles/status and enforce operation/ownership checks;
+administrator alone never implies author or learner access. F03 must keep
+session secrets separately on the server and must not turn an actor fixture or
+dependency outage into an authenticated session. DEC-06/07 session choices
+remain held. There is deliberately no `/api/v1/me` route in F02.
+
+**Pagination:** use `Annotated[PaginationParams, Query()]` for collection query
+inputs: `pageSize` defaults to 25 and accepts 1-100, `cursor` defaults to null.
+Only decimal integer query strings are parsed; fractions, booleans, negatives,
+null sizes and extra fields fail validation. `Page[T]` responses contain
+`items` and a required `nextCursor`, explicitly null when exhausted. A future
+collection producer owns cursor encoding/validation and server-side filters;
+it must use stable ordering with a unique-ID tiebreaker and apply authorization
+before pagination. No list route, cursor algorithm or generic persistence layer
+is implemented here. Concrete page schemas are generated when real routes use them.
+
+**Errors:** `postgres/src/quezo_api/errors.py` installs consistent handlers on the
+application factory without changing F01 lifespan. Responses contain `code`,
+fixed safe `message`, `requestId`, and optional typed `details`. Every HTTP
+response has a newly generated UUID `X-Request-ID`; inbound IDs are never trusted
+or reflected. The same ID appears in error bodies and structured error logs.
+It is unrelated to a command `requestId` or `Idempotency-Key`.
+
+Validation details are `{"fields":[{"path":["body","actor","userId"],"reason":"invalid_value"}]}`.
+Reasons are `required`, `unknown_field` or `invalid_value`, never Pydantic's raw
+message/input/context. Only schema-owned field names and array indexes may be
+reflected; unknown keys and dynamic path segments become `[field]`. Neither
+raw values nor validator/exception messages are logged. Errors use
+`Cache-Control: private, no-store`. Future protected success responses must
+also use private/no-store caching in their owning route/facade.
+
+Use `ApiError(ErrorCode.<CODE>)` for the SRS's fixed error codes. For rate limits,
+the owning feature may supply positive integer `retry_after` seconds; F02 does
+not select a rate/retry policy or automatically retry requests. Framework 404
+and 405 errors are sanitized too (`NOT_FOUND`, `METHOD_NOT_ALLOWED`); malformed
+body decoding may return 400 with `VALIDATION_FAILED`. Arbitrary HTTP exception
+details/headers are discarded; only validated Allow and numeric Retry-After
+headers survive. Unsupported HTTP exception statuses fail as `INTERNAL_ERROR`.
+Psycopg operational/pool failures become 503 `DEPENDENCY_UNAVAILABLE`, response
+validation and unexpected failures become 500 `INTERNAL_ERROR`.
+Future conflict details must be explicit, disclosure-reviewed Pydantic schemas,
+not arbitrary dictionaries or exception text.
+
+The HTTP boundary enforces **256 KiB of actual received body bytes**, including
+chunked requests and misleading Content-Length. Exactly 256 KiB is allowed;
+larger bodies receive 413 `PAYLOAD_TOO_LARGE` before route execution. It buffers
+only up to this limit, does not contain authorization, and does not change
+lifespan or websocket handling. Unexpected exceptions are consumed before the
+server can log their raw text. A failure after response headers cannot replace
+the already-started response: it logs only the correlated safe error and aborts
+with a fixed, sanitized exception. No streaming business endpoint is introduced.
+
+### Export, generation and drift checks
+
+The approved tools are pinned to `openapi-typescript` 7.13.0 (root development
+dependency) and `openapi-fetch` 0.17.0 (web runtime dependency). npm regenerates
+the shared lock. No new Python dependency is needed.
+
+From the repository root:
+
+```powershell
+npm run api:export
+npm run api:generate
+npm run api:check
+npm run test:contracts
+```
+
+`api:export` runs
+`uv run --directory postgres --locked python scripts/export_openapi.py` and
+writes sorted, LF-terminated `postgres/openapi.json` directly from `create_app()`
+without starting lifespan, reading database credentials or connecting to a
+dependency. `api:generate` exports first, then runs
+`node postgres/scripts/generate-client.mjs`, producing
+`frontend/quezo/src/lib/api/schema.d.ts`. Do not hand-edit either generated file.
+Only `GET /health/live` is an operation; unattached Actor/PaginationParams
+components are schema contracts, not promises that endpoints exist.
+
+`api:check` executes these read-only checks and fails for missing/stale output:
+
+```powershell
+npm run api:export -- --check
+node postgres/scripts/generate-client.mjs --check
+```
+
+After a server contract change or producer merge, regenerate both artifacts,
+review the diff, and run the checks before consumer work. Generated defaults
+preserve optional request fields; the health response still guarantees exactly
+`{"status":"ok","scope":"process-only"}`.
+
+`frontend/quezo/src/lib/api/client.ts` exports `createApiClient(baseUrl, fetch?)`.
+Consumers import `paths`/`components` from `./schema` rather than copy DTOs.
+The client requires an explicit backend base URL, supports an injected fetch,
+returns typed `data` or `error` with the original Response, and propagates
+network failures. It adds no authentication, retry, default host or fake success.
+F03 should use it inside the server-side facade and handle backend errors and
+network failures separately, preserving the safe code/message/requestId.
+
+`test:contracts` runs `test_contract_schemas.py`, `test_http_contract.py` and
+Node's built-in runner for `postgres/scripts/test_contract_tools.mjs`.
+HTTP fixtures add routes only to test-owned app instances and intentionally
+omit lifespan; F01's real-database `test_app.py` remains the startup/liveness
+evidence. Tooling tests create disposable copies, prove missing/stale checks
+fail without overwriting output, regenerate identical artifacts, compile
+positive/negative typed-client consumers, and exercise success/error/network
+behavior with synthetic fetches. Web CI runs generation checks and these tests
+on Node 22/24; the original Python 3.12/3.14 PostgreSQL jobs remain intact.
+
+| Requirement | F02 evidence | Limit |
+| --- | --- | --- |
+| IAM-02 / FR-001,002,003,061 contract conventions | Approved minimal actor; role/status/UUID and extra-field fixtures; generated actor type | No token validation, current-role lookup or authorization enforcement; **AT-01 not established** |
+| SRS sections 6-7; F02 schemas/errors/health criteria | CamelCase/strict integer/UUID/enum/UTC/pagination tests; invalid/unknown fields, safe dependency/internal/response errors; correlation, byte-limit boundaries and unchanged liveness | No business routes, scoring, cursor persistence or conflict implementation |
+| QUAL-02 / NFR-007,008 | No raw payload/exception/unknown-key reflection; sanitized logs and disabled raw access logs | Role/ownership/CSRF/token, real-data privacy and retention acceptance remain later work |
+| QUAL-04 / NFR-010; F02 generation criteria | Contract fixtures, deterministic export, negative drift tests, typed client checks, root type/build checks and preserved F01 suite | No assessment transitions, grading or disclosure acceptance |
+| AT-15 partial support / QUAL-06 structured errors | Correlated 500/503 errors, explicit synthetic dependency failures and F01 process-only liveness | No deployment/readiness/metrics/recovery evidence; **full AT-15 not established** |
+
+F03/I01 can rely on the agreed actor and generated types after B.C. accepts
+integration, but their decision holds remain. S01 can reuse UUID and strict
+nonnegative integer conventions without implementing HTTP/authentication; its
+domain inputs, scoring enums and AT-11 evidence remain S01's responsibility.
+
+### F02 local verification: 20 October 2026
+
+These are local results, not hosted CI or B.C.'s acceptance. Environment:
+Windows x64, Node 24.20.0, npm 11.19.0, uv 0.12.17, Python 3.12.10 and 3.14.7,
+Docker Engine 29.7.2, PostgreSQL 17.11 (Debian x86_64). Node 22 and hosted Linux
+CI were not executed locally for F02; the configured CI matrices remain required
+review evidence.
+
+The isolated test dependency was started with:
+
+```powershell
+docker compose -p quezo-f02-9c413787 --profile test up -d --wait postgres-test
+```
+
+That shell set `QUEZO_TEST_PORT=55442` and distinct synthetic
+`QUEZO_TEST_ADMIN_PASSWORD`, `QUEZO_TEST_MIGRATION_PASSWORD` and
+`QUEZO_TEST_RUNTIME_PASSWORD` values. Unused `POSTGRES_PASSWORD` and
+`KEYCLOAK_ADMIN_PASSWORD` placeholders satisfied Compose interpolation; neither
+the development database nor identity service was started. Test shells exported
+`QUEZO_TEST_ADMIN_URL` for `quezo_test_admin` at
+`127.0.0.1:55442/quezo_test_control` and the matching migration/runtime passwords.
+The Python 3.14 runs used a separate temporary session-artifact virtualenv via
+`UV_PROJECT_ENVIRONMENT`; the default `postgres/.venv` stayed on Python 3.12.
+
+| Exact command (repository root) | Final outcome |
+| --- | --- |
+| `npm install --ignore-scripts --no-audit --no-fund` | Installed pinned contract tools and regenerated `package-lock.json` through npm |
+| `npm run api:export` (also run by generation) | Exported the implemented API without database startup |
+| `npm run api:generate` | Regenerated OpenAPI and TypeScript reproducibly |
+| `npm run api:check` | Both exported OpenAPI and generated TypeScript current |
+| `npm run api:export -- --check` | Read-only server contract check passed |
+| `node postgres/scripts/generate-client.mjs --check` | Read-only generated-type check passed |
+| `npm run test:contracts` | 87 Python cases and 2 Node tooling/client tests passed, no skips |
+| `uv run --directory postgres --locked pytest tests/test_contract_schemas.py tests/test_http_contract.py` | 87 passed (also invoked by `test:contracts`) |
+| `npm run typecheck` | Web route/TypeScript checks and strict mypy passed; 19 Python source files |
+| `npm test` | 138 passed, no skips, including all integrated F01 tests |
+| `npm run test:db` | Original 41 database/migration/lifespan/isolation cases passed, no skips |
+| `npm run build` | Next.js production build passed; product UI unchanged |
+| `uv run --directory postgres --locked --python 3.14 mypy` | Passed, 19 source files |
+| `uv run --directory postgres --locked --python 3.14 pytest tests/test_contract_schemas.py tests/test_http_contract.py` | 87 passed |
+| `uv run --directory postgres --locked --python 3.14 python scripts/export_openapi.py --check` | Export identical across Python 3.12/3.14 |
+| `uv run --directory postgres --locked --python 3.14 pytest` | Final full suite: 138 passed, no skips |
+
+Initial checks caught alias-constructor typing, framework exception typing and
+pagination schema-bound metadata issues; these were corrected before the final
+results above. Negative drift tests deliberately use missing/modified artifacts
+in temporary copies and assert exit status 1, then regenerate identical output.
+They do not modify the checked-in generated artifacts. No check prerequisite
+remained unavailable for the final local commands.
+
+The original F01 migrations, rollback, role restrictions, shutdown/outage and
+isolation tests remain unchanged. No new migration or data recovery procedure
+is introduced. After testing, only the synthetic control database remained;
+the F02 disposable test service and its dedicated network were removed:
+
+```powershell
+docker compose -p quezo-f02-9c413787 --profile test rm -s -f postgres-test
+docker network rm quezo-f02-9c413787_default
+```
+
+**Review boundary:** F02 remains `active` in the backlog and is returned as ready
+for B.C.'s review, not accepted/done. No commit, pull request, successor work,
+external provisioning, deployment or real-data use was performed.
 
 ## Local database and optional identity dependency
 
@@ -391,12 +610,13 @@ local database services were removed after verification.
 ## Approved first wave and remaining review gates
 
 B.C. approved the [scoped G00 baseline](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
-on 20 October 2026. F01 is active under B.C. for synthetic-data development;
-F02 remains ready and undispatched.
+on 20 October 2026. F02 is active under B.C.'s exclusive shared-file write window,
+using integrated F01 baseline `8732328` (PR #3). The stale F01 tracker row awaits
+B.C.'s integration/evidence reconciliation.
 Use their [prepared handoff prompts](implementation/AGENT-HANDOFF.md#4-approved-first-wave-prompts);
 B.C. owns integration and review, and moves each item to `active` at dispatch.
 F01 persistence tools are locked in the backend manifest; F02 contract tools
-are not installed by this package.
+are locked in the npm manifests.
 Identity/session implementation and later gates remain held.
 
 Read [scope](PROTOTYPE-SCOPE.md), [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md)

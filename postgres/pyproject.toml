@@ -24,7 +24,7 @@ addopts = "-q"
 python_version = "3.12"
 strict = true
 mypy_path = "src"
-files = ["src", "tests", "migrations"]
+files = ["src", "tests", "migrations", "scripts"]
 
 [dependency-groups]
 dev = [
