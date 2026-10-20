@@ -1,7 +1,8 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** Planning bundle for review. No work items have been started by its creation.
+**Status:** G00 approved with explicit holds; F01/F02 ready for synthetic-data development.
+No engineering work items have started.
 
 ## 1. Start here
 
@@ -9,6 +10,14 @@ The [software specification](../SOFTWARE-SPECIFICATION.md) defines behavior and
 acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines architecture;
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
+
+**Current checkpoint:** B.C. approved the [scoped G00 baseline](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+on 20 October 2026 and owns the backlog, integration and first-wave review/merge.
+Use the [prepared F01/F02 prompts](AGENT-HANDOFF.md#4-approved-first-wave-prompts),
+dispatching F01 first and F02 next unless B.C. explicitly coordinates shared-file
+writes. Update each row to `active` at dispatch, not when preparing its prompt.
+Identity/session implementation and later decision gates remain held as recorded
+in the specification and backlog.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).

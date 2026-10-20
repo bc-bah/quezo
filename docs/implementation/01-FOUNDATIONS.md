@@ -6,7 +6,13 @@ Paths below are ownership proposals; create only the files needed by the package
 
 ## G00: Approve implementation baseline
 
-**Owner:** Product + Engineering reviewers. **Type:** review, not feature code.
+**Owner/approver:** B.C. **Type:** review, not feature code.
+
+**Recorded outcome, 20 October 2026:** [G00 accepted with scoped approval](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026).
+DEC-01 through DEC-05 and F01/F02 tools under DEC-07 are approved. DEC-06 and
+session storage implementation remain held, blocking F03/I01 as applicable.
+B.C. owns integration and F01/F02 review/merge. Only F01/F02 are authorized,
+using synthetic data; DEC-08 through DEC-11 later commitments remain held.
 
 Read the scope, HLA and [software specification](../SOFTWARE-SPECIFICATION.md),
 especially DEC-01 through DEC-11. Resolve DEC-01 through DEC-07 sufficiently to

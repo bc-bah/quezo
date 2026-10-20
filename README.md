@@ -2,10 +2,12 @@
 
 A standalone assessment workspace for creating, delivering, and reviewing quizzes.
 
-**Status: architecture review and scaffold only.** The agreed prototype scope is
+**Status: first development wave approved; scaffold only.** The agreed prototype scope is
 single-organization, low-stakes assessment covering the PRD's P0 requirements.
 No authentication, authoring, assessment, grading, or database features are
-implemented. Product development is paused pending review.
+implemented. B.C. approved synthetic-data foundation packages F01/F02 on
+20 October 2026; they are ready, not started. Identity/session and later gates
+remain explicitly held.
 
 ## Review first
 
@@ -21,8 +23,10 @@ implemented. Product development is paused pending review.
    Track assignments and evidence in the [backlog](docs/implementation/BACKLOG.md).
 
 The [original PRD](docs/reference/02-Product-Requirements.md) remains the source
-for requirement IDs. The specification and plan are proposed for approval;
-creating them does not start feature development.
+for requirement IDs. The [G00 approval record](docs/SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+defines the approved decisions and remaining holds. B.C. owns integration and the
+backlog. Start with the [F01 handoff prompt](docs/implementation/AGENT-HANDOFF.md#f01-dispatch-prompt),
+then F02; preparing these assignments does not start feature development.
 
 The supplied product ideation documents are preserved in [docs/reference](docs/reference/00-Start-Here.md)
 as unmodified source material, not approved specifications or executable agent
@@ -77,4 +81,4 @@ The root scripts are convenience wrappers: `typecheck` checks both languages,
 Uvicorn; there is no backend JavaScript build.
 
 See [development setup](docs/DEVELOPMENT.md) for optional local infrastructure,
-configuration, checks, and the explicit review stop.
+configuration, checks, and the scoped first-wave dispatch gate.

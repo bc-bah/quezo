@@ -11,36 +11,46 @@ has permission to start. `review` means work is available but not yet accepted.
 owner, PR/commit and evidence links as work progresses. A blocked item records the
 specific decision or predecessor, not a generic "waiting."
 
-**Initial state:** only G00 is ready for document review. All engineering packages
-are planned; no product implementation or issue/PR creation is implied.
+**Current state (20 October 2026):** B.C. approved the scoped G00 baseline and
+owns integration and all backlog packages. B.C. is the F01/F02 reviewer and merge
+approver; later reviewers and release commitments remain held under DEC-11.
+F01 and F02 are the authorized synthetic-data wave and are `ready`, not dispatched.
+No engineering package has started; no implementation or issue/PR creation is implied.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
 dependency. Decision gates still apply as specified by the package.
 
+Approval evidence: [G00 approval record](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026).
+Prepared assignments: [first-wave prompts](AGENT-HANDOFF.md#4-approved-first-wave-prompts).
+Dispatch F01 first, then F02 by default to serialize shared files; this is a
+coordination order, not a new F02 prerequisite. B.C. may dispatch them concurrently
+only after assigning non-overlapping shared-file write windows. Move each to
+`active` when actually dispatched. No engineering completion evidence exists yet.
+
 | ID | Phase | Package | Prerequisites | Status | Owner | PR/commit and evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
-| G00 | 0 | [Approve implementation baseline](01-FOUNDATIONS.md#g00-approve-implementation-baseline) | - | ready | - | DEC-01 through DEC-07 pending; reviewers/assignment needed |
-| F01 | 1 | [Database and integration-test foundation](01-FOUNDATIONS.md#f01-database-and-integration-test-foundation) | G00 | planned | - | - |
-| F02 | 1 | [Contract and error foundation](01-FOUNDATIONS.md#f02-contract-and-error-foundation) | G00 | planned | - | - |
-| F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | planned | - | - |
-| I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | planned | - | - |
-| I02 | 1 | [Integrated login and access gate](01-FOUNDATIONS.md#i02-integrated-login-and-access-gate) | F03, I01 | planned | - | - |
-| C01 | 2 | [Versioned objective questions](02-CORE-LIFECYCLE.md#c01-versioned-objective-questions) | I02 | planned | - | - |
-| C02 | 2 | [Immutable quiz publication](02-CORE-LIFECYCLE.md#c02-immutable-quiz-publication) | C01 | planned | - | - |
-| D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | planned | - | - |
-| D02 | 2 | [Durable response save and resume](02-CORE-LIFECYCLE.md#d02-durable-response-save-and-resume) | D01 | planned | - | - |
-| S01 | 2 | [Pure objective scoring](02-CORE-LIFECYCLE.md#s01-pure-objective-scoring) | F02 | planned | - | - |
-| D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | planned | - | - |
-| R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | planned | - | - |
-| T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | planned | - | - |
-| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | planned | - | - |
-| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | planned | - | - |
-| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | planned | - | DEC-09 required for timed UX |
-| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | planned | - | - |
-| Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | - | - |
-| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | - | - |
-| O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | - | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
-| Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | - | DEC-08 benchmark/gates required |
-| G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | - | Named approvers and release evidence required |
+| G00 | 0 | [Approve implementation baseline](01-FOUNDATIONS.md#g00-approve-implementation-baseline) | - | done | B.C. | [Scoped approval, 20 October 2026](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026); DEC-01 through DEC-05 approved; DEC-06/07 holds explicit; F01/F02 assigned |
+| F01 | 1 | [Database and integration-test foundation](01-FOUNDATIONS.md#f01-database-and-integration-test-foundation) | G00 | ready | B.C. | DEC-07 persistence tools approved; [dispatch prompt](AGENT-HANDOFF.md#f01-dispatch-prompt); no implementation evidence yet |
+| F02 | 1 | [Contract and error foundation](01-FOUNDATIONS.md#f02-contract-and-error-foundation) | G00 | ready | B.C. | DEC-05/07 contract tools approved; [dispatch prompt](AGENT-HANDOFF.md#f02-dispatch-prompt); no implementation evidence yet |
+| F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | blocked | B.C. | DEC-06 and DEC-07 session storage implementation held; F01/F02 not integrated |
+| I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | blocked | B.C. | DEC-06 realm/client, JWT libraries and privileges held; F01/F02 not integrated |
+| I02 | 1 | [Integrated login and access gate](01-FOUNDATIONS.md#i02-integrated-login-and-access-gate) | F03, I01 | planned | B.C. | - |
+| C01 | 2 | [Versioned objective questions](02-CORE-LIFECYCLE.md#c01-versioned-objective-questions) | I02 | planned | B.C. | - |
+| C02 | 2 | [Immutable quiz publication](02-CORE-LIFECYCLE.md#c02-immutable-quiz-publication) | C01 | planned | B.C. | - |
+| D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | planned | B.C. | - |
+| D02 | 2 | [Durable response save and resume](02-CORE-LIFECYCLE.md#d02-durable-response-save-and-resume) | D01 | planned | B.C. | - |
+| S01 | 2 | [Pure objective scoring](02-CORE-LIFECYCLE.md#s01-pure-objective-scoring) | F02 | planned | B.C. | - |
+| D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | planned | B.C. | - |
+| R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | planned | B.C. | - |
+| T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | planned | B.C. | - |
+| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | planned | B.C. | - |
+| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | planned | B.C. | - |
+| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | planned | B.C. | DEC-09 required for timed UX |
+| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | planned | B.C. | - |
+| Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |
+| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 timed-accessibility approval required |
+| O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
+| Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | B.C. | DEC-08 benchmark/gates required |
+| G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | B.C. | DEC-11 later approvers/release commitments and release evidence required; DEC-10 gates any pilot |
 
 ## Update protocol
 

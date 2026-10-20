@@ -1,7 +1,8 @@
 # Prototype high-level architecture
 
 **Date:** 20 October 2026  
-**Status:** Proposed design for review; scaffold only, not implemented architecture.  
+**Status:** Scoped foundation tool choices approved; scaffold only, not implemented architecture.
+
 **Product baseline:** [PRD v0.1](reference/02-Product-Requirements.md), as scoped by
 [Prototype scope](PROTOTYPE-SCOPE.md).
 
@@ -37,10 +38,12 @@ Frontend dependencies are pinned in npm manifests and `package-lock.json`; backe
 dependencies are pinned in `postgres/pyproject.toml` and `postgres/uv.lock`.
 `postgres/.python-version` selects Python 3.12 for reproducible local defaults.
 Container image tags are development defaults, not immutable production digests.
-No UI kit, ORM, session library, or migration runner has been selected;
-choose those during the first approved slice based on its requirements.
-Prefer parameterized PostgreSQL access and reviewed, ordered migrations.
-SQLAlchemy/Alembic are candidates, not selected or installed dependencies. The
+Under [G00/DEC-07](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026),
+B.C. approved Psycopg 3 async/pooling and Alembic with SQLAlchemy Core (no ORM)
+for F01, plus openapi-typescript and openapi-fetch for F02 on 20 October 2026.
+These dependencies are selected, not yet installed. Use parameterized PostgreSQL
+access and reviewed, ordered migrations. No UI kit, session library or session
+storage implementation has been selected; identity/session work remains held. The
 backend keeps the existing `postgres/` directory name but is no longer an npm
 workspace; its importable Python application lives in `postgres/src/quezo_api/`.
 
@@ -293,9 +296,9 @@ Proposed `/api/v1` resources:
 
 These are design sketches, not implemented endpoints. Define typed Pydantic
 request/response models with each approved slice; FastAPI generates the OpenAPI
-contract. Generate a TypeScript client from that contract when the first frontend
-integration is built, rather than manually duplicating Python types. Select the
-generator then and check contract/client drift in CI. No client generator is
+contract. F02 will generate types with openapi-typescript and use openapi-fetch
+for the typed client, rather than manually duplicating Python types, and check
+contract/client drift in CI. No client generator is
 installed for this liveness-only scaffold. Stable internal contracts and local
 interactive documentation do not constitute the P1 supported external API.
 
@@ -307,7 +310,7 @@ Deadline conflicts return authoritative attempt status and server time.
 Do not echo secrets, scoring keys, database errors or another learner's work.
 Writes do not return success-shaped fallback responses when a dependency fails.
 FastAPI's default validation/HTTP errors do not yet implement this proposed error
-envelope; add deliberate exception handlers with the first business routes, without
+envelope; F02 adds deliberate exception handlers before business routes, without
 echoing sensitive request values in validation errors.
 
 ## 9. Security and privacy
@@ -408,10 +411,11 @@ preemptively.
 | One organization, per-owner access | Reduces first prototype complexity without pretending tenant isolation already exists | Scope confirmed |
 | No auth bypass or speculative infrastructure | A shell is enough before review; avoids unsafe demo behavior and unneeded distributed dependencies | Scaffold decision |
 
-Review [scope section 7](PROTOTYPE-SCOPE.md#7-review-gate) before feature work.
-Detailed behavior, contracts and acceptance cases are proposed in the
-[software specification](SOFTWARE-SPECIFICATION.md); dependency-aware packages,
+Review the [G00 approval and explicit holds](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+before feature work. The software specification records approved behavior,
+contracts and acceptance cases; dependency-aware packages,
 parallel workstreams and tracking live in the
-[implementation bundle](implementation/README.md). These documents do not approve
-their open behavioral decisions or start implementation. Executable migrations,
+[implementation bundle](implementation/README.md). Only F01/F02 are authorized
+for synthetic-data development; open decisions remain held and no implementation
+has started. Executable migrations,
 OpenAPI exports and UI designs are delivered by the assigned slices.
