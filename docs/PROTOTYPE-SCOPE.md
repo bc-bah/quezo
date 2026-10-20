@@ -1,0 +1,131 @@
+# Prototype scope
+
+**Date:** 20 October 2026  
+**Status:** Scope direction confirmed; detailed behavior and architecture proposed
+for review. This is not a production-readiness claim.
+
+## 1. Source and decision precedence
+
+The [PRD v0.1](reference/02-Product-Requirements.md) supplies requirement IDs and
+acceptance criteria. The [strategy](reference/01-Product-Strategy-and-Competitive-Assessment.md),
+[engineering brief](reference/03-Engineering-Architecture-Brief.md), and
+[workshop](reference/04-Product-Engineering-Alignment-Workshop.md) provide rationale
+and open questions.
+On 20 October 2026, the user approved **Python/FastAPI** for the backend:
+its maintainers are comfortable with Python and accept a two-language stack.
+Quezo uses Next.js/React for the frontend, PostgreSQL for persistence, Keycloak
+for identity, and Docker for containerization. The product source documents are
+preserved unchanged.
+
+The user confirmed **single-organization, low-stakes P0 prototype** on
+20 October 2026. All P0 requirements remain in the target prototype; the first
+vertical slice is a delivery sequence, not a reduction of that scope. P1 and P2
+remain deferred except for minimal integrity records described below. Proposed
+rules in the architecture require review before implementation.
+
+## 2. Outcome and audience
+
+Prove this complete workflow for an author, learner, and administrator in one
+organization:
+
+> Create and reuse objective questions -> configure and publish a quiz ->
+> authorize a learner -> save and resume an attempt -> finalize exactly once ->
+> score against the delivered version -> show only permitted results.
+
+The product is assessment-first, not a learning management system. The prototype
+uses synthetic questions and test identities. It does not establish suitability
+for formal exams, certification, sensitive institutional records, or public SaaS.
+The first real customer segment remains unconfirmed.
+
+## 3. P0 coverage
+
+All rows describe **planned work**, not capabilities delivered by this scaffold.
+
+| PRD requirements | Prototype scope | Evidence expected at review/demo |
+| --- | --- | --- |
+| FR-001-004 | Keycloak sign-in; administrator/author/learner roles; account/access administration; ownership checks | Sign in as each role; prevent cross-author access; disable an account and deny further assessment operations |
+| FR-010-015, FR-018 | Author-owned question bank; create/edit/archive; text/category/tag search; single-answer MCQ and true/false; points and feedback; reuse and preview; immutable revisions | Reuse a question in two quizzes; edit its draft without altering an existing attempt or published revision |
+| FR-020-026 | Quiz authoring; bank selection and point overrides; time/attempt limits; question/option ordering randomization; zoned availability; draft/published/closed/archived; learner preview; disclosure policy | Publish and preview; enforce schedule and limits; keep ordering stable on refresh; close/archive safely |
+| FR-030-038 | Named-learner assignment and authenticated links; eligibility; answer navigation and revision; durable autosave and resume; server deadlines; retry-safe submission and explicit status | Refresh after a save, disconnect/reconnect, retry/conflict saves, race submissions, and verify one final result |
+| FR-040-043 | Objective auto-grading, configured points, retained answers/timestamps/state, authorized result release | Verify both supported question types, unanswered items, points, and restricted results |
+| FR-050-052, FR-056 | Learner history; author participation/completion/score summary; individual submission review; explicit unanswered/incorrect/finalized distinctions | Inspect two learners' attempts without leaking one learner's work to another; no manual-grade state is needed while written answers are excluded |
+| FR-061-062 | Server authorization for every application interface and stable identifiers | Negative authorization coverage for the same operations invoked outside the UI |
+
+Assignment is separate from Quiz and Attempt even without cohorts. Proposed
+prototype distribution is an author assigning named active learners, with a link
+that locates the quiz but never grants access by itself. Self-enrollment and
+public/guest links are not implicitly included.
+
+FR-004 must eventually have a basic in-app administration workflow; the Keycloak
+console alone is not completion of that P0 requirement. The implementation should
+use a narrowly privileged Keycloak administration adapter for identity changes
+and application-owned account/access records for assessment authorization.
+
+## 4. Explicit deferrals and reconciled inconsistencies
+
+| Deferred scope | PRD references / interpretation |
+| --- | --- |
+| Multiple organizations, group/cohort management and group comparisons | FR-005, FR-055; one deployment serves one organization; no tenant isolation claim |
+| General audit browser, audit export, grade correction and regrading | FR-006, FR-045-046; retain minimal publication, access-change and finalization records for integrity, without promising full audit reporting |
+| Multiple-answer, short-answer and essay questions; manual grading | FR-016, FR-044; PRD journey 3's written-grading step is conditional and excluded here |
+| Question import/export and results CSV export | FR-017, FR-053; PRD section 10's export criterion applies only when enabled, not to this prototype |
+| Quiz duplication, random selection from pools | FR-027-028; randomizing the order of all selected questions/options remains P0 |
+| Guests and anonymous attempts | FR-039 |
+| Question-level analytics | FR-054 |
+| Supported public API, third-party credentials and compatibility commitment | FR-060; internal REST contracts are documented as developed, with FR-061 authorization from day one |
+| QTI/LTI, AI authoring, proctoring, LMS features, native apps | FR-063-064 and PRD non-goals |
+| Microservices, message brokers, Redis, WebSockets, media/CDN pipelines, subscriptions | Not required by the prototype's assessment workflow |
+
+## 5. Demonstration and acceptance
+
+Use three test identities (administrator, author, learner), plus a second author
+and learner for access-control checks. Prepare at least two quizzes sharing a
+question, with both supported question types and different result policies.
+
+1. Administrator provisions/assigns roles and disables access. Author organizes,
+   searches, previews, reuses, publishes, closes, and archives content.
+2. Learner accesses an assigned quiz in its availability window; repeat starts
+   cannot bypass attempt limits. Randomized presentation survives refresh.
+3. Acknowledged answers survive refresh, process restart, and a temporary network
+   interruption within the agreed persistence contract. Unsaved edits stay
+   visibly unsaved; stale saves cannot overwrite newer answers silently.
+4. Submission retries and concurrent submission/expiry produce one finalized
+   result. Deadline rejection is based on server time, not browser time.
+5. Scores use fixed delivered questions and points. Hidden answers/feedback are
+   absent from learner payloads. Learner history and author summaries agree.
+6. PRD security, accessibility, concurrency, and recovery evidence is reviewed
+   before any pilot; scaffolding alone satisfies none of those product gates.
+
+The PRD's 100 active learners, p95 reads <=300 ms, p75 usable UI <=2.5 seconds,
+99.5% availability, and WCAG 2.2 AA are proposed targets. Workload, environment,
+measurement method, and operating commitments must be agreed before adoption.
+
+## 6. Proposed delivery sequence after approval
+
+The [software specification](SOFTWARE-SPECIFICATION.md) expands this scope into
+testable rules and acceptance cases. The [implementation bundle](implementation/README.md)
+is the delivery source of truth: baseline approval, working foundations, first
+complete lifecycle, parallel P0 completion, hardening/operations and acceptance.
+Its [backlog](implementation/BACKLOG.md) records actual package prerequisites,
+ownership, status and evidence.
+
+Each feature slice includes its migrations, interface contract, UI, authorization
+and tests. Detailed product decisions remain proposed until recorded as approved
+in the specification's decision register. No slice is authorized to start by the
+creation of these documents.
+
+## 7. Review gate
+
+| Decision | Current position | Owner / gate |
+| --- | --- | --- |
+| Audience, organization scope, priority coverage | Single-organization, low-stakes, all P0; confirmed by user | Product; confirmed 20 October 2026 |
+| Technology stack | Next.js/React, Python/FastAPI, PostgreSQL, Keycloak and Docker; two-language stack explicitly accepted | Confirmed 20 October 2026 |
+| Exact versions, packages, module layout | Locked scaffold defaults; production suitability remains subject to review | Engineering review |
+| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | Proposed in HLA sections 5-7 | Product + Engineering before feature code |
+| Keycloak realm/provider, login claims, administration privileges | Local test realm first; not configured | Identity owner before identity slice |
+| First customer, pilot data policy, retention/deletion obligations | Unresolved; synthetic data only meanwhile | Product + privacy owner before pilot |
+| Hosting, workload, recovery objectives, availability commitment | Unresolved; local Docker is not hosting approval | Engineering + operations before pilot |
+| Delivery date, budget, release approver | Unresolved | Product before backlog commitment |
+
+**Stop here for user review.** Approve or revise this scope and the linked HLA
+before implementing domain schemas, identity integration, or product workflows.

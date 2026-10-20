@@ -1,0 +1,31 @@
+[project]
+name = "quezo-api"
+version = "0.0.0"
+description = "Quezo FastAPI prototype scaffold"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.156.1",
+    "pydantic==2.14.1",
+    "uvicorn==0.54.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+files = ["src", "tests"]
+
+[dependency-groups]
+dev = [
+    "httpx2==2.15.1",
+    "mypy==2.4.0",
+    "pytest==9.1.1",
+]
