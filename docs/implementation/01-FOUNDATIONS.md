@@ -4,15 +4,22 @@ Dependencies/status are authoritative in [BACKLOG.md](BACKLOG.md). Each engineer
 package also requires the [definition of done](README.md#5-definition-of-ready-and-done).
 Paths below are ownership proposals; create only the files needed by the package.
 
+**Current checkpoint, 20 October 2026:** F01/F02/F03/I01 are accepted and integrated.
+B.C. explicitly assigned I02 as `active`, retaining integration/review/merge
+ownership. F03 carries the approved EX-I02-01 completion exception; I02 must
+resolve it before combined browser acceptance. Use the
+[I02 copy-ready prompt](AGENT-HANDOFF.md#i02-dispatch-prompt) and
+[assignment/exception record](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception).
+Later decision holds are unchanged.
+
 ## G00: Approve implementation baseline
 
 **Owner/approver:** B.C. **Type:** review, not feature code.
 
 **Recorded outcome, 20 October 2026:** [G00 accepted with scoped approval](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026).
-DEC-01 through DEC-05 and F01/F02 tools under DEC-07 are approved. DEC-06 and
-session storage implementation remain held, blocking F03/I01 as applicable.
-B.C. owns integration and F01/F02 review/merge. Only F01/F02 are authorized,
-using synthetic data; DEC-08 through DEC-11 later commitments remain held.
+DEC-01 through DEC-05 and F01/F02 tools under DEC-07 were approved. The original
+DEC-06/session-storage holds were subsequently resolved by the second-wave
+approval above. DEC-08 through DEC-11 later commitments remain held.
 
 Read the scope, HLA and [software specification](../SOFTWARE-SPECIFICATION.md),
 especially DEC-01 through DEC-11. Resolve DEC-01 through DEC-07 sufficiently to
@@ -96,6 +103,9 @@ session interface and authorized-fetch/client integration.
 
 ### Second-wave checkpoint
 
+Historical dispatch record; F03 and I01 have since been marked done by B.C.,
+with the explicit F03 exception recorded above. I02 is now active.
+
 B.C.'s [20 October 2026 approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
 supersedes G00's F03 identity/session holds. F01 PR #3 (`8732328`) and F02 PR #4
 (`5f314125e13262139e1d3e28d190881d6fbd5f8b`) are accepted/integrated. F03 is active,
@@ -135,6 +145,12 @@ check conventions, identity configuration and test account setup.
 in frontend code, automatic role grants on arbitrary login.
 
 ## I02: Integrated login and access gate
+
+**Current assignment:** active under B.C., 20 October 2026; F03 PR #5 and I01
+PR #6 are integrated in `6ef734f`. First resolve
+[EX-I02-01](BACKLOG.md#ex-i02-01-native-loginlogout-origin) using actual native
+browser form submissions; keep origin/CSRF protection intact. This is a named
+acceptance blocker within authorized I02 work, not an unresolved decision gate.
 
 **Rules:** IAM-01/02, AT-01, QUAL-02.  
 **Primary surfaces:** integration/browser tests, minimal F03/I01 integration fixes.

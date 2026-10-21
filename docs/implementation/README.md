@@ -1,8 +1,8 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** F01/F02 accepted and integrated; F03 code integrated; I01 active for synthetic-data development.
-Later work remains subject to its decision gates and explicit dispatch.
+**Status:** F01/F02/F03/I01 done; I02 active under B.C.'s synthetic-data assignment.
+F03's explicit browser integration exception must close in I02 before AT-01 acceptance.
 
 ## 1. Start here
 
@@ -11,15 +11,14 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint:** B.C. approved the [second-wave F03 baseline](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
-on 20 October 2026 and owns F03 integration/review. F01/F02 are done and integrated.
-F03 has the first exclusive second-wave shared-file window; use
-[handoff section 5](AGENT-HANDOFF.md#5-second-wave-f03-assignment).
-B.C. subsequently dispatched I01, approved PyJWT/cryptography and async HTTPX,
-and authorized reconciliation of these records without claiming acceptance.
-I01 uses the integrated F03 PR #5 (`b1a2fe0`) baseline and the following exclusive
-shared-file window. B.C. retains final acceptance/tracker updates; later decision
-gates remain held.
+**Current checkpoint:** B.C. confirmed F03/I01 completion and explicitly assigned
+I02 on 20 October 2026, retaining integration/review/merge ownership. Use the
+[copy-ready I02 prompt](AGENT-HANDOFF.md#i02-dispatch-prompt) from the integrated
+`6ef734f` baseline plus this tracking update. The
+[assignment and exception record](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
+requires I02 to resolve the native-form Origin finding with real browser evidence.
+I02 is active, not implemented by this documentation. No agents were launched.
+DEC-08/09/10 and later DEC-11 commitments remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).

@@ -161,9 +161,9 @@ This is a descriptive DTO, **not** authentication or authorization. I01 must
 resolve current application roles/status and enforce operation/ownership checks;
 administrator alone never implies author or learner access. F03 must keep
 session secrets separately on the server and must not turn an actor fixture or
-dependency outage into an authenticated session. The second-wave DEC-06/07
-approval selects openid-client + pg for F03. There is deliberately no
-`/api/v1/me` route in F02.
+dependency outage into an authenticated session. DEC-06/07 choices are now
+approved in the [second-wave record](SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01).
+F02 did not implement `/api/v1/me`; the integrated I01 package now provides it.
 
 **Pagination:** use `Annotated[PaginationParams, Query()]` for collection query
 inputs: `pageSize` defaults to 25 and accepts 1-100, `cursor` defaults to null.
@@ -275,8 +275,8 @@ on Node 22/24; the original Python 3.12/3.14 PostgreSQL jobs remain intact.
 | QUAL-04 / NFR-010; F02 generation criteria | Contract fixtures, deterministic export, negative drift tests, typed client checks, root type/build checks and preserved F01 suite | No assessment transitions, grading or disclosure acceptance |
 | AT-15 partial support / QUAL-06 structured errors | Correlated 500/503 errors, explicit synthetic dependency failures and F01 process-only liveness | No deployment/readiness/metrics/recovery evidence; **full AT-15 not established** |
 
-F03 can rely on the integrated actor and generated types under B.C.'s second-wave
-approval; I01 remains separately dispatched. S01 can reuse UUID and strict
+F03/I01 can rely on the agreed actor and generated types: B.C. has accepted
+F01/F02 integration and approved their second-wave decisions. S01 can reuse UUID and strict
 nonnegative integer conventions without implementing HTTP/authentication; its
 domain inputs, scoring enums and AT-11 evidence remain S01's responsibility.
 
@@ -340,9 +340,11 @@ docker compose -p quezo-f02-9c413787 --profile test rm -s -f postgres-test
 docker network rm quezo-f02-9c413787_default
 ```
 
-**Review boundary:** F02 remains `active` in the backlog and is returned as ready
-for B.C.'s review, not accepted/done. No commit, pull request, successor work,
-external provisioning, deployment or real-data use was performed.
+**Original handoff boundary:** these local results were returned for B.C.'s
+review, not declared acceptance by the implementing agent. F02 has since merged
+via [PR #4](https://github.com/bc-bah/quezo/pull/4) and B.C. confirmed completion;
+the backlog now records `done`. This does not authorize external provisioning,
+deployment or real-data use.
 
 ## Local database and optional identity dependency
 
@@ -623,9 +625,10 @@ local database services were removed after verification.
 ## F03 web session and navigation interface
 
 B.C.'s [second-wave approval](SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
-accepts integrated F01/F02 and dispatches F03, with B.C. owning integration,
-review and the exclusive shared-file window. I01 is not dispatched by this work;
-later approval gates remain held. The historic F01/F02 evidence above is unchanged.
+dispatched F03 from integrated F01/F02 with an exclusive shared-file window.
+F03 and the subsequent I01 package are now done; the active I02 assignment and
+explicit F03 completion exception are recorded below. Historical test results
+remain unchanged.
 
 ### Configuration, lifecycle and OIDC requirements
 
@@ -881,8 +884,10 @@ docker network rm quezo-f03-37862b8f_default
 | QUAL-03 / NFR-009; partial AT-14 | Native keyboard-operable navigation, labels, skip/focus targets, wrapping layout and explicit states; static-render evidence only, not full keyboard/screen-reader/WCAG acceptance |
 | QUAL-04/05; partial AT-15 | Clean/prior-head migrations, process restart durability, failure/closure checks, locked dependencies, reproducible build and unchanged F02 contract checks; no deployment/readiness or recovery claim |
 
-F03 is returned **ready for B.C.'s review**, not done or integrated. No automatic
-commit/PR, successor launch, external provisioning or deployment is performed.
+**Original handoff boundary:** F03 was returned ready for B.C.'s review, not
+declared accepted by the implementing agent. It is now merged via PR #5 and
+marked done by B.C. with EX-I02-01 explicitly carried into active I02 work.
+That exception and combined browser acceptance remain unresolved.
 
 ## I01 identity and authorization
 
@@ -1092,10 +1097,36 @@ docker compose -p quezo-i01-e2f6cba3 --profile test --profile identity-test rm -
 docker network rm quezo-i01-e2f6cba3_default
 ```
 
-I01 is returned **ready for B.C.'s review**, not done. The tracker remains active;
-B.C. owns review, accepted integration and final status updates.
+**Original handoff boundary:** I01 was returned ready for B.C.'s review, not
+declared done by the implementing agent. B.C. has since confirmed completion
+and accepted the merged package; current status is in the backlog.
 
-## Remaining review gates
+## Active I02 integration and remaining review gates
+
+B.C. confirmed F03/I01 complete on 20 October 2026. They are integrated by
+[PR #5](https://github.com/bc-bah/quezo/pull/5) (`b1a2fe0`) and
+[PR #6](https://github.com/bc-bah/quezo/pull/6) (`6ef734f`). Hosted CI passed on
+Node 22/24 and Python 3.12/3.14. The local verification sections above remain
+historical evidence, not new test runs by this documentation reconciliation.
+
+I02 is active under B.C.'s explicit assignment, integration and review ownership.
+Use the [copy-ready prompt](implementation/AGENT-HANDOFF.md#i02-dispatch-prompt).
+The baseline has both real `/me` and the F03 facade; neither controlled F03 HTTP
+tests nor I01's actual-Keycloak HTTP tests establish combined browser acceptance.
+
+**Known completion exception, EX-I02-01:** B.C. approved closing F03 with a
+source/protocol finding carried explicitly into I02. `no-referrer` on native
+login/logout form pages can produce `Origin: null`, rejected by F03's strict
+origin guard. The current production test supplies Origin manually. This has
+not been reproduced in a browser in this review. I02 must reproduce with native
+browser forms, fix narrowly if confirmed, and retain null/foreign-origin denial;
+it cannot pass AT-01 or close until browser evidence resolves the finding.
+This is a functional integration exception, not an authorization bypass waiver.
+The [I02 approval record](SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
+defines its owner, scope and closure gate.
+
+Later operational, accessibility and pilot gates remain held. No assessment
+workflows, A01 service privileges or successor assignments follow automatically.
 
 Read [scope](PROTOTYPE-SCOPE.md), [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md)
 and the [software specification](SOFTWARE-SPECIFICATION.md) for behavior and

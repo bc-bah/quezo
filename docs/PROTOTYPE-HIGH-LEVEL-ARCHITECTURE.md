@@ -1,7 +1,7 @@
 # Prototype high-level architecture
 
 **Date:** 20 October 2026  
-**Status:** Scoped foundation tool choices approved; scaffold only, not implemented architecture.
+**Status:** F01/F02/F03/I01 integrated; I02 real-browser proof and minimal integration fixes active.
 
 **Product baseline:** [PRD v0.1](reference/02-Product-Requirements.md), as scoped by
 [Prototype scope](PROTOTYPE-SCOPE.md).
@@ -26,8 +26,8 @@ claims are not treated as independently validated evidence.
 | --- | --- |
 | Web | Next.js 16.4.2 App Router, React 19.3.1, TypeScript 5.9.3 |
 | Application backend | Python 3.12+, FastAPI 0.156.1, Pydantic 2.14.1 and Uvicorn 0.54.0; separate ASGI backend process |
-| Persistence | PostgreSQL 17 local image; relational transactions; SQL migrations to be introduced with the first schema |
-| Identity | Keycloak 26.4.7 local-development image; OAuth 2.0/OIDC and RBAC; authorization-code flow with PKCE proposed; integration not implemented |
+| Persistence | PostgreSQL 17 local image; Psycopg async pool/transactions and Alembic foundation migrations integrated; no domain tables yet |
+| Identity | Keycloak 26.4.7 local-development image; web code + PKCE and independent backend JWT validation implemented; combined browser gate remains I02 |
 | Packaging | Docker and environment configuration; local dependency Compose file now; production application images/pipeline after review |
 | Automation | npm for the frontend; uv 0.12.17 and `pyproject.toml` for the backend; root npm convenience wrappers work on Windows/Linux |
 | Backend checks | Strict mypy and pytest with FastAPI's test client; Python dependencies locked separately |
@@ -41,9 +41,12 @@ Container image tags are development defaults, not immutable production digests.
 Under [G00/DEC-07](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026),
 B.C. approved Psycopg 3 async/pooling and Alembic with SQLAlchemy Core (no ORM)
 for F01, plus openapi-typescript and openapi-fetch for F02 on 20 October 2026.
-These dependencies are selected, not yet installed. Use parameterized PostgreSQL
-access and reviewed, ordered migrations. No UI kit, session library or session
-storage implementation has been selected; identity/session work remains held. The
+These dependencies are now locked and integrated. The
+[second-wave approval](SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01)
+selects openid-client and node-postgres (`pg`) for web OIDC/restricted PostgreSQL
+sessions, and PyJWT with cryptography plus HTTPX for backend JWT/JWKS validation.
+Second-wave libraries are now locked and integrated. No UI kit is selected.
+Use parameterized access and reviewed, ordered migrations. The
 backend keeps the existing `postgres/` directory name but is no longer an npm
 workspace; its importable Python application lives in `postgres/src/quezo_api/`.
 
@@ -76,10 +79,12 @@ Only Next.js may access its session records; it must not read assessment tables
 directly. FastAPI owns assessment persistence and must not read session secrets.
 Production database privileges should enforce this separation.
 
-**Current scaffold:** a static page and a typed FastAPI liveness response, plus
-generated `/openapi.json` and local `/docs` for that response only. There is no
-web-to-backend connection, login, persistence, or session facade yet. Interactive
-documentation exposure in shared environments requires a deployment decision.
+**Current foundations:** PostgreSQL pool/transaction/migration infrastructure,
+generated OpenAPI/TypeScript contracts, F03 OIDC/server sessions/navigation and
+I01 independent token validation/current-actor `/me`. I02 must prove the combined
+real-browser flow and resolve EX-I02-01, the native-form Origin finding. No
+assessment persistence/workflows exist; shared documentation exposure remains
+a deployment decision.
 
 ## 4. Module responsibilities and interfaces
 
@@ -296,10 +301,10 @@ Proposed `/api/v1` resources:
 
 These are design sketches, not implemented endpoints. Define typed Pydantic
 request/response models with each approved slice; FastAPI generates the OpenAPI
-contract. F02 will generate types with openapi-typescript and use openapi-fetch
-for the typed client, rather than manually duplicating Python types, and check
-contract/client drift in CI. No client generator is
-installed for this liveness-only scaffold. Stable internal contracts and local
+contract. F02 generates types with openapi-typescript and uses openapi-fetch
+for the typed client, rather than manually duplicating Python types, and checks
+contract/client drift in CI. I01 implements /api/v1/me alongside liveness;
+the assessment routes above remain future work. Stable internal contracts and local
 interactive documentation do not constitute the P1 supported external API.
 
 Use structured errors such as `{ code, message, requestId, details? }`, with safe
@@ -309,9 +314,9 @@ invalid payload (422), rate limits (429), and dependency failure (503).
 Deadline conflicts return authoritative attempt status and server time.
 Do not echo secrets, scoring keys, database errors or another learner's work.
 Writes do not return success-shaped fallback responses when a dependency fails.
-FastAPI's default validation/HTTP errors do not yet implement this proposed error
-envelope; F02 adds deliberate exception handlers before business routes, without
-echoing sensitive request values in validation errors.
+F02 implements sanitized exception/validation handlers before business routes,
+without echoing sensitive request values. Future domain error details still
+require explicit disclosure-reviewed schemas.
 
 ## 9. Security and privacy
 
@@ -407,15 +412,15 @@ preemptively.
 | FastAPI modular monolith plus Next.js web | Maintainers are comfortable with Python; Pydantic/OpenAPI reduce contract boilerplate. Accepts separate Python and TypeScript toolchains while keeping one home for domain rules | Stack confirmed 20 October 2026; detailed layout proposed |
 | Immutable published versions plus attempt snapshots | Extra storage for historically correct content and reproducible randomized delivery; mutable live question references rejected | Required invariant; physical representation proposed |
 | Synchronous objective finalization transaction | One committed outcome instead of a queue and transient ungraded state; bounded objective workload supports this | Proposed |
-| Server-side session facade | Keeps tokens out of browser storage; adds session storage and CSRF work versus a browser-token client | Proposed |
+| Server-side session facade | Keeps tokens out of browser storage; adds session storage and CSRF work versus a browser-token client | Implemented; I02 must close EX-I02-01 and combined browser acceptance |
 | One organization, per-owner access | Reduces first prototype complexity without pretending tenant isolation already exists | Scope confirmed |
 | No auth bypass or speculative infrastructure | A shell is enough before review; avoids unsafe demo behavior and unneeded distributed dependencies | Scaffold decision |
 
-Review the [G00 approval and explicit holds](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
+Review the [I02 assignment and explicit exception](SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
 before feature work. The software specification records approved behavior,
 contracts and acceptance cases; dependency-aware packages,
 parallel workstreams and tracking live in the
-[implementation bundle](implementation/README.md). Only F01/F02 are authorized
-for synthetic-data development; open decisions remain held and no implementation
-has started. Executable migrations,
-OpenAPI exports and UI designs are delivered by the assigned slices.
+[implementation bundle](implementation/README.md). F01/F02/F03/I01 are done
+with the explicit F03 browser exception carried into active I02 work. Later
+operational/pilot decisions remain held. Foundation/identity migrations and
+OpenAPI exports exist; assessment schemas and UI arrive with assigned slices.

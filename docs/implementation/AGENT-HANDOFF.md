@@ -85,6 +85,11 @@ raw logs, credentials and assessment payloads out of committed documents.
 
 ## 4. Approved first-wave prompts
 
+**Historical assignments:** F01/F02 are now accepted and integrated. Do not
+redispatch these prompts. Use [section 5](#5-active-second-wave-prompts) for the
+current F03/I01 assignments; the original approval and execution instructions
+below are retained as evidence of first-wave scope.
+
 **Approval:** B.C., 20 October 2026; see the
 [G00 approval record](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026).
 These are prepared assignments, not evidence that agents have started. B.C. owns
@@ -254,52 +259,409 @@ Do not create a commit or PR automatically; return changes for B.C.'s review.
 Report readiness for review, not done; B.C. owns tracker and integration updates.
 ```
 
-## 5. Second-wave F03 assignment
+## 5. Active second-wave prompts
 
-**Subsequent I01 dispatch:** B.C. authorized I01 on 20 October 2026, followed by
-explicit permission to reconcile the approval/checkpoint records and mark I01
-active without acceptance. Use integrated F03 PR #5 (`b1a2fe0`), its exact web
-OIDC/session requirements, and the exclusive I01 shared-file window. Approved
-backend dependencies are PyJWT with cryptography and asynchronous HTTPX using
-existing repository conventions, locked with uv. Local Keycloak administration
-is explicit provisioning only; no runtime admin credentials or automatic grants.
-Preserve applied migrations and session privileges. Return section 3, without
-committing, opening a PR, claiming done or launching I02. The F03 assignment below
-is retained as the producer contract, not a new dispatch.
+**Historical assignments:** F03 and I01 are now done; F03 has the explicit
+[EX-I02-01 completion exception](BACKLOG.md#ex-i02-01-native-loginlogout-origin).
+Do not redispatch these prompts. Use [I02](#i02-dispatch-prompt) below.
+B.C. separately authorized coordination-record reconciliation during each
+package's execution. Actual I01 execution followed integrated F03 PR #5
+(`b1a2fe0`), retaining its schema/role boundaries and exclusive shared-file order.
+The original prompts below preserve the approved scope, not current status.
 
-**Approval/dispatch:** B.C., 20 October 2026, including explicit authorization
-to reconcile the coordination documents before implementation. See the
-[second-wave approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026).
-F01 PR #3 (`8732328`) and F02 PR #4
-(`5f314125e13262139e1d3e28d190881d6fbd5f8b`) are accepted and integrated.
-B.C. owns F03, integration, review and the first exclusive shared-file window.
+B.C. explicitly assigned F03 and I01 on 20 October 2026 and approved the
+[identity/session baseline](../SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01).
+Both tracker rows are `active`; no further activation is required. No agent has
+been launched by preparing these prompts. B.C. owns both packages and their
+integration/review/merge. F01/F02 are done, with merged PRs and evidence in the
+[backlog](BACKLOG.md).
 
-Implement F03 only: server-only openid-client code + PKCE/state/nonce OIDC,
-pg-backed durable sessions/login transactions in a separate restricted schema,
-opaque cookies, expiry/rotation/logout, CSRF/origin enforcement, thin backend
-facade and keyboard-usable role-aware navigation with explicit failure states.
-Use a local Keycloak realm, confidential web client, exact redirects and a
-dedicated API audience; never runtime admin credentials, bypasses or automatic
-role grants. npm locks compatible dependencies. Bounded session/timeout defaults
-may be documented for review without changing business semantics.
+The integrated producer baseline is `5f314125e13262139e1d3e28d190881d6fbd5f8b`.
+Each execution checkout must also contain this second-wave approval/tracker update;
+the producer commit alone predates it. Use one prompt per session.
 
-Permitted implementation surfaces are frontend server/session/navigation code
-and focused tests, new session-only migrations/tests, narrow web-role bootstrap,
-and F03-only manifests/lock/scripts, environment/Compose/CI, shared test fixtures,
-migration runbook and DEVELOPMENT.md. No backend identity/business route changes,
-generated DTO edits, or edits to applied migrations. Escalate additional needs.
+**Default execution order:** F03 first, then I01 from the accepted F03 integration.
+This serializes root scripts, CI, Compose, bootstrap, lockfiles, shared docs and
+Alembic revisions; it does not add a logical dependency. F03 uses the approved
+actor DTO and controlled test identities while I01 produces the real `/me` route.
+I02 remains responsible for combined real-browser acceptance.
 
-I01 owns `/api/v1/me`. Consume the F02 Actor/error/client contract; use
-schema-validated controlled identities only in tests while that producer is
-absent. Runtime outages are explicit failures, never authenticated fallbacks.
-Prove real PostgreSQL durability and role isolation, clean/prior-head migration,
-expiry/logout/replay/CSRF and token nondisclosure. Run root typecheck, test, build,
-api:check, test:contracts, test:db and focused F03 checks with isolated dependencies.
-Record exact commands/environment/results; missing prerequisites are not passes.
+For parallel execution, B.C. must explicitly allocate non-overlapping shared-file
+windows and migration ordering. Independent feature code can progress, but no
+agent may guess revision IDs/parents or concurrently replace shared bootstrap,
+fixtures or generated artifacts. Preserve applied revisions and test the single
+integrated migration chain before acceptance.
 
-Return section 3 with session/schema/role interfaces, OIDC configuration,
-defaults, evidence and I01/I02 inputs. Report ready for review or a specific
-blocker, not done. I02 owns combined Keycloak/browser acceptance; isolated F03
-checks do not establish full AT-01 or WCAG conformance. No successors, external
-resources, deployment, real data, automatic commit or PR. B.C. owns final
-acceptance and tracker updates.
+### F03 dispatch prompt
+
+```text
+Implement Quezo work item F03: Web session and navigation foundation.
+
+Read:
+- docs/implementation/BACKLOG.md: F03 and its done prerequisites F01/F02.
+- docs/implementation/01-FOUNDATIONS.md: F03 and the second-wave checkpoint.
+- docs/implementation/README.md: shared-file rules and definition of done.
+- docs/SOFTWARE-SPECIFICATION.md: second-wave approval, IAM-01/02, sections 6-8,
+  QUAL-02/03 and AT-01 boundaries.
+- docs/PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md: sections 2-4 and 9.
+- docs/DEVELOPMENT.md: F02 actor/error/client contract, F01 migration/test setup.
+- postgres/migrations/README.md, infra/keycloak/README.md and current scripts.
+- docs/implementation/AGENT-HANDOFF.md: section 3 return format and section 5.
+
+Owner, integration owner and reviewer: B.C.
+Assignment: F03 is active by B.C.'s explicit direction on 20 October 2026.
+Approved decisions: DEC-06/07 second-wave approval selects openid-client for OIDC
+and node-postgres (pg) for restricted PostgreSQL-backed server sessions.
+Use a local Keycloak realm, confidential web client, exact redirects, code+PKCE,
+state/nonce and a dedicated API audience. Keycloak owns identity; the backend
+owns application role/status/ownership decisions on every protected request.
+Choose compatible versions and lock via npm. B.C. authorizes documented,
+bounded session/timeout defaults for review, not changes to business semantics.
+No runtime Keycloak-admin credentials, auth bypass or automatic role grants.
+
+Integrated prerequisites: F01 PR #3, merge 8732328; F02 PR #4, merge
+5f314125e13262139e1d3e28d190881d6fbd5f8b. Verify these changes and the current
+second-wave approval/tracker exist in this checkout. F01/F02 are done, not
+blocked. The real /api/v1/me producer belongs to I01; do not implement it here.
+Use controlled identities/schema-validated actor fixtures only in tests while
+I01 is absent. Never enable a runtime fixture, fake session or outage fallback.
+
+Permitted surfaces:
+- frontend/quezo/ server-only OIDC/session/facade code, root layout/navigation,
+  login/callback/logout and signed-out/expired/disabled/error presentation.
+- Focused frontend session/navigation tests using repository conventions.
+- Session-specific Alembic revision(s) and tests under postgres/migrations/
+  and postgres/tests/, plus narrow bootstrap changes for the web runtime role.
+- F03-only shared changes: frontend manifest, root package.json/package-lock.json,
+  .env.example, compose.yaml, .github/workflows/ci.yml, shared test fixtures,
+  postgres/bootstrap/roles.sql, test database bootstrap as needed,
+  postgres/migrations/README.md and docs/DEVELOPMENT.md.
+Shared-file owner: B.C. F03 has the first exclusive shared-file window.
+Do not modify backend identity/business routes, F02 shared DTOs or existing
+applied migrations. Escalate incompatible contracts or additional file needs.
+
+Required input contracts:
+- schemas.py Actor: userId UUID; roles array of administrator/author/learner
+  (combined or empty); status active/disabled. No token, email or provider IDs.
+- frontend/quezo/src/lib/api/client.ts and generated schema.d.ts; server models
+  are authoritative. Consume the agreed actor shape until I01 exports /me;
+  do not hand-edit generated output or invent an OpenAPI endpoint.
+- Error envelope: code/message/requestId/details; preserve safe actionable
+  backend errors. Transport/dependency failures are explicit, never signed-in.
+- F01 migration head is 0002_runtime_grants. Use the actual integrated head
+  when creating new revisions; one linear chain, migration-only credentials.
+  quezo schema default grants belong to the backend and MUST NOT cover sessions.
+
+Deliver all F03 acceptance criteria:
+- Real server-side PostgreSQL session and login-transaction storage in a separate
+  schema, with a restricted web runtime identity. Prove the web role cannot read
+  assessment tables and quezo_runtime cannot access session secrets. Keep schema
+  creation/privileged bootstrap out of application startup; do not use in-memory
+  authoritative state. Bound and close the pg pool, including failed startup.
+- Correct authorization-code callback, PKCE/state/nonce and replay rejection;
+  exact redirect validation, session rotation/expiry and logout invalidation.
+  Tokens remain server-only; opaque HttpOnly/SameSite cookies are Secure in shared
+  environments. State-changing requests enforce CSRF/origin protection.
+- A thin server-only backend facade, with no assessment rules in Next.js and no
+  browser token storage. An actor snapshot in a session is not live authorization:
+  consult backend /me/protected responses; never trust stale roles/status on outage.
+- Keyboard-usable role-aware navigation and explicit signed-out, expired,
+  disabled and error states; no assessment screens or administration UI.
+- Tests for expiry/logout, callback replay, CSRF/origin denial, token redaction,
+  durable sessions across process restart and database outages. Test storage and
+  privilege boundaries against real PostgreSQL, not an in-memory substitute.
+- Record clean migration and prior-baseline upgrade evidence and document exact
+  session/configuration interfaces, timeout defaults, role provisioning and checks.
+  If initial web tooling cannot exercise required behavior, add only focused
+  test tooling needed for F03; combined Keycloak/browser acceptance stays in I02.
+
+Run npm run typecheck, npm test, npm run build, npm run api:check,
+npm run test:contracts and npm run test:db with required isolated dependencies,
+plus the focused session/navigation/migration checks you add. Record exact
+commands, environment and outcomes; missing prerequisites/skips are not passes.
+Preserve F01 database lifecycle/isolation and F02 sanitized errors/client checks.
+IAM-01 and QUAL-02/03 require package evidence; do not claim full AT-01 or WCAG
+conformance from isolated F03 tests. I02 owns the real combined identity gate.
+
+Use synthetic identities/data and local test dependencies only. Stop after F03
+and return the complete section 3 handoff, including session/schema/role interface,
+OIDC realm/client/audience/redirect requirements, defaults, tests and I01/I02 inputs.
+Do not launch successors, create external resources, deploy, or use real data.
+Do not create a commit or PR automatically; return changes for B.C.'s review.
+Report ready for review or blocked with a specific reason, not done; B.C. owns
+tracker updates and accepted integration.
+```
+
+### I01 dispatch prompt
+
+```text
+Implement Quezo work item I01: Identity and authorization backend.
+
+Read:
+- docs/implementation/BACKLOG.md: I01 and its done prerequisites F01/F02.
+- docs/implementation/01-FOUNDATIONS.md: I01 and the second-wave checkpoint.
+- docs/implementation/README.md: shared-file rules and definition of done.
+- docs/SOFTWARE-SPECIFICATION.md: second-wave approval, IAM-01/02, identity
+  portion of IAM-03, sections 6-7, QUAL-02/04 and AT-01.
+- docs/PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md: sections 2-5 and 9.
+- docs/DEVELOPMENT.md: actor/error conventions and database/transaction interface.
+- infra/keycloak/README.md, postgres/migrations/README.md and current scripts.
+- docs/implementation/AGENT-HANDOFF.md: section 3 return format and section 5.
+
+Owner, integration owner and reviewer: B.C.
+Assignment: I01 is active by B.C.'s explicit direction on 20 October 2026.
+Approved decisions: DEC-06/07 second-wave approval selects PyJWT with cryptography
+and HTTPX for asynchronous JWT/JWKS integration. Follow the repository's existing
+HTTPX package/import conventions when adding runtime dependencies; lock with uv.
+Configure a dedicated local Keycloak realm, confidential web client using
+code+PKCE/state/nonce, exact redirect/logout URIs and a dedicated API audience.
+F03 uses openid-client and PostgreSQL sessions through pg. Application database
+roles/status are authoritative on every protected request. Local provisioning
+is explicit; no automatic grants and no runtime Keycloak-admin credentials.
+B.C. authorizes bounded documented timeout/cache defaults for review, not
+DEC-08 performance gates or weakened token validation.
+
+Integrated prerequisites: F01 PR #3, merge 8732328; F02 PR #4, merge
+5f314125e13262139e1d3e28d190881d6fbd5f8b. Verify these changes and the current
+second-wave approval/tracker exist. The default shared-file sequence follows
+accepted F03 integration: use that checkout baseline and its documented web
+client/redirect/session requirements. F03 is not a logical package prerequisite;
+parallel work requires B.C.'s explicit shared-file windows and migration order.
+Do not overwrite F03 bootstrap, session grants or applied migrations.
+
+Permitted surfaces:
+- infra/keycloak/ synthetic realm/client configuration and local provisioning.
+- postgres/src/quezo_api/modules/identity/ and package-specific authorization,
+  token, provisioning and real-database tests under postgres/tests/.
+- Identity Alembic revisions and minimal FastAPI router/lifespan wiring.
+- I01-only shared changes: postgres/pyproject.toml and uv.lock, .env.example,
+  compose.yaml, postgres/bootstrap/roles.sql, isolated test bootstrap/fixtures,
+  root package.json and .github/workflows/ci.yml for required checks,
+  postgres/migrations/README.md and docs/DEVELOPMENT.md.
+- Regenerate postgres/openapi.json and frontend/quezo/src/lib/api/schema.d.ts
+  using the existing scripts when /me is added; never hand-edit generated files.
+Shared-file owner: B.C.; default exclusive I01 window follows F03 integration.
+No frontend session/UI implementation, assessment modules or A01 admin UI.
+
+Required input contracts:
+- quezo_api.database.get_database and Database.transaction(): one bounded
+  per-process pool; transaction commits only on successful context exit and
+  rolls back on failure/cancellation. Pass the leased connection within atomic
+  work; do not manually commit, retain it or open nested independent transactions.
+- F02 Actor wire DTO: userId UUID, roles array of administrator/author/learner
+  (combined or empty), status active/disabled. Resolve a current active actor,
+  never authorize from a token role claim or a cached session actor alone.
+- ApiModel aliases/validation and F02 error envelope code/message/requestId/details;
+  reuse safe UNAUTHENTICATED, FORBIDDEN, ACCOUNT_DISABLED, NOT_FOUND and dependency
+  errors as appropriate. Unknown/malformed identity must not become authenticated.
+- F01 base head 0002_runtime_grants, or actual integrated head including F03.
+  Keep a single migration chain and restricted migration/runtime identities.
+  Identity tables belong in the backend quezo schema, not the web session schema.
+
+Deliver all I01 acceptance criteria:
+- Reproducible local realm/client/audience and synthetic test-account setup with
+  no committed secrets, wildcards, auth bypass or bootstrap-admin application user.
+  Keep Keycloak administration confined to explicit local provisioning; A01
+  service privileges/account-management integration are not part of this package.
+- Validate signature, configured issuer/audience, expiry and lifetime, with an
+  explicit allowed-algorithm policy and bounded async JWKS retrieval/cache.
+  Cover key rotation and unknown keys; never trust token-supplied key URLs or
+  fall back to unverified claims. Dependency failures remain explicit/fail-closed.
+- Unique stable (issuer, subject) to application UUID mapping, live application
+  role/status lookup and reusable actor/role/ownership checks. Admin alone does
+  not imply author/learner permissions; conceal foreign resources consistently.
+- Implement GET /api/v1/me returning the existing Actor for active mapped users;
+  deny missing/inactive mappings. Do not expose tokens or identity-provider data.
+- Explicit first-admin/test-account provisioning: identity failures leave no
+  eligible application grant; no arbitrary-login provisioning or privilege grants.
+- Tests for invalid signatures/algorithms/issuer/audience/expired tokens,
+  missing/inactive mappings, disabled accounts and role revocation with old tokens,
+  cross-role/ownership denial, provisioning failure and identity outages.
+  Use real PostgreSQL for account/mapping persistence and current-access checks.
+- Clean and actual prior-revision upgrades; preserve F03 session isolation.
+  Document actor dependency, authorization interfaces, realm/client setup,
+  timeout/cache defaults and synthetic provisioning without leaking credentials.
+
+Run npm run typecheck, npm test, npm run build, npm run api:generate,
+npm run api:check, npm run test:contracts and npm run test:db, plus focused
+identity/provisioning/migration tests. Verify generated /me types are reproducible
+and preserve integrated F01/F02/F03 checks. Update intentional scaffold assertions
+that required /api/v1/me to be absent; do not weaken unrelated route/error tests.
+Record commands, environment and outcomes, distinguishing synthetic verifier
+fixtures from actual Keycloak integration. Package evidence supports AT-01, but
+I02 still owns the combined real-browser -> facade -> API identity acceptance.
+
+Use synthetic data and local test dependencies only. Stop after I01 and return
+the complete section 3 handoff with actor/auth helpers, migration chain, /me
+contract, generated output, realm/client/audience settings, provisioning and tests.
+Do not launch I02 or other successors, provision external resources, deploy or
+use real data. Do not create a commit or PR automatically; return changes for
+B.C.'s review. Report ready for review or blocked with a specific reason, not done;
+B.C. owns tracker updates and accepted integration.
+```
+
+## 6. Active I02 integration handoff
+
+B.C. confirmed F03/I01 completion and assigned I02 as `active` on 20 October
+2026. B.C. owns integration/review/merge and explicitly accepted carrying the
+native-form Origin finding as EX-I02-01 into I02, where it must be resolved
+before acceptance. This is not a missing start approval. No agent is launched
+by preparing this prompt.
+
+F03 [PR #5](https://github.com/bc-bah/quezo/pull/5) and I01
+[PR #6](https://github.com/bc-bah/quezo/pull/6) are integrated in
+`6ef734faefbb52c76b78abb7d676ec9305f0c557`. Start from that result **plus this
+approval/tracker update**. I02 owns the exclusive integration window; do not
+reopen the historical F03/I01 prompts or dispatch assessment successors.
+
+### I02 dispatch prompt
+
+```text
+Implement Quezo work item I02: Integrated login and access gate.
+
+Read:
+- docs/implementation/BACKLOG.md: active I02, done F03/I01 and EX-I02-01.
+- docs/implementation/01-FOUNDATIONS.md: I02 acceptance and completion checkpoint.
+- docs/implementation/README.md: integration ownership and definition of done.
+- docs/SOFTWARE-SPECIFICATION.md: I02 assignment/completion exception,
+  DEC-06/07, IAM-01/02, AT-01, QUAL-02 and relevant sections 6-8.
+- docs/DEVELOPMENT.md: F03 configuration/session/facade, I01 actor/token interfaces,
+  verification commands and distinctions between HTTP tests and browser proof.
+- infra/keycloak/README.md: exact realm/client/audience and isolated provisioning.
+- postgres/migrations/README.md and tests/e2e/README.md.
+- Current root/frontend manifests and .github/workflows/ci.yml.
+- docs/implementation/AGENT-HANDOFF.md: section 3 return format and section 6.
+
+Owner, integration owner and reviewer/merge approver: B.C.
+Assignment: I02 is active by B.C.'s explicit direction on 20 October 2026.
+F03/I01 are done, not awaiting approval. B.C. explicitly accepts EX-I02-01 as
+a predecessor completion exception and requires I02 to reproduce/fix or resolve
+it with browser evidence before I02/AT-01 acceptance. It does not block starting.
+
+Approved decisions: preserve DEC-06/07's implemented Keycloak code+PKCE/state/nonce,
+confidential web client, dedicated API audience, PostgreSQL server sessions,
+openid-client/pg web libraries and PyJWT/cryptography/async HTTPX backend validation.
+Current database roles/status remain authoritative. No cached actor on outage,
+runtime admin credentials, automatic grants or authentication bypass.
+I02 may select/add a browser runner as its existing package requires: prefer
+npm-locked Playwright Test, using the existing Node/uv toolchains. Document the
+exact browser installation/run commands. Do not invent an already-existing
+test:e2e command; add and document a focused script if needed.
+No approval for refresh tokens, global SSO logout, different session defaults,
+new business routes, A01 admin features, hosting, real data or pilot deployment.
+
+Integrated prerequisites:
+- F03 PR #5, merge b1a2fe035d52cdddf4db3a0c832a690773fe5688.
+- I01 PR #6, merge 6ef734faefbb52c76b78abb7d676ec9305f0c557.
+- Current migration head 0004_identity, following 0003_web_sessions.
+Verify the producer code AND this I02 approval/tracker update exist in the
+checkout. Do not implement from the old F02 baseline or overwrite either producer.
+Both prior PRs passed hosted CI, but that is not real-browser AT-01 evidence.
+
+Permitted surfaces:
+- tests/e2e/ browser tests/configuration, reusable synthetic login fixtures and
+  isolated orchestration; package-specific helper tests where already established.
+- Narrow frontend session/facade/header/navigation fixes and focused regressions
+  required to connect F03 to real I01, including EX-I02-01.
+- Narrow backend identity/app or Keycloak test-provisioning fixes only where
+  demonstrated necessary for I02 integration; no account-management expansion.
+- I02-only shared edits: npm manifests/lock, root scripts, CI, Compose/env examples,
+  existing isolated fixtures, docs/DEVELOPMENT.md and tests/e2e/README.md.
+Shared-file owner: B.C.; I02 has the exclusive integration write window.
+Preserve the single migration chain, database role isolation and all applied
+revisions. No schema redesign is planned; escalate any demonstrated schema need.
+Regenerate OpenAPI/TypeScript through F02 tools if a producer contract changes;
+do not hand-edit artifacts or silently change the approved actor DTO.
+
+Required interfaces and setup:
+- Real browser -> Next auth routes/session facade -> FastAPI /api/v1/me -> real
+  Keycloak JWT/JWKS and real PostgreSQL mappings/roles/status.
+- Local realm quezo-local; confidential client quezo-web; scope openid quezo-api;
+  API audience quezo-api; exact configured issuer and /auth/callback URI.
+  If using isolated ports, explicitly register matching redirect/origin values;
+  never fix a mismatch with wildcard redirects or disabled issuer/audience checks.
+- Actor: userId UUID, roles array (administrator/author/learner, combined or empty),
+  status active/disabled. /me denies inactive mappings/disabled accounts.
+- Existing F03 SessionStore, BackendFacade and generated F02 client conventions;
+  wire the existing actor adapter to I01's now-generated /me operation if needed,
+  preserving schema checks, bounded requests, no-store and safe error propagation.
+- Runtime roles quezo_web and quezo_runtime remain isolated from each other's
+  storage; bootstrap/migration/provisioner credentials exist only in setup helpers.
+- Current logout is local Quezo session invalidation, not Keycloak SSO logout.
+  Session expiry is capped by access-token expiry; no automatic token refresh.
+
+First acceptance blocker, EX-I02-01:
+- Reproduce native browser clicks/submissions on the real login AND logout forms
+  without setting Origin via the test API or globally injecting request headers.
+- Inspect frontend/quezo/next.config.ts Referrer-Policy, src/app/auth-form.tsx
+  native POSTs, src/lib/server/session.ts origin validation and the existing
+  tests/production.test.ts manually supplied Origin header.
+- The source/protocol review predicts no-referrer can yield Origin:null and 403.
+  This has not yet been browser-reproduced; do not claim a confirmed runtime
+  failure before observing it.
+- If confirmed, choose the narrowest same-origin-form-compatible referrer policy
+  (for example same-origin or strict-origin) and regression coverage while
+  preserving token/query nondisclosure and foreign/null/missing Origin rejection.
+  Never allow Origin:null, remove CSRF checks or replace native browser actions
+  with manually authenticated HTTP calls merely to make the suite green.
+- If not reproduced, record exact browser/version/request-header evidence that
+  resolves the finding. Return EX-I02-01 closure evidence for B.C.'s review.
+
+Deliver all I02 acceptance criteria:
+- Start isolated real PostgreSQL, Keycloak, FastAPI and built Next.js instances;
+  prove readiness before browser navigation. Reuse guarded test database and
+  actual-provider helpers; do not target development volumes, production URLs
+  or an existing realm. Cleanup only explicitly owned resources, also on failure.
+- Through the actual provider login UI, demonstrate administrator, author and
+  learner sessions/navigation, plus combined-role/non-inheritance behavior where
+  relevant. Use explicit synthetic provisioning, not password-grant shortcuts,
+  injected cookies/tokens, mocked /me, route interception or runtime auth bypass.
+- Demonstrate callback, reload/session persistence, local logout and expiry with
+  real server decisions. Use approved bounded configuration or actual waits;
+  do not bypass validation or silently add refresh/global logout behavior.
+- Disable/revoke an existing application's account/role and prove the next
+  request with the old token/session cannot restore access. Cover invalid tokens
+  and denied direct API calls independently of hidden navigation.
+- Prove browser CSRF/origin denial and callback/state protections alongside
+  valid native form success. Retain meaningful lower-level hostile-request tests;
+  they supplement rather than replace the real user journey.
+- Prove identity/backend/database outages fail explicitly without authenticated
+  fallbacks. Respect I01's bounded JWKS cache: valid cached keys may work until
+  TTL; cold/expired-cache failures must fail closed. Do not require per-request
+  JWKS fetches or immediate failure of already validated cached keys.
+- Assert tokens and usable session secrets are absent from page content,
+  localStorage/sessionStorage and application logs. Opaque HttpOnly session
+  cookies are intentional browser-cookie storage, not a failed assertion:
+  verify document.cookie cannot read them and flags match local/shared policy.
+- Keep Playwright traces/HAR/screenshots/storage-state files from persisting
+  credentials, callback codes or authorization/cookie headers. Disable sensitive
+  captures or sanitize them before retention; never commit raw browser state.
+- Provide reusable synthetic login fixtures, automated AT-01 scenario evidence
+  and the working-foundations demonstration. Note keyboard navigation/error-state
+  observations without claiming full Q02/WCAG or P0 acceptance.
+
+Preserve existing checks and run:
+npm run typecheck
+npm test
+npm run build
+npm run api:check
+npm run test:contracts
+npm run test:db
+npm run test:identity
+npm run test:identity:integration
+npm run test:web:production
+Run the newly documented real-browser command as well, with required isolated
+services and actual browser dependencies. Add the focused browser check to CI
+without duplicating every existing matrix unnecessarily. Record exact commands,
+versions, environment and results; distinguish local/hosted/manual evidence.
+Missing services, skipped cases, controlled HTTP peers and a passing existing
+suite do not establish I02. Fix integration failures rather than weakening tests.
+
+Stop after I02 and return the complete section 3 handoff, including each AT-01
+scenario/result, EX-I02-01 disposition/evidence, browser fixture/startup/cleanup
+commands, minimal producer fixes, generated changes if any and C01/T01 inputs.
+Do not launch successors, provision external resources, deploy or use real data.
+Do not create a commit or PR automatically; return changes for B.C.'s review.
+Report ready for review or blocked with an exact unresolved criterion, not done;
+B.C. owns acceptance, exception closure, integration and tracker updates.
+```

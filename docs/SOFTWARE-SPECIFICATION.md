@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Scoped G00 approval recorded; synthetic-data F01/F02 authorized, not started.
+**Status:** F01/F02/F03/I01 done; I02 active with an explicit browser integration exception to resolve.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -23,9 +23,11 @@ and the [implementation bundle](implementation/README.md) owns delivery sequenci
 An agent encountering a conflict must identify the conflicting requirement and
 obtain a decision rather than silently choosing a different behavior.
 
-**Existing software:** a Next.js placeholder, a FastAPI liveness endpoint and its
-OpenAPI documentation, locked toolchains, optional database/identity containers,
-and scaffold checks. None of the assessment requirements below is implemented.
+**Existing software:** F01 PostgreSQL infrastructure, F02 schemas/errors/generated
+contracts, F03 server sessions/navigation/facade, and I01 token validation,
+current-actor `/me` and controlled local provisioning. Combined real-browser
+authentication acceptance is still I02 work, including EX-I02-01 below. No
+assessment workflow is implemented; foundation completion is not pilot approval.
 
 **Excluded:** multiple tenants, cohorts, anonymous access, written/manual grading,
 regrading, CSV/import/export, pool selection, external API support, LMS integration,
@@ -51,13 +53,16 @@ approval means the decision is not approved.
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
 | DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
-| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped approval by B.C., 20 October 2026: B.C. owns integration and F01/F02/F03 review/merge; later reviewers, release approval, dates and budget held |
+| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped assignment extended 20 October 2026: B.C. owns integration and F01/F02/F03/I01/I02 review/merge; other reviewers, release approval, dates and budget held |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
 The initial baseline work item identifies exactly which decisions each wave needs.
 
 ### G00 approval record: 20 October 2026
+
+Historical first-wave authorization; its F03/I01 holds are superseded only by the
+[second-wave approval](#second-wave-approval-f03-and-i01) below.
 
 B.C. explicitly approved this scoped baseline and first-wave tool selection.
 B.C. is the backlog and integration owner, accountable owner for every package,
@@ -81,46 +86,98 @@ DEC-01 through DEC-05 are approved but do not dispatch their future packages.
 
 ### Second-wave approval record: 20 October 2026
 
-B.C. explicitly dispatched F03 and approved reconciling this record, the tracker,
-foundation checkpoint, implementation README and handoff section 5 in the F03
-session on 20 October 2026. F01 is accepted/integrated via PR #3 (`8732328`);
-F02 via PR #4 (`5f314125e13262139e1d3e28d190881d6fbd5f8b`). Both are done.
-This record supersedes the first-wave identity/session holds for F03 only.
+Historical dispatch provenance: B.C. authorized F03's first shared-file window
+and coordination-record reconciliation, then I01's window from integrated F03
+PR #5 (`b1a2fe0`). The I01 extension selected repository-convention asynchronous
+HTTPX and PyJWT/cryptography, with no runtime administration credentials.
+The consolidated approval below preserves both assignments and their boundaries.
+Current completion and I02 authorization are recorded separately below.
 
-**Authorized work:** F03 under B.C. as owner, integration owner and reviewer,
-with the first exclusive second-wave shared-file window. Select compatible
-openid-client and node-postgres (pg) versions and lock with npm. Use a local
-Keycloak realm, confidential web client, exact redirects, authorization code +
-PKCE, state/nonce and a dedicated API audience. Identity belongs to Keycloak;
-current application roles/status/ownership belong to the backend on every
-protected request. No runtime Keycloak-admin credential, bypass, automatic role
-grant, runtime fixture or outage fallback is authorized.
+### Second-wave approval: F03 and I01
 
-B.C. authorizes documented bounded session/timeout defaults for review, not
-business-semantic changes. Separate restricted session storage must not inherit
-assessment-schema default grants. I01 owns the real `/api/v1/me` producer;
-schema-validated controlled actors are test-only. I02 owns combined real
-Keycloak/browser/backend acceptance. Neither successor is dispatched here.
-DEC-08 through DEC-11 remain held except for the scoped ownership above.
-No deployment, external resources, real data, commit or PR is authorized.
-B.C. retains F03 acceptance and final tracker updates.
+Historical second-wave authorization; current status is in the
+[I02 assignment record](#i02-assignment-and-completion-exception).
 
-**I01 extension, 20 October 2026:** B.C. explicitly dispatches I01 and authorizes
-reconciling the approval/checkpoint documents and marking I01 active, without
-claiming acceptance. The execution baseline includes F03 PR #5 (`b1a2fe0`),
-following the integrated F01/F02 revisions above. B.C. owns I01, integration,
-review and its exclusive shared-file window after F03 integration.
-DEC-06/07 select PyJWT with cryptography and asynchronous HTTPX, following the
-repository's existing package/import conventions and locking with uv.
-Application roles/status remain authoritative on every protected request.
-Keycloak administration is confined to explicit synthetic local provisioning;
-no automatic grants, bootstrap-admin application user, runtime admin credentials
-or A01 service privileges. Bounded documented timeout/cache defaults are
-authorized for review, not DEC-08 performance gates or relaxed token validation.
-Preserve F03 bootstrap, session grants and applied migrations. I02 retains the
-combined browser/facade/API gate and is not dispatched. No external resources,
-deployment, real data, automatic commit or PR are authorized. B.C. retains final
-review, acceptance and integration/tracker updates.
+On 20 October 2026, B.C. confirmed F01/F02 complete, requested F03/I01 be made
+`active`, and explicitly approved the following identity/session baseline.
+F01 is integrated by [PR #3](https://github.com/bc-bah/quezo/pull/3), merge
+`873232814ab3de0baefeac2ebbcdc1351611a67d`; F02 by
+[PR #4](https://github.com/bc-bah/quezo/pull/4), merge
+`5f314125e13262139e1d3e28d190881d6fbd5f8b`. Both packages are accepted as foundation
+work, not as AT-01, full AT-10/AT-15, or prototype acceptance.
+
+**Approved choices:** openid-client for Next.js OIDC, node-postgres (`pg`) for
+server-session persistence, and PyJWT with cryptography plus HTTPX for backend
+JWT/JWKS verification. Use a dedicated local Keycloak realm, confidential web
+client with exact redirect/logout URIs, authorization code + PKCE/state/nonce,
+and a dedicated backend audience. No implicit/password grant, arbitrary login
+role grants, or runtime Keycloak-admin credentials. Local provisioning is explicit
+and fail-closed; application identity uses unique `(issuer, subject)` mapping.
+Application roles/status are read authoritatively for every protected request.
+
+Session and login-transaction records live in a separate PostgreSQL schema with
+a restricted web runtime role, not the `quezo` schema with F01's default backend
+grants. Only the web runtime may read session secrets; it cannot read assessment
+tables, and `quezo_runtime` cannot read session records. Migration/bootstrap
+credentials are never application credentials. Tokens remain server-side;
+browser cookies hold opaque session identifiers, never access/refresh tokens.
+F03/I01 reuse the approved F02 actor DTO and sanitized error contract.
+
+Agents may select compatible library versions and bounded session/timeout
+defaults, document the rationale and enforce/test expiry and limits for B.C.'s
+review. This delegation is not permission to invent business behavior, change
+the actor contract, relax security controls or establish DEC-08 performance gates.
+
+**Assignment:** F03 and I01 are active under B.C.'s ownership, integration and
+review/merge authority. This records B.C.'s explicit assignment, not an agent
+launch or evidence of implementation. Default execution is F03 then I01 to
+serialize migrations and shared files; the package dependency graph is unchanged.
+Use the [second-wave handoffs](implementation/AGENT-HANDOFF.md#5-active-second-wave-prompts).
+I02 still owns the combined real-browser identity acceptance after both merge.
+
+**Remaining holds:** DEC-08/09/10 and the remainder of DEC-11 are unchanged.
+No I02 or other successor dispatch, production configuration, external provisioning,
+deployment, real data or shared pilot is authorized. Full account-administration
+integration/privileges belong to A01 and require separate review.
+
+### I02 assignment and completion exception
+
+On 20 October 2026, B.C. confirmed F03 and I01 complete and explicitly requested
+their `done` status and I02's `active` assignment. F03 is merged via
+[PR #5](https://github.com/bc-bah/quezo/pull/5), merge
+`b1a2fe035d52cdddf4db3a0c832a690773fe5688`; I01 via
+[PR #6](https://github.com/bc-bah/quezo/pull/6), merge
+`6ef734faefbb52c76b78abb7d676ec9305f0c557`. Hosted CI passed for both on Node 22/24
+and Python 3.12/3.14. Local evidence remains in the development runbook.
+
+**EX-I02-01, explicit completion exception:** the review identified a likely
+native-browser login/logout failure: F03's `Referrer-Policy: no-referrer` can
+produce `Origin: null` for native form POSTs, which its strict CSRF origin guard
+rejects. The existing HTTP test supplies Origin manually. This is a source/protocol
+finding, not a browser reproduction. B.C. explicitly approved closing F03 with
+this named exception and assigning browser reproduction/fix as I02's first
+acceptance blocker. **Owner:** B.C. **Scope/impact:** F03 native authentication
+forms may fail closed; no permission to weaken origin validation or accept null
+origins. **Follow-up/closure:** actual-browser evidence must confirm and fix the
+failure, or demonstrate with evidence that it does not occur; retain malicious
+origin denial regression coverage. I02 and AT-01 cannot pass while it is unresolved.
+No integrity or unauthorized-disclosure failure is accepted as an exception.
+
+**Authorized work:** I02 integrated login/access proof and minimal F03/I01
+integration fixes, synthetic local data only. B.C. owns the package, integration,
+review/merge and its exclusive shared-file window. Select/add the browser test
+runner as I02 already requires, keeping the current npm/uv toolchains and locked
+dependencies. Existing identity/session choices and defaults remain the baseline;
+changing login semantics, refresh behavior or global SSO logout requires a
+separate decision, not an incidental test fix.
+
+Use the [I02 prompt](implementation/AGENT-HANDOFF.md#i02-dispatch-prompt) from
+`6ef734f` plus this approval/tracker update. `active` records explicit assignment;
+this documentation does not launch an agent or establish combined acceptance.
+The known exception is a completion blocker to resolve during I02, not a missing
+approval preventing I02 from starting. DEC-08/09/10 and later DEC-11 holds remain.
+C01/S01 or other successor dispatch, real data, deployment and shared pilot
+remain unauthorized by this assignment.
 
 ## 3. Actors and authorization
 
