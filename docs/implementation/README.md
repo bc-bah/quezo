@@ -1,8 +1,8 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** F01/F02/F03/I01 done; I02 active under B.C.'s synthetic-data assignment.
-F03's explicit browser integration exception must close in I02 before AT-01 acceptance.
+**Status:** Working foundations including I02 accepted; EX-I02-01 closed.
+All eight Phase 2 packages are active assignments with explicit execution gates.
 
 ## 1. Start here
 
@@ -11,18 +11,20 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint:** B.C. confirmed F03/I01 completion and explicitly assigned
-I02 on 20 October 2026, retaining integration/review/merge ownership. Use the
-[copy-ready I02 prompt](AGENT-HANDOFF.md#i02-dispatch-prompt) from the integrated
-`6ef734f` baseline plus this tracking update. The
-[assignment and exception record](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
-requires I02 to resolve the native-form Origin finding with real browser evidence.
-I02 is active, not implemented by this documentation. No agents were launched.
+**Current checkpoint, 21 October 2026:** B.C. confirmed I02 completion; merged
+PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
+B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
+retaining their dependency execution gates. Only C01/S01 can implement now;
+other packages wait for accepted, integrated producers. Use the
+[eight copy-ready prompts](PHASE-2-HANDOFFS.md) and
+[Phase 2 approval/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
+B.C. owns every package's integration/review/merge. No agents were launched.
 DEC-08/09/10 and later DEC-11 commitments remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).
-3. Dispatch only dependency-ready work using the [agent handoff](AGENT-HANDOFF.md).
+3. Assign work using the [agent handoff](AGENT-HANDOFF.md); begin implementation
+   only when its execution gate is satisfied.
 4. Merge tested producer interfaces before completing their consumers.
 5. Demonstrate each milestone; record evidence in the backlog before releasing
    more work. A phase label does not itself authorize deployment or real data.
@@ -143,7 +145,14 @@ an explicit updated dependency/handoff before that consumer continues.
 
 ## 5. Definition of ready and done
 
-**Ready:** specification references understood; required decisions approved;
+**Assignment versus execution:** B.C. may explicitly assign a whole wave as
+`active` before all producers finish. Such a row is assigned, not automatically
+executable. Its handoff must name the unmet prerequisites; only planning and
+contract reading may proceed until those producers are accepted and integrated.
+This does not alter the dependency graph or permit fixture-only substitutes for
+unfinished producer implementations.
+
+**Ready to implement:** specification references understood; required decisions approved;
 all backlog prerequisites are done and integrated; input schemas are available;
 owner and permitted file surfaces assigned; acceptance evidence is named.
 

@@ -4,13 +4,12 @@ Dependencies/status are authoritative in [BACKLOG.md](BACKLOG.md). Each engineer
 package also requires the [definition of done](README.md#5-definition-of-ready-and-done).
 Paths below are ownership proposals; create only the files needed by the package.
 
-**Current checkpoint, 20 October 2026:** F01/F02/F03/I01 are accepted and integrated.
-B.C. explicitly assigned I02 as `active`, retaining integration/review/merge
-ownership. F03 carries the approved EX-I02-01 completion exception; I02 must
-resolve it before combined browser acceptance. Use the
-[I02 copy-ready prompt](AGENT-HANDOFF.md#i02-dispatch-prompt) and
-[assignment/exception record](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception).
-Later decision holds are unchanged.
+**Current checkpoint, 21 October 2026:** all foundation packages through I02
+are accepted and integrated. I02 PR #7 (`553a2c8`) provides real-browser evidence
+and closes EX-I02-01. B.C. assigned Phase 2 with explicit producer execution
+gates; use the [current prompts](PHASE-2-HANDOFFS.md) and
+[approval/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
+Later operational/accessibility/pilot holds are unchanged.
 
 ## G00: Approve implementation baseline
 
@@ -103,8 +102,8 @@ session interface and authorized-fetch/client integration.
 
 ### Second-wave checkpoint
 
-Historical dispatch record; F03 and I01 have since been marked done by B.C.,
-with the explicit F03 exception recorded above. I02 is now active.
+Historical dispatch record; F03, I01 and I02 have since been marked done by B.C.
+The explicit F03 exception is now closed with I02 browser evidence.
 
 B.C.'s [20 October 2026 approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
 supersedes G00's F03 identity/session holds. F01 PR #3 (`8732328`) and F02 PR #4
@@ -123,6 +122,15 @@ I01 produces real `/api/v1/me`; no cached actor may authenticate on outage.
 I02 owns the combined identity/browser gate and full AT-01 evidence and is not
 dispatched. B.C. authorized coordination-record reconciliation, not acceptance;
 later decision/pilot gates remain held.
+
+**I02 checkpoint, 20 October 2026 (supersedes the dispatch state above):**
+B.C. confirms F03 PR #5 (`b1a2fe0`) and I01 PR #6 (`6ef734f`) done and integrated,
+accepts EX-I02-01 as a predecessor completion exception and explicitly dispatches
+I02. B.C. owns integration, review and the exclusive I02 shared-file window.
+The I02 session is authorized to reconcile these records. Real native browser
+login/logout evidence must resolve EX-I02-01 before I02/AT-01 acceptance.
+The migration head remains `0004_identity`; no schema redesign, successors,
+refresh tokens, global logout, deployment or real data are authorized.
 
 ## I01: Identity and authorization backend
 
@@ -146,11 +154,11 @@ in frontend code, automatic role grants on arbitrary login.
 
 ## I02: Integrated login and access gate
 
-**Current assignment:** active under B.C., 20 October 2026; F03 PR #5 and I01
-PR #6 are integrated in `6ef734f`. First resolve
-[EX-I02-01](BACKLOG.md#ex-i02-01-native-loginlogout-origin) using actual native
-browser form submissions; keep origin/CSRF protection intact. This is a named
-acceptance blocker within authorized I02 work, not an unresolved decision gate.
+**Current status:** done, accepted by B.C. 21 October 2026; PR #7 merge
+`553a2c8`. [Browser evidence](../DEVELOPMENT.md#i02-integrated-browser-gate) covers
+all 16 cases; hosted browser/matrix CI passed. EX-I02-01 is closed without
+weakening CSRF. The acceptance criteria below remain the regression contract
+for all later feature packages, not work to redispatch.
 
 **Rules:** IAM-01/02, AT-01, QUAL-02.  
 **Primary surfaces:** integration/browser tests, minimal F03/I01 integration fixes.

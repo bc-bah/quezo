@@ -1,7 +1,7 @@
 # Prototype high-level architecture
 
 **Date:** 20 October 2026  
-**Status:** F01/F02/F03/I01 integrated; I02 real-browser proof and minimal integration fixes active.
+**Status:** Working foundations through I02 accepted; Phase 2 lifecycle work assigned with execution gates.
 
 **Product baseline:** [PRD v0.1](reference/02-Product-Requirements.md), as scoped by
 [Prototype scope](PROTOTYPE-SCOPE.md).
@@ -27,7 +27,7 @@ claims are not treated as independently validated evidence.
 | Web | Next.js 16.4.2 App Router, React 19.3.1, TypeScript 5.9.3 |
 | Application backend | Python 3.12+, FastAPI 0.156.1, Pydantic 2.14.1 and Uvicorn 0.54.0; separate ASGI backend process |
 | Persistence | PostgreSQL 17 local image; Psycopg async pool/transactions and Alembic foundation migrations integrated; no domain tables yet |
-| Identity | Keycloak 26.4.7 local-development image; web code + PKCE and independent backend JWT validation implemented; combined browser gate remains I02 |
+| Identity | Keycloak 26.4.7 local-development image; web code + PKCE and independent backend JWT validation implemented; I02 combined browser gate accepted |
 | Packaging | Docker and environment configuration; local dependency Compose file now; production application images/pipeline after review |
 | Automation | npm for the frontend; uv 0.12.17 and `pyproject.toml` for the backend; root npm convenience wrappers work on Windows/Linux |
 | Backend checks | Strict mypy and pytest with FastAPI's test client; Python dependencies locked separately |
@@ -81,10 +81,10 @@ Production database privileges should enforce this separation.
 
 **Current foundations:** PostgreSQL pool/transaction/migration infrastructure,
 generated OpenAPI/TypeScript contracts, F03 OIDC/server sessions/navigation and
-I01 independent token validation/current-actor `/me`. I02 must prove the combined
-real-browser flow and resolve EX-I02-01, the native-form Origin finding. No
-assessment persistence/workflows exist; shared documentation exposure remains
-a deployment decision.
+I01 independent token validation/current-actor `/me`. I02 proves the combined
+real-browser flow and closes EX-I02-01 without relaxing origin validation.
+Phase 2 is assigned but no assessment persistence/workflow is implemented yet;
+shared documentation exposure remains a deployment decision.
 
 ## 4. Module responsibilities and interfaces
 
@@ -412,15 +412,15 @@ preemptively.
 | FastAPI modular monolith plus Next.js web | Maintainers are comfortable with Python; Pydantic/OpenAPI reduce contract boilerplate. Accepts separate Python and TypeScript toolchains while keeping one home for domain rules | Stack confirmed 20 October 2026; detailed layout proposed |
 | Immutable published versions plus attempt snapshots | Extra storage for historically correct content and reproducible randomized delivery; mutable live question references rejected | Required invariant; physical representation proposed |
 | Synchronous objective finalization transaction | One committed outcome instead of a queue and transient ungraded state; bounded objective workload supports this | Proposed |
-| Server-side session facade | Keeps tokens out of browser storage; adds session storage and CSRF work versus a browser-token client | Implemented; I02 must close EX-I02-01 and combined browser acceptance |
+| Server-side session facade | Keeps tokens out of browser storage; adds session storage and CSRF work versus a browser-token client | Implemented and browser-tested in I02; EX-I02-01 closed |
 | One organization, per-owner access | Reduces first prototype complexity without pretending tenant isolation already exists | Scope confirmed |
 | No auth bypass or speculative infrastructure | A shell is enough before review; avoids unsafe demo behavior and unneeded distributed dependencies | Scaffold decision |
 
-Review the [I02 assignment and explicit exception](SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
+Review the [Phase 2 assignment and approved defaults](SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
 before feature work. The software specification records approved behavior,
 contracts and acceptance cases; dependency-aware packages,
 parallel workstreams and tracking live in the
-[implementation bundle](implementation/README.md). F01/F02/F03/I01 are done
-with the explicit F03 browser exception carried into active I02 work. Later
-operational/pilot decisions remain held. Foundation/identity migrations and
-OpenAPI exports exist; assessment schemas and UI arrive with assigned slices.
+[implementation bundle](implementation/README.md). Foundations through I02 are
+done and the F03 browser exception is closed. All eight Phase 2 packages are
+assigned, but consumers wait for integrated producers. Later operational/pilot
+decisions remain held; assessment schemas and UI arrive with these gated slices.

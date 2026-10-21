@@ -502,6 +502,11 @@ B.C. owns tracker updates and accepted integration.
 
 ## 6. Active I02 integration handoff
 
+**Historical assignment:** I02 is now done and EX-I02-01 closed following
+B.C.'s 21 October 2026 completion confirmation and merged browser evidence review.
+Do not redispatch this prompt. The current assignments are
+[Phase 2](PHASE-2-HANDOFFS.md); the instructions below preserve I02's original scope.
+
 B.C. confirmed F03/I01 completion and assigned I02 as `active` on 20 October
 2026. B.C. owns integration/review/merge and explicitly accepted carrying the
 native-form Origin finding as EX-I02-01 into I02, where it must be resolved
@@ -665,3 +670,23 @@ Do not create a commit or PR automatically; return changes for B.C.'s review.
 Report ready for review or blocked with an exact unresolved criterion, not done;
 B.C. owns acceptance, exception closure, integration and tracker updates.
 ```
+
+## 7. Active Phase 2 assignments
+
+B.C. assigned all eight lifecycle packages on 21 October 2026, with explicit
+producer execution gates and approved untimed demo defaults. Use one copy-ready
+prompt per session from [PHASE-2-HANDOFFS.md](PHASE-2-HANDOFFS.md).
+`active` means assigned; it is not evidence that a predecessor has finished.
+The current integrated foundation is I02 merge `553a2c8`, plus this planning
+update. Consumers must also include their later accepted producer commits.
+
+| Package | Copy-ready prompt | Implementation gate |
+| --- | --- | --- |
+| C01 | [Versioned objective questions](PHASE-2-HANDOFFS.md#c01-dispatch-prompt) | I02 done; executable now |
+| C02 | [Immutable quiz publication](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) | C01 accepted and integrated |
+| D01 | [Assignment and attempt start](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) | C02 accepted and integrated |
+| D02 | [Durable response save and resume](PHASE-2-HANDOFFS.md#d02-dispatch-prompt) | D01 accepted and integrated |
+| S01 | [Pure objective scoring](PHASE-2-HANDOFFS.md#s01-dispatch-prompt) | F02 done; executable now |
+| D03 | [Finalization and expiration](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) | D02 and S01 accepted and integrated |
+| R01 | [Policy-filtered result](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) | D03 accepted and integrated |
+| T01 | [First lifecycle acceptance](PHASE-2-HANDOFFS.md#t01-dispatch-prompt) | R01 and I02 accepted and integrated |

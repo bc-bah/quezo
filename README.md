@@ -2,12 +2,12 @@
 
 A standalone assessment workspace for creating, delivering, and reviewing quizzes.
 
-**Status: F01/F02/F03/I01 complete; I02 active.** The agreed prototype scope is
+**Status: working foundations through I02 complete; Phase 2 assigned.** The agreed prototype scope is
 single-organization, low-stakes assessment covering the PRD's P0 requirements.
 PostgreSQL infrastructure, shared contracts, web sessions and backend identity
-are integrated. I02 must prove the combined real-browser flow and resolve the
-explicit F03 native-form Origin exception. No assessment workflow is implemented;
-later operational and pilot gates remain held.
+are integrated and the real-browser identity gate is accepted. EX-I02-01 is closed.
+All eight Phase 2 packages are active assignments; only C01/S01 can implement
+immediately. No assessment workflow is implemented yet; later gates remain held.
 
 ## Review first
 
@@ -23,10 +23,10 @@ later operational and pilot gates remain held.
    Track assignments and evidence in the [backlog](docs/implementation/BACKLOG.md).
 
 The [original PRD](docs/reference/02-Product-Requirements.md) remains the source
-for requirement IDs. The [I02 assignment record](docs/SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception)
+for requirement IDs. The [Phase 2 assignment/defaults](docs/SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
 defines current decisions and remaining holds. B.C. owns integration and the
-backlog. Use the [I02 copy-ready prompt](docs/implementation/AGENT-HANDOFF.md#i02-dispatch-prompt);
-active assignment is not evidence of combined AT-01 acceptance.
+backlog. Use the [eight copy-ready prompts](docs/implementation/PHASE-2-HANDOFFS.md);
+active assignment does not waive a consumer's integrated-producer gate.
 
 The supplied product ideation documents are preserved in [docs/reference](docs/reference/00-Start-Here.md)
 as unmodified source material, not approved specifications or executable agent
@@ -40,7 +40,7 @@ postgres/               Python + FastAPI + Uvicorn; liveness and current actor
 postgres/src/quezo_api/  Python application, identity and planned assessment modules
 postgres/tests/         Database, session, identity and HTTP contract checks
 postgres/migrations/    Ordered foundation, web-session and identity migrations
-tests/e2e/              I02 real-browser acceptance assignment
+tests/e2e/              Real-browser identity baseline and future lifecycle cases
 infra/keycloak/         Explicit local synthetic realm/account provisioning
 docs/                   Scope, architecture, setup guide, original references
 compose.yaml            Optional local PostgreSQL and Keycloak dependencies
@@ -86,4 +86,4 @@ The root scripts are convenience wrappers: `typecheck` checks both languages,
 Uvicorn; there is no backend JavaScript build.
 
 See [development setup](docs/DEVELOPMENT.md) for optional local infrastructure,
-configuration, checks, and the active I02 assignment.
+configuration, checks, and the Phase 2 assignments.

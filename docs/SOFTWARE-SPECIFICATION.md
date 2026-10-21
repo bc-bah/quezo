@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** F01/F02/F03/I01 done; I02 active with an explicit browser integration exception to resolve.
+**Status:** Working foundations through I02 accepted; Phase 2 assigned with producer execution gates.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -25,9 +25,9 @@ obtain a decision rather than silently choosing a different behavior.
 
 **Existing software:** F01 PostgreSQL infrastructure, F02 schemas/errors/generated
 contracts, F03 server sessions/navigation/facade, and I01 token validation,
-current-actor `/me` and controlled local provisioning. Combined real-browser
-authentication acceptance is still I02 work, including EX-I02-01 below. No
-assessment workflow is implemented; foundation completion is not pilot approval.
+current-actor `/me` and controlled local provisioning. I02's combined real-browser
+identity gate is accepted and EX-I02-01 closed. No assessment workflow is
+implemented yet; foundation completion is not full P0 or pilot approval.
 
 **Excluded:** multiple tenants, cohorts, anonymous access, written/manual grading,
 regrading, CSV/import/export, pool selection, external API support, LMS integration,
@@ -53,7 +53,7 @@ approval means the decision is not approved.
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
 | DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
-| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped assignment extended 20 October 2026: B.C. owns integration and F01/F02/F03/I01/I02 review/merge; other reviewers, release approval, dates and budget held |
+| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped assignment extended 21 October 2026: B.C. owns foundation and all Phase 2 package integration/review/merge; later reviewers, release approval, dates and budget held |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
@@ -142,6 +142,9 @@ integration/privileges belong to A01 and require separate review.
 
 ### I02 assignment and completion exception
 
+Historical assignment; the [I02 acceptance record](#i02-acceptance-and-exception-closure)
+below now closes the exception and completes the gate.
+
 On 20 October 2026, B.C. confirmed F03 and I01 complete and explicitly requested
 their `done` status and I02's `active` assignment. F03 is merged via
 [PR #5](https://github.com/bc-bah/quezo/pull/5), merge
@@ -178,6 +181,99 @@ The known exception is a completion blocker to resolve during I02, not a missing
 approval preventing I02 from starting. DEC-08/09/10 and later DEC-11 holds remain.
 C01/S01 or other successor dispatch, real data, deployment and shared pilot
 remain unauthorized by this assignment.
+
+### I02 assignment and completion exception: 20 October 2026
+
+Historical in-session dispatch/reconciliation record, superseded for current
+status by I02 acceptance and the Phase 2 assignment below.
+
+B.C. confirms F03 PR #5 (merge `b1a2fe035d52cdddf4db3a0c832a690773fe5688`)
+and I01 PR #6 (merge `6ef734faefbb52c76b78abb7d676ec9305f0c557`) done and
+integrated, and explicitly dispatches I02. B.C. owns the package, integration,
+review and exclusive shared-file write window. B.C. also explicitly authorizes
+the I02 session to reconcile the approval/tracker documents to this assignment.
+
+**EX-I02-01:** B.C. accepts the predicted `no-referrer`/native POST `Origin:null`
+interaction as a predecessor completion exception. At dispatch it was not a
+confirmed runtime failure and did not block starting I02. I02 must reproduce/fix or resolve
+it with native browser login AND logout evidence before I02/AT-01 acceptance.
+CSRF and foreign/null/missing Origin rejection must remain intact. B.C. owns
+exception closure; passing HTTP tests/hosted CI do not substitute for this proof.
+
+DEC-06/07 and the implemented session defaults remain unchanged. npm-locked
+Playwright Test may be added for isolated real PostgreSQL/Keycloak/API/built-web
+acceptance using synthetic data. No refresh tokens, global SSO logout, runtime
+admin credentials, automatic grants, outage fallback, schema redesign, A01,
+business routes, successors, external resources, deployment or real data are
+authorized. Return evidence for review, without automatic commit or PR.
+
+### I02 acceptance and exception closure
+
+On 21 October 2026, B.C. confirmed I02 complete. The reviewed integrated result
+is [PR #7](https://github.com/bc-bah/quezo/pull/7), merge
+`553a2c8b77a770667f4cef6825f57c3b55f477ed`. Standards and specification review
+found no significant issues. All 16 actual-browser scenarios and the retained
+application checks passed in the recorded local run; hosted browser and
+Node 22/24/Python 3.12/3.14 jobs also passed.
+
+EX-I02-01 is closed: real Chromium native forms reproduced null-Origin/403 with
+`no-referrer`; I02 changed document policy to `strict-origin`, preserving
+`no-referrer` on auth routes. Normal login/logout work without injected Origin;
+the retained negative control and malicious-origin checks still deny access.
+See [browser evidence](DEVELOPMENT.md#i02-integrated-browser-gate) and
+[hosted CI](https://github.com/bc-bah/quezo/actions/runs/39564745343).
+This accepts the AT-01 working-foundations gate, not future assessment
+authorization, full accessibility, operational readiness or pilot deployment.
+
+### Phase 2 assignment and demo defaults
+
+On 21 October 2026, B.C. explicitly assigned **C01, C02, D01, D02, S01, D03,
+R01 and T01** as `active`, retaining ownership, integration and review/merge.
+B.C. explicitly approved that these are **assignments with execution gates**:
+only C01 and S01 can implement immediately; downstream packages must wait for
+all listed producers to be accepted and integrated in their own checkout.
+The dependency graph is unchanged. No agent launch or product implementation
+is implied by this record.
+
+The starting foundation is I02 merge `553a2c8`, with migration head
+`0004_identity`, plus this approval/tracker update. Use the
+[Phase 2 prompts](implementation/PHASE-2-HANDOFFS.md). Later accepted producer
+commits/contracts must be recorded in the backlog and included before a consumer
+starts. No fabricated endpoints, parallel DTO copies or mock-only acceptance
+may substitute for missing producers.
+
+B.C. approved these **minimal demo defaults**:
+
+| Setting | Phase 2 author/learner demo |
+| --- | --- |
+| Duration and availability | Untimed: duration, availability start and end all null |
+| Attempt limit | One successful start per assignment; expiry consumes allowance |
+| Question/option order | No randomization in the initial UI; preserve authored order |
+| Points | Selected question-version default unless an explicit validated override is supplied |
+| Score-only release preset | Score `after_finalization`; answer key and explanation each `never` |
+| Fully withheld preset | Score, answer key and explanation each `never` |
+
+Persist independent policy fields and evaluate them at the proper server seams;
+the two UI presets do not collapse three release rules into one flag. Backend
+fixtures/tests cover other approved policies, finite deadlines, ordering and
+allowance boundaries. `after_availability_end` still requires a finite end.
+Do not silently coerce unsupported writes into demo defaults. Advanced policy
+controls remain D04 work; authors may choose either minimal release preset so
+T01 can demonstrate released aggregate scores and fully withheld results.
+
+DEC-09 remains held: no user-facing timed learner workflow/countdown is accepted
+in Phase 2. D03 must still implement and test authoritative backend expiry;
+T01 uses an explicitly controlled backend expiry fixture to demonstrate an
+expired result, not a timed-accessibility claim. DEC-08 remains held: no numeric
+performance gate or automatic transient-database retry policy is approved.
+Surface failures and support specified idempotent client retries without
+inventing a server retry loop.
+
+One writer owns shared scripts/CI/manifests, generated contracts and migration
+ordering at a time. C01 has the initial shared-file window; S01 is independently
+restricted to pure scoring and its tests. B.C. serializes later windows along
+the lifecycle chain. Phase 3, real-data/shared pilot, external provisioning,
+deployment, delivery dates and budget remain outside this assignment.
 
 ## 3. Actors and authorization
 
