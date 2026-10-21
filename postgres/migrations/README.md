@@ -16,9 +16,10 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0002_runtime_grants` | `0001_application_schema` | Restrict database access, grant runtime schema usage and future table/sequence DML privileges; remove default public function execution |
 | `0003_web_sessions` | `0002_runtime_grants` | Create isolated `quezo_session` tables and explicit DML grants to `quezo_web` only |
 | `0004_identity` | `0003_web_sessions` | Create backend accounts, unique issuer/subject mappings and current role assignments; no seeded grants |
+| `0005_questions` | `0004_identity` | Owned banks/questions, immutable objective revisions, content checks and restricted version privileges |
 
-Only `public.alembic_version` records migration state. There are no assessment,
-seed, audit or acknowledgement tables. F03 adds sessions
+Only `public.alembic_version` records migration state. C01 adds question tables,
+but no quiz, attempt, grade, seed, audit or acknowledgement tables. F03 adds sessions
 and single-use login transactions in `quezo_session`. Upcoming packages
 provide their own reviewed schema and section 6 constraints. Default runtime
 grants apply only to tables/sequences created **by `quezo_migrator` in `quezo`**;
@@ -33,6 +34,42 @@ Applied F01 revisions are unchanged.
 I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
+
+### C01 question storage
+
+`0005_questions` is the single head, parent `0004_identity`. Applied foundation
+revisions are unchanged. `question_banks` references its owning account.
+`questions` has a stable UUID, bank/owner composite foreign key, current revision
+and reserved archive marker. Bank/question archive commands and movement remain
+C03 work; new selections exclude archived banks/questions.
+
+`question_versions` stores its UUID, question UUID, unique positive revision,
+type, literal prompt, ordered JSONB options (`id`, `text` only), correct option
+UUID, integer default points, feedback and UTC creation time. A deferred composite
+foreign key from `(questions.id, questions.revision)` requires the current
+revision to exist at commit. Creation and revision insertion occur in one
+transaction; edits lock the question, compare the expected revision, insert
+the new version and advance the pointer before committing.
+
+Immutable SQL validation functions/check constraints enforce text bounds,
+nonblank required text, option shape/count/unique UUIDs/key membership, exact
+`True`/`False` semantic choices and 0-10,000 points. The version UPDATE/DELETE
+grants are revoked from `quezo_runtime`; a trigger also rejects mutation by the
+migration owner. JSONB options are part of that immutable row, not mutable shared
+option records. `quezo_web` has no privileges on any question table/function.
+Owner/bank indexes support bounded stable lists.
+
+`test_question_migrations.py` proves the actual `0004_identity -> head` upgrade
+preserves an existing account, roles and web session; repeat-head is safe.
+It exercises failed DDL rollback to `0004_identity`, SQL constraint violations,
+immutable versions, relationship integrity and web-role denial. The retained
+foundation suite independently covers clean `base -> head`.
+
+An unapplied failure rolls back DDL and the ledger together. No destructive
+downgrade or runtime version correction is provided. After integration, correct
+content by appending a revision; correct schema with a reviewed forward migration.
+Deleting/restoring versions can invalidate later pinned references, so recovery
+must preserve the whole relational chain. This is not backup/restore acceptance.
 
 ### I01 identity storage
 

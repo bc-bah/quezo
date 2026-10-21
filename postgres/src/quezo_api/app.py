@@ -10,6 +10,7 @@ from quezo_api.database import Database, DatabaseSettings
 from quezo_api.errors import ErrorEnvelope, install_error_handling
 from quezo_api.openapi import ContractAPI
 from quezo_api.modules.identity.router import router as identity_router
+from quezo_api.modules.questions.router import router as questions_router
 from quezo_api.modules.identity.tokens import IdentitySettings, TokenVerifier
 
 
@@ -36,12 +37,13 @@ def create_app() -> FastAPI:
     app = ContractAPI(
         title="Quezo API",
         version="0.0.0",
-        description="Process liveness and current application identity. No assessment routes.",
+        description="Process liveness, current identity and author-owned versioned questions.",
         lifespan=lifespan,
         responses={"default": {"model": ErrorEnvelope, "description": "Sanitized error"}},
     )
     install_error_handling(app)
     app.include_router(identity_router)
+    app.include_router(questions_router)
 
     @app.get("/health/live", response_model=LivenessResponse)
     async def liveness() -> LivenessResponse:

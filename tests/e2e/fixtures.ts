@@ -60,6 +60,7 @@ export class Applications {
   readonly secrets = new Set<string>([
     process.env.I02_CLIENT_SECRET!, "i02-query-sentinel", ...Object.values(accounts).map((account) => account.password),
   ]);
+  readonly assessmentContent = new Set<string>();
   readonly webDb = new pg.Pool({ connectionString: process.env.I02_WEB_DATABASE, max: 1, connectionTimeoutMillis: 5000 });
   readonly apiDb = new pg.Pool({ connectionString: process.env.I02_API_DATABASE, max: 1, connectionTimeoutMillis: 5000 });
   readonly webTransport = new DatabaseTransport(process.env.I02_WEB_DATABASE!);
@@ -155,6 +156,7 @@ export class Applications {
       await this.apiTransport.close();
     }
     expect([...this.secrets].some((secret) => this.logs.includes(secret)), "Application logs contain no usable secrets").toBe(false);
+    expect([...this.assessmentContent].some((value) => this.logs.includes(value)), "Application logs contain no assessment content").toBe(false);
     expect(/code=|[?&]state=|Authorization:|Cookie:/i.test(this.logs), "No callback/header logging").toBe(false);
   }
 }

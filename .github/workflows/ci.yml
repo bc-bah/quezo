@@ -28,7 +28,7 @@ jobs:
       - run: uv sync --directory postgres --locked --python 3.12
       - run: npx playwright install --with-deps chromium
       - run: npm run typecheck:e2e
-      - name: Real browser, Keycloak, API and isolated PostgreSQL AT-01
+      - name: Real browser, Keycloak, API and isolated PostgreSQL AT-01 and C01
         run: npm run test:e2e
       # No browser state, traces, HAR, screenshots or raw application logs are uploaded.
 

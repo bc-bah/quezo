@@ -6,7 +6,8 @@ The scaffold contains a Next.js/TypeScript npm workspace and an independent
 Python/FastAPI backend with a typed liveness endpoint, generated OpenAPI, pytest
 checks and strict mypy configuration. F01 adds real PostgreSQL connectivity,
 ordered migrations, restricted database roles and isolated database tests.
-Separate frontend/backend CI jobs are included. No assessment feature is implemented.
+Separate frontend/backend CI jobs are included. C01 adds owned question banks,
+immutable MCQ/true-false revisions and author forms; quiz delivery is not implemented.
 F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
 bounded request bodies and a generated TypeScript client for implemented routes.
 
@@ -14,7 +15,7 @@ F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
 independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
 
-Domain schemas, business routes,
+Quiz/attempt schemas and routes,
 background expiration, grading, real readiness checks, application containers,
 and deployment are intentionally absent. A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
@@ -22,6 +23,9 @@ I02, not established by F03 protocol tests. Database configuration is required
 for both server lifecycles.
 
 ## Prerequisites and startup
+
+For the C01 author workflow, migration and consumer contract, see
+[C01 versioned objective questions](#c01-versioned-objective-questions).
 
 Use Node.js 22+ and npm 10+ for the frontend, plus Python 3.12+ and
 [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.17 for the backend.
@@ -55,9 +59,9 @@ points to an older version.
 The web shell listens on `127.0.0.1:3000`; the backend on `127.0.0.1:4000`.
 Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
-no `/health/ready` or assessment routes. FastAPI exposes local interactive docs at
+no `/health/ready` or quiz/attempt routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
-`http://localhost:4000/openapi.json`; liveness and `GET /api/v1/me` are implemented.
+`http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me` and C01 question authoring are implemented.
 Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
@@ -131,6 +135,207 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## C01 versioned objective questions
+
+### Review handoff: 21 October 2026
+
+**Work item:** C01, Versioned objective questions.
+
+**State:** ready for B.C.'s review, not accepted/done. The final unfiltered
+`npm run test:e2e -- --checks` exited 0, including all 21 browser cases and owned
+service/network cleanup. B.C. retains acceptance and tracker updates.
+
+**Changes:** `postgres/src/quezo_api/modules/questions/` owns strict DTOs,
+authorization-scoped reads, bank writes and atomic revision-producing edits.
+`0005_questions` introduces only bank/question/version storage. The `/author`
+pages and server actions use the existing server-only `BackendFacade.client`;
+they never query assessment storage or expose a bearer token to JavaScript.
+The author home links to bank management. Generated OpenAPI/TypeScript, focused
+Python tests, existing browser discovery/fixtures, database script and runbooks
+are updated. No scoring, quiz, assignment, attempt or grading surfaces were added.
+
+**Requirement coverage:** AUTH-01 and IAM-02; SRS sections 6-8; QUAL-02/04;
+FR-003/011/012/061, the initial create/read/edit portion of FR-010, and immutable
+identity/version foundations for FR-014/018;
+NFR-007/008/010. This is not complete AUTH-01/AT-03 management or AT-04 publication
+acceptance: the deferred cases are listed below.
+
+**Acceptance:** `test_question_schemas.py`, `test_questions.py`,
+`test_question_migrations.py` and `tests/e2e/questions.spec.ts` cover:
+
+| Acceptance | Delivered initial scope |
+| --- | --- |
+| AT-03 | Both objective types through real signed-in browser, server facade, API and PostgreSQL; bank create/read/rename; required text and all content bounds; literal text rendering; strict/extra-field rejection; stable bounded pagination; foreign-owner list/direct/nested read and write denial; learner/administrator non-inheritance; live role revocation and visible outage errors |
+| AT-04 | Stable question identity, distinct immutable version IDs, preserved option IDs/content/key/points/feedback after editing, explicit exact-version selection, old-version reread after refresh, stale/concurrent edit conflict, database mutation denial and atomic failure rollback |
+| QUAL-02/04 | Existing identity/CSRF suite retained; safe field errors and log redaction; no key-bearing learner response; deterministic schemas/client; clean and actual prior-head migration/rollback; restricted web/runtime privileges |
+
+Backend identity tests use the existing signed-token/JWKS controlled peer and
+real database; the browser cases additionally use actual Keycloak/native login.
+The existing combined-role synthetic account is the second author, not a new
+provisioning/auth path. Browser artifacts remain disabled and application-log
+sentinels cover assessment content as well as credentials.
+
+**Checks:** final local execution on Windows x64, Node 24.20.0, npm 11.19.0,
+uv 0.12.17, Python 3.12.10, Docker Engine 29.7.2, PostgreSQL 17.11 and Chromium
+156.0.8078.4 (Playwright 1.64.1). Next.js is 16.4.2; identity uses the existing
+local Keycloak fixture. No hosted or other-version matrix result is claimed.
+
+The successful unfiltered `npm run test:e2e -- --checks` used owned project
+`quezo-i02-eb9af10d8ef2`, with PostgreSQL/Keycloak/web/API loopback ports
+53235/53236/53237/53238. The launcher generated distinct synthetic credentials,
+guarded disposable databases and the realm; it removed its containers/network
+and browser temporary results on completion, without touching development data.
+
+| Exact command (repository root) | Final outcome |
+| --- | --- |
+| `npm run api:generate` | Regenerated authoritative OpenAPI and TypeScript client |
+| `npm run typecheck` | Web, browser TypeScript and strict mypy passed (48 Python files) |
+| `npm test` | 12 web tests and 365 Python cases passed, no skips |
+| `npm run build` | Production Next build passed |
+| `npm run api:check` | Both generated artifacts current |
+| `npm run test:contracts` | 87 Python cases and 2 Node contract/tooling cases passed |
+| `npm run test:db` | 138 cases passed, including clean/prior-head migrations, constraints, rollback, immutable versions and real-database authorization |
+| `npm run test:identity` | 108 retained identity cases passed |
+| `npm run test:identity:integration` | Actual Keycloak integration passed |
+| `npm run test:web:production` | Built-web HTTP/session boundary passed |
+| `npm run test:e2e -- --checks` | All above checks plus all 16 retained I02 and 5 C01 browser cases passed; exit 0 |
+| `uv run --directory postgres --locked alembic heads` | Exactly `0005_questions` |
+| `uv run --directory postgres --locked alembic history` | One linear chain; `0004_identity -> 0005_questions` |
+| `git diff --check` | Passed |
+
+Initial browser runs found that nested textarea labels included prefilled text
+in label lookup, and browser form restoration retained stale text after a
+conflict/reload. Explicit textarea labels and `autocomplete="off"` corrected
+those paths; tests prove current persisted content appears on reload. Error
+assertions now target the main region rather than also matching Next's route
+announcer. The safe reporter recognizes C01 source locations without raw
+error/call logs. Focused `npm run test:e2e -- --grep C01` and
+`npm run test:e2e -- --grep "C01 stale"` drove these corrections.
+One subsequent full run stopped at a native Windows/npm startup failure
+(exit 3221226505) before `test:web:production`; its cleanup completed. The
+unchanged complete command was rerun successfully as recorded above; no check,
+assertion or runtime authority was bypassed.
+
+**CI portability follow-up:** the hosted Python 3.14 contract check exposed a
+standard-library HTTP 422 description change from `Unprocessable Entity` to
+`Unprocessable Content`. Question routes now explicitly retain the committed
+description. The reproducibility test exercises both standard-library phrases
+on every Python version, comparing the complete schema with the committed
+artifact. The failure was reproduced before the fix. Targeted local checks on
+Python 3.12.10 and 3.14.7 each passed all 88 contract cases, strict mypy and
+`npm run api:check`; both Node contract/tooling cases also passed. Regeneration
+left OpenAPI and TypeScript artifacts unchanged. No runtime response, database
+or browser behavior changed; the full browser/database gate was not rerun for
+this metadata-only patch. Hosted CI must rerun after the patch is pushed.
+
+**Contracts:** all paths below are relative to `/api/v1`. Every operation
+requires a currently active mapped author. Administrator alone is denied (403);
+another owner's resources are concealed as 404, including bank filters, cursors
+and nested version IDs. Protected success/error responses are private/no-store.
+`get_identity` verifies the token; the function-scoped transaction dependency
+calls `resolve_actor` and `require_role` inside the same transaction as the
+operation. Dependency teardown commits before sending success, including
+deferred constraints. There is no authorization snapshot in a browser session.
+
+| HTTP operation | Input / output |
+| --- | --- |
+| `GET /question-banks` | `pageSize`, `cursor`; `Page[Bank]` |
+| `POST /question-banks` | `{name}`; 201 `Bank` |
+| `GET /question-banks/{bank_id}` | Own bank; `Bank` |
+| `PATCH /question-banks/{bank_id}` | `{name}`; updated `Bank` |
+| `GET /questions` | `pageSize`, `cursor`, optional `bankId`; current `Page[QuestionSummary]` |
+| `POST /questions` | `QuestionCreate`; 201 `QuestionVersion` |
+| `GET /questions/{question_id}` | Current `QuestionVersion` |
+| `PATCH /questions/{question_id}` | Full `QuestionEdit`, including `expectedRevision`; new `QuestionVersion` |
+| `GET /questions/{question_id}/versions` | `pageSize`, `cursor`; retained `Page[QuestionSummary]` |
+| `GET /questions/{question_id}/versions/{version_id}` | Exact owned `QuestionVersion`, never replaced by current |
+
+`Bank` is `{id, name}`. `QuestionCreate` requires `bankId` plus every content
+field below; `QuestionEdit` requires `expectedRevision` plus every content field
+and does not accept bank/owner IDs. Despite PATCH, this is a complete new content
+revision, not a partial field merge. Missing, extra and snake_case write fields
+are rejected recursively. No server timestamp, version ID or owner is writable.
+
+| Validated content field | Contract |
+| --- | --- |
+| `questionType` | Exactly `mcq` or `true_false` |
+| `prompt` | 1-4,000 Unicode characters; not whitespace-only |
+| `options` | Ordered list of 2-10 `{id, text}` objects for MCQ; exactly two for true/false |
+| `options[].id` | UUID supplied by the author client; unique after UUID parsing within the revision; returned canonically |
+| `options[].text` | 1-1,000 characters, not whitespace-only; true/false requires exactly `True` and `False`, case-sensitive, either order |
+| `correctOptionId` | One UUID matching exactly one option ID; no additional per-option correct flags |
+| `defaultPoints` | Strict integer 0-10,000, inclusive; no strings, booleans or fractional numbers |
+| `feedback` | Required string of 0-4,000 characters; empty means no explanation supplied |
+
+Bank names are 1-100 characters and not whitespace-only. Required text is
+checked for trimmed emptiness but stored verbatim. All text must be valid Unicode;
+C0 controls other than tab/CR/LF are rejected. Plain text means literal storage
+and escaped text rendering, not an HTML/Markdown parser: angle brackets are
+allowed as text, not interpreted. Bounds are checked independently of the UI.
+
+`QuestionVersion` adds `questionId`, `bankId`, `versionId`, positive `revision`
+and RFC 3339 UTC `createdAt` to the content fields. `questionId` is the stable
+reusable question UUID. `versionId` is a new server UUID for every successful
+save; revisions start at 1. Existing option IDs are retained when editing a
+choice; added choices get new UUIDs, and changing type in the UI explicitly
+replaces the choices. Old versions preserve their original option array/key.
+`correctOptionId` references `options[].id` in that exact version, not a position,
+question ID or boolean. No returned key-bearing DTO is a learner representation.
+
+`QuestionSummary` contains `questionId`, `bankId`, `versionId`, `revision`,
+`questionType`, `promptExcerpt` (first 120 characters) and `defaultPoints`.
+Summaries omit key/options/feedback and keep maximum-sized pages below the
+existing facade body limit. Lists default to 25, allow 1-100, and always return
+`nextCursor` (null at end). Bank/question lists order by UUID ascending and use
+the last bank/question UUID as cursor. History orders by revision and version
+UUID and uses the last version UUID. Cursors must be canonical UUIDs and belong
+to the authorized list scope; foreign/nested mismatches return 404, malformed
+cursors 422. Authorization is applied before pagination.
+
+Question edits lock the owned question row and compare `expectedRevision`
+(strict integer 1-2,147,483,647). A stale edit returns 409
+`DRAFT_REVISION_CONFLICT`; the UI retains unsaved input and asks for a reload.
+No automatic retry, command acknowledgement ledger or C02 publication semantics
+are added. A connection failure after a create/save is an unknown outcome:
+the form tells the author to check persisted state before retrying.
+
+**Data:** new single head `0005_questions`, parent `0004_identity`.
+`question_banks`, `questions`, `question_versions` have relational ownership,
+unique revisions, content checks, immutable version triggers/privileges and a
+deferred current-version foreign key. Applied migrations are unchanged.
+Unapplied upgrade failures roll back DDL and ledger; after an applied migration,
+use reviewed forward corrections rather than a destructive downgrade.
+See [migration details](../postgres/migrations/README.md#c01-question-storage).
+
+**Integration:** accepted I02 foundation
+`553a2c8b77a770667f4cef6825f57c3b55f477ed`, plus approval/tracker baseline
+`4613fdc` (including `0514cfb` and `49eb37b`). C01 used its assigned initial
+shared-file window. S01 surfaces are untouched. No commit, PR, successor
+dispatch, tracker completion or acceptance is implied.
+
+**Known gaps:** no unresolved criterion within the assigned C01 slice.
+C03 owns full search/category/tag/move/archive controls; archive
+markers are reserved storage only and unsupported commands remain absent.
+C02 owns quiz reuse/composition/publication; no publication/attempt/grade
+preservation claim is possible yet. No Q02/WCAG, Node 22/Python 3.14 local matrix,
+hosted CI, deployment or real-data/pilot acceptance is claimed by this run.
+
+**Successor handoff (C02):** wait for B.C.'s acceptance/integration, then include
+the actual C01 commit and migration. Consume the generated schemas, not a copied
+DTO. Persist explicit `(questionId, versionId)` selections; never resolve
+"current" while publishing a prior selection. Within the caller's
+`Database.transaction`, resolve the live actor, then call
+`questions.service.get_question(connection, actor, question_id, version_id)`
+to verify ownership/nesting and obtain the exact `QuestionVersion`. Supplying
+no `version_id` deliberately requests current and is unsuitable for a pinned
+selection. Recheck every selection inside publication's transaction.
+Keep authored option order/UUIDs; use `defaultPoints` unless an explicit validated
+quiz override exists. Do not confuse revision number with a version UUID, use
+the bank ID as question identity, expose `correctOptionId`/feedback to learners,
+or mutate a version. C02 adds its own FKs/duplicate-question checks, positive
+total, snapshot/projection, draft CAS and publish replay semantics; none are
+scaffolded here.
+
 ## F02 HTTP contracts and generated client
 
 Server Pydantic models remain authoritative. `postgres/src/quezo_api/schemas.py`
@@ -170,11 +375,10 @@ F02 did not implement `/api/v1/me`; the integrated I01 package now provides it.
 inputs: `pageSize` defaults to 25 and accepts 1-100, `cursor` defaults to null.
 Only decimal integer query strings are parsed; fractions, booleans, negatives,
 null sizes and extra fields fail validation. `Page[T]` responses contain
-`items` and a required `nextCursor`, explicitly null when exhausted. A future
-collection producer owns cursor encoding/validation and server-side filters;
+`items` and a required `nextCursor`, explicitly null when exhausted. A collection producer owns cursor encoding/validation and server-side filters;
 it must use stable ordering with a unique-ID tiebreaker and apply authorization
-before pagination. No list route, cursor algorithm or generic persistence layer
-is implemented here. Concrete page schemas are generated when real routes use them.
+before pagination. C01 implements its own scoped UUID cursors and concrete
+bank/question page schemas below; no generic persistence layer is introduced.
 
 **Errors:** `postgres/src/quezo_api/errors.py` installs consistent handlers on the
 application factory without changing F01 lifespan. Responses contain `code`,
