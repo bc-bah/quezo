@@ -18,13 +18,15 @@
     "typecheck": "npm run typecheck:web && npm run typecheck:api",
     "typecheck:web": "npm run typecheck --workspace @quezo/web",
     "typecheck:api": "uv run --directory postgres --locked mypy",
-    "test": "uv run --directory postgres --locked pytest",
+    "test": "npm run test:web && uv run --directory postgres --locked pytest",
+    "test:web": "npm test --workspace @quezo/web",
+    "test:web:production": "uv run --directory postgres --locked python tests/run_web_production.py",
     "api:export": "uv run --directory postgres --locked python scripts/export_openapi.py",
     "api:generate": "npm run api:export && node postgres/scripts/generate-client.mjs",
     "api:check": "npm run api:export -- --check && node postgres/scripts/generate-client.mjs --check",
     "test:contracts": "uv run --directory postgres --locked pytest tests/test_contract_schemas.py tests/test_http_contract.py && node --test postgres/scripts/test_contract_tools.mjs",
     "db:upgrade": "uv run --directory postgres --locked alembic upgrade head",
-    "test:db": "uv run --directory postgres --locked pytest tests/test_migrations.py tests/test_database.py tests/test_database_isolation.py tests/test_app.py"
+    "test:db": "uv run --directory postgres --locked pytest tests/test_migrations.py tests/test_database.py tests/test_database_isolation.py tests/test_app.py tests/test_web_sessions.py"
   },
   "devDependencies": {
     "openapi-typescript": "7.13.0",

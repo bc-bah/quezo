@@ -14,23 +14,27 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | --- | --- | --- |
 | `0001_application_schema` | `base` | Revoke public schema access; create migration-owned `quezo` namespace |
 | `0002_runtime_grants` | `0001_application_schema` | Restrict database access, grant runtime schema usage and future table/sequence DML privileges; remove default public function execution |
+| `0003_web_sessions` | `0002_runtime_grants` | Create isolated `quezo_session` tables and explicit DML grants to `quezo_web` only |
 
-Only `public.alembic_version` records migration state. There are no domain,
-identity, session, seed, audit or acknowledgement tables. Upcoming packages
+Only `public.alembic_version` records migration state. There are no assessment,
+application-identity, seed, audit or acknowledgement tables. F03 adds sessions
+and single-use login transactions in `quezo_session`. Upcoming packages
 provide their own reviewed schema and section 6 constraints. Default runtime
 grants apply only to tables/sequences created **by `quezo_migrator` in `quezo`**;
 session storage must not use that schema or those grants.
 
 The real prior-revision upgrade is `base -> 0001_application_schema`, disconnect,
-then `0001_application_schema -> 0002_runtime_grants`. Tests verify runtime schema
+then `0001_application_schema -> head`. Tests verify runtime schema
 access is absent before the second revision and present afterwards, as well as
 a separate clean `base -> head` path and repeat `head` execution.
+F03 also tests the actual integrated prior head `0002_runtime_grants -> 0003_web_sessions`.
+Applied F01 revisions are unchanged.
 
 ## Execution and identities
 
 Bootstrap is an explicit local administrator action (`postgres/bootstrap/roles.sql`).
-It creates distinct restricted login roles, makes `quezo_migrator` the database
-owner and revokes public database/schema access. Neither role is a superuser,
+It creates three distinct restricted login roles, makes `quezo_migrator` the database
+owner and revokes public database/schema access. None is a superuser,
 role creator, database creator, replication user or RLS bypass user. The bootstrap
 identity is never supplied to FastAPI or Alembic.
 
@@ -58,6 +62,52 @@ index creation or transaction-breaking commands may be added without a reviewed
 change to this contract. `quezo_runtime` can connect and perform DML in `quezo`,
 but cannot create schemas/tables/temp tables, truncate tables, assume the migration
 role, create roles or read/write `public.alembic_version`.
+
+### F03 session role and existing-baseline upgrade
+
+Fresh bootstrap additionally requires distinct `QUEZO_WEB_PASSWORD` (Compose test
+service: `QUEZO_TEST_WEB_PASSWORD`). `quezo_web` has CONNECT, USAGE on
+`quezo_session` and SELECT/INSERT/UPDATE/DELETE on its two named tables only.
+It has no assessment/public schema access, CREATE, TEMP, TRUNCATE, migration
+ledger access or role memberships. `quezo_runtime` cannot access session secrets.
+There are **no default web grants**; future session objects require explicit
+review. Existing default backend grants remain scoped to `quezo`, never sessions.
+
+An already bootstrapped F01 database needs a narrow, explicit administrator step
+before upgrading. Do not rerun the full fresh bootstrap or reset volumes.
+In a local administrator `psql` session, with the new distinct
+`QUEZO_WEB_PASSWORD` exported to that process:
+
+```sql
+\set ON_ERROR_STOP on
+\getenv web_password QUEZO_WEB_PASSWORD
+CREATE ROLE quezo_web LOGIN PASSWORD :'web_password'
+    NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+```
+
+Verify the password is nonempty and distinct from the existing role credentials
+before running; existing roles are not silently reused or altered. Then leave
+the administrator session and run `npm run db:upgrade` with only the migration
+URL. The migration owns schema/tables; application startup only verifies access.
+Web processes receive only `QUEZO_WEB_DATABASE_URL` with `quezo_web`.
+
+`sessions` stores SHA-256 opaque-ID hashes, originating login hash, server-only
+access token, token/absolute/idle expiry and creation time. `login_transactions`
+stores hashed browser binding, state, nonce, PKCE verifier, expiry and a consumed
+flag. Consuming is atomic; session insertion deletes the consumed transaction
+atomically and refuses expired/deleted transactions. Logout deletes both pending
+login and session rows, including sessions completed from that login. No refresh
+or ID token, provider subject, email, application actor or role snapshot is stored.
+Token/PKCE values are plaintext within this restricted schema: protect database
+transport, dumps, backups and administrator access as secrets; encryption at rest
+and real-data retention remain operational gates, not claims of this package.
+
+Unapplied failure rolls back the whole upgrade. Existing sessions survive web
+process restarts. A deliberate recovery that loses/deletes session rows signs
+users out rather than restoring authorization from a cache. Restoring old session
+backups could resurrect locally invalidated sessions; a reviewed recovery must
+invalidate restored sessions/login transactions before reopening traffic.
+No destructive downgrade is supplied.
 
 ## Adding and recovering revisions
 

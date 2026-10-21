@@ -94,6 +94,21 @@ session interface and authorized-fetch/client integration.
 
 **Excluded:** assessment screens or a parallel backend inside Next.js.
 
+### Second-wave checkpoint
+
+B.C.'s [20 October 2026 approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
+supersedes G00's F03 identity/session holds. F01 PR #3 (`8732328`) and F02 PR #4
+(`5f314125e13262139e1d3e28d190881d6fbd5f8b`) are accepted/integrated. F03 is active,
+owned/reviewed by B.C., with exclusive first second-wave shared-file access.
+Use openid-client and pg with npm-locked compatible versions, a restricted
+separate session schema and migration-only schema creation. Bounded documented
+session/timeout defaults are authorized for review; business semantics are not.
+
+I01's real `/api/v1/me` remains absent. F03 tests may use schema-validated actors;
+runtime must fail explicitly without its producer and must not trust cached roles
+on outage. I02 owns the combined identity/browser gate and full AT-01 evidence.
+No successor is dispatched, and later decision/pilot gates remain held.
+
 ## I01: Identity and authorization backend
 
 **Rules:** IAM-01/02, identity portion of IAM-03, AT-01.  

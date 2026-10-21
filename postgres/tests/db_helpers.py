@@ -22,6 +22,7 @@ class IsolatedDatabase:
     name: str
     migration_url: str = field(repr=False)
     runtime_url: str = field(repr=False)
+    web_url: str = field(repr=False)
 
 
 def validate_test_admin_url(url: str) -> dict[str, str]:
@@ -89,6 +90,7 @@ def isolated_database() -> Iterator[IsolatedDatabase]:
     params = validate_test_admin_url(os.environ.get("QUEZO_TEST_ADMIN_URL", ""))
     migration_password = os.environ["QUEZO_TEST_MIGRATION_PASSWORD"]
     runtime_password = os.environ["QUEZO_TEST_RUNTIME_PASSWORD"]
+    web_password = os.environ["QUEZO_TEST_WEB_PASSWORD"]
     name = f"quezo_test_{uuid4().hex}"
     marker = f"f01-owned:{name}"
     with psycopg.connect(
@@ -120,6 +122,7 @@ def isolated_database() -> Iterator[IsolatedDatabase]:
                 name,
                 f"postgresql://quezo_migrator:{quote(migration_password, safe='')}@{authority}",
                 f"postgresql://quezo_runtime:{quote(runtime_password, safe='')}@{authority}",
+                f"postgresql://quezo_web:{quote(web_password, safe='')}@{authority}",
             )
         finally:
             drop_test_database(admin, name, marker)

@@ -253,3 +253,42 @@ Do not start successors, provision external resources, deploy or use real data.
 Do not create a commit or PR automatically; return changes for B.C.'s review.
 Report readiness for review, not done; B.C. owns tracker and integration updates.
 ```
+
+## 5. Second-wave F03 assignment
+
+**Approval/dispatch:** B.C., 20 October 2026, including explicit authorization
+to reconcile the coordination documents before implementation. See the
+[second-wave approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026).
+F01 PR #3 (`8732328`) and F02 PR #4
+(`5f314125e13262139e1d3e28d190881d6fbd5f8b`) are accepted and integrated.
+B.C. owns F03, integration, review and the first exclusive shared-file window.
+
+Implement F03 only: server-only openid-client code + PKCE/state/nonce OIDC,
+pg-backed durable sessions/login transactions in a separate restricted schema,
+opaque cookies, expiry/rotation/logout, CSRF/origin enforcement, thin backend
+facade and keyboard-usable role-aware navigation with explicit failure states.
+Use a local Keycloak realm, confidential web client, exact redirects and a
+dedicated API audience; never runtime admin credentials, bypasses or automatic
+role grants. npm locks compatible dependencies. Bounded session/timeout defaults
+may be documented for review without changing business semantics.
+
+Permitted implementation surfaces are frontend server/session/navigation code
+and focused tests, new session-only migrations/tests, narrow web-role bootstrap,
+and F03-only manifests/lock/scripts, environment/Compose/CI, shared test fixtures,
+migration runbook and DEVELOPMENT.md. No backend identity/business route changes,
+generated DTO edits, or edits to applied migrations. Escalate additional needs.
+
+I01 owns `/api/v1/me`. Consume the F02 Actor/error/client contract; use
+schema-validated controlled identities only in tests while that producer is
+absent. Runtime outages are explicit failures, never authenticated fallbacks.
+Prove real PostgreSQL durability and role isolation, clean/prior-head migration,
+expiry/logout/replay/CSRF and token nondisclosure. Run root typecheck, test, build,
+api:check, test:contracts, test:db and focused F03 checks with isolated dependencies.
+Record exact commands/environment/results; missing prerequisites are not passes.
+
+Return section 3 with session/schema/role interfaces, OIDC configuration,
+defaults, evidence and I01/I02 inputs. Report ready for review or a specific
+blocker, not done. I02 owns combined Keycloak/browser acceptance; isolated F03
+checks do not establish full AT-01 or WCAG conformance. No successors, external
+resources, deployment, real data, automatic commit or PR. B.C. owns final
+acceptance and tracker updates.

@@ -30,6 +30,7 @@ jobs:
       - run: uv sync --directory postgres --locked --python 3.12
       - run: npm run api:check
       - run: npm run test:contracts
+      - run: npm run test:web
       - run: npm run typecheck:web
       - run: npm run build
       - name: Validate local dependency configuration
@@ -51,6 +52,7 @@ jobs:
       QUEZO_TEST_ADMIN_URL: postgresql://quezo_test_admin:ci-test-admin@127.0.0.1:5432/quezo_test_control
       QUEZO_TEST_MIGRATION_PASSWORD: ci-test-migrator
       QUEZO_TEST_RUNTIME_PASSWORD: ci-test-runtime
+      QUEZO_TEST_WEB_PASSWORD: ci-test-web
     services:
       postgres:
         image: postgres:17
@@ -60,6 +62,7 @@ jobs:
           POSTGRES_PASSWORD: ci-test-admin
           QUEZO_MIGRATION_PASSWORD: ci-test-migrator
           QUEZO_RUNTIME_PASSWORD: ci-test-runtime
+          QUEZO_WEB_PASSWORD: ci-test-web
         ports:
           - 127.0.0.1:5432:5432
         options: >-
@@ -74,9 +77,16 @@ jobs:
           cache-dependency-glob: postgres/uv.lock
       - run: uv python install "${{ matrix.python }}"
       - run: uv sync --locked --python "${{ matrix.python }}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --prefix ..
       - name: Bootstrap isolated database identities and safety marker
         run: |
           docker exec -i "${{ job.services.postgres.id }}" psql -U quezo_test_admin -d quezo_test_control < bootstrap/roles.sql
           docker exec -i "${{ job.services.postgres.id }}" psql -U quezo_test_admin -d quezo_test_control < tests/bootstrap.sql
       - run: uv run --locked --python "${{ matrix.python }}" mypy
       - run: uv run --locked --python "${{ matrix.python }}" pytest
+      - run: npm run build --prefix ..
+      - run: npm run test:web:production --prefix ..
