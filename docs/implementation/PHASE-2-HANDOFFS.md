@@ -9,6 +9,7 @@ their accepted producer commits, not just the foundation commit.
 
 | Package | Prompt | Required producer acceptance/integration |
 | --- | --- | --- |
+|  |  |  |
 | C01 | [Versioned objective questions](#c01-dispatch-prompt) | I02, already done |
 | C02 | [Immutable quiz publication](#c02-dispatch-prompt) | C01 |
 | D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 |
