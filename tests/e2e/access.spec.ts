@@ -180,27 +180,39 @@ test("AT-01 direct API denies missing, malformed, tampered, wrong-audience and w
 });
 
 test("AT-01 callback state, browser binding and replay fail closed", async ({ page, apps, browser }) => {
+  console.log("Callback protection: starting native login for wrong-state check");
   await beginLogin(page);
   const binding = (await page.context().cookies(webOrigin)).find((cookie) => cookie.name === "quezo_login")!;
   apps.secrets.add(binding.value);
   expect(binding.httpOnly).toBe(true);
+  console.log("Callback protection: navigating with wrong state");
   const failed = await page.goto(webOrigin + "/auth/callback?code=invalid-synthetic-code&state=wrong-state&iss=" + encodeURIComponent(issuer));
   expect(failed!.status()).toBe(401);
+  console.log("Callback protection: checking wrong-state error page");
   await expect(page.locator("main").getByRole("alert")).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to Quezo" })).toBeVisible();
   let callback = "";
   page.on("request", (request) => {
     if (request.url().startsWith(webOrigin + "/auth/callback?")) callback = request.url();
   });
+  console.log("Callback protection: completing a fresh native login");
   await login(page, "author");
+  console.log("Callback protection: reading the completed session");
   await apps.session(page);
   expect(Boolean(callback)).toBe(true);
+  console.log("Callback protection: creating an unbound browser context");
   const fresh = await browser.newContext();
   try {
     const other = await fresh.newPage();
+    console.log("Callback protection: navigating without browser binding");
     expect((await other.goto(callback))!.status()).toBe(401);
-  } finally { await fresh.close(); }
+  } finally {
+    console.log("Callback protection: closing the unbound browser context");
+    await fresh.close();
+  }
+  console.log("Callback protection: replaying in the original browser");
   expect((await page.goto(callback))!.status()).toBe(401);
+  console.log("Callback protection: assertions complete; privacy teardown follows");
 });
 
 test("AT-01 real foreign-origin form and missing/null hostile requests are denied", async ({ page, apps }) => {

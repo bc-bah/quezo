@@ -4,7 +4,7 @@ import { publicError } from "../../lib/server/errors";
 
 export function AuthorPage({ children }: { children: ReactNode }) {
   return <main id="main" tabIndex={-1}>
-    <nav aria-label="Author navigation"><a href="/">Home</a><a href="/author">Question banks</a></nav>
+    <nav aria-label="Author navigation"><a href="/">Home</a><a href="/author">Question banks</a><a href="/author/quizzes">Quizzes</a></nav>
     {children}
   </main>;
 }

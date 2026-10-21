@@ -15,10 +15,14 @@ specific decision or predecessor, not a generic "waiting."
 
 **Current state (21 October 2026):** I02 is `done`; EX-I02-01 is closed after
 B.C.'s completion confirmation and review of merged browser/CI evidence.
-C01, C02, D01, D02, S01, D03, R01 and T01 are `active` assignments under B.C.
-B.C. explicitly approved retaining producer execution gates: only C01/S01
-can implement immediately; all others await accepted, integrated prerequisites.
-No agent launch or Phase 2 implementation is implied. B.C. owns integration,
+C01 is `done` following B.C.'s explicit acceptance/integration confirmation.
+C02 is also `done` at B.C.'s explicit direction, accepting the verified local
+delivery and handoff. Its changes are still uncommitted on C01 merge `e66f459`;
+no C02 commit/PR or default-branch integration is claimed. Record the actual
+C02 integration commit and include it in D01's checkout before execution.
+D01, D02, S01, D03, R01 and T01 remain `active` assignments under B.C.
+S01 remains independently executable; downstream checkout gates are unchanged.
+No successor dispatch is implied. B.C. owns integration,
 review/merge and shared-file coordination for this wave; later release holds remain.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
 dependency. Decision gates still apply as specified by the package.
@@ -30,9 +34,11 @@ Current approval: [Phase 2 assignment/defaults](../SOFTWARE-SPECIFICATION.md#pha
 Current assignments: [eight copy-ready prompts](PHASE-2-HANDOFFS.md).
 Integrated foundation baseline: `553a2c8b77a770667f4cef6825f57c3b55f477ed`;
 migration head `0004_identity`. Consumers must also include their later producer
-commits, recorded on acceptance. C01 owns the initial shared-file window; S01
-may run independently on its pure scoring/test surfaces. Later shared writes
-and migrations are serialized along the lifecycle chain by B.C.
+commits, recorded on acceptance. Accepted C01 merge
+`e66f459c5a6b225bd3d1b4bbce6b5b87de67974c` advances the migration head to
+`0005_questions` and completes C01's initial shared-file window. S01 may run
+independently on its pure scoring/test surfaces. C02 and later shared writes
+and migrations remain serialized along the lifecycle chain by B.C.
 
 | ID | Phase | Package | Prerequisites | Status | Owner | PR/commit and evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,9 +48,9 @@ and migrations are serialized along the lifecycle chain by B.C.
 | F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | done | B.C. | Accepted 20 October 2026 with [EX-I02-01](#ex-i02-01-native-loginlogout-origin), now closed in I02; [PR #5](https://github.com/bc-bah/quezo/pull/5), merge `b1a2fe0`; [local evidence](../DEVELOPMENT.md#f03-local-verification-20-october-2026), [hosted CI](https://github.com/bc-bah/quezo/actions/runs/39519807448); 10 web tests, 154 Python cases |
 | I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | done | B.C. | Accepted 20 October 2026; [PR #6](https://github.com/bc-bah/quezo/pull/6), merge `6ef734f`; [local evidence](../DEVELOPMENT.md#i01-local-verification-20-october-2026), [hosted CI](https://github.com/bc-bah/quezo/actions/runs/39530379835); 262 Python cases, 10 web tests and actual-Keycloak HTTP integration; combined browser proof accepted in I02 |
 | I02 | 1 | [Integrated login and access gate](01-FOUNDATIONS.md#i02-integrated-login-and-access-gate) | F03, I01 | done | B.C. | Accepted 21 October 2026; [PR #7](https://github.com/bc-bah/quezo/pull/7), merge `553a2c8`; [16-browser-case evidence](../DEVELOPMENT.md#i02-integrated-browser-gate), [hosted browser and matrix CI](https://github.com/bc-bah/quezo/actions/runs/39564745343); EX-I02-01 closed; AT-01 foundation gate accepted |
-| C01 | 2 | [Versioned objective questions](02-CORE-LIFECYCLE.md#c01-versioned-objective-questions) | I02 | active | B.C. | Assigned 21 October 2026; executable now on `553a2c8`; initial shared-file window; [prompt](PHASE-2-HANDOFFS.md#c01-dispatch-prompt); evidence pending |
-| C02 | 2 | [Immutable quiz publication](02-CORE-LIFECYCLE.md#c02-immutable-quiz-publication) | C01 | active | B.C. | Assigned 21 October 2026; execution waits for C01 accepted/integrated question-version contract; [prompt](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) |
-| D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | active | B.C. | Assigned 21 October 2026; execution waits for C02 accepted/integrated publication contract; [prompt](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) |
+| C01 | 2 | [Versioned objective questions](02-CORE-LIFECYCLE.md#c01-versioned-objective-questions) | I02 | done | B.C. | Accepted/integration confirmed by B.C. 21 October 2026; [PR #8](https://github.com/bc-bah/quezo/pull/8), merge `e66f459`; [handoff, evidence and exact-version contract](../DEVELOPMENT.md#c01-versioned-objective-questions), [hosted browser and matrix CI](https://github.com/bc-bah/quezo/actions/runs/39596126267); migration `0005_questions`; initial AT-03/04 question scope accepted |
+| C02 | 2 | [Immutable quiz publication](02-CORE-LIFECYCLE.md#c02-immutable-quiz-publication) | C01 | done | B.C. | Accepted and marked done at B.C.'s direction, 21 October 2026; [accepted local handoff/evidence](../DEVELOPMENT.md#c02-immutable-quiz-publication): 449 Python, 166 database and 24 browser cases passed; migration `0006_quizzes`; uncommitted delivery on C01 `e66f459`, actual integration commit/PR still to be recorded; [prompt](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) |
+| D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | active | B.C. | Assigned 21 October 2026; C02 acceptance satisfied; before execution record/include the actual C02 integration commit and [accepted publication contract](../DEVELOPMENT.md#c02-immutable-quiz-publication) in its checkout; [prompt](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) |
 | D02 | 2 | [Durable response save and resume](02-CORE-LIFECYCLE.md#d02-durable-response-save-and-resume) | D01 | active | B.C. | Assigned 21 October 2026; execution waits for D01 accepted/integrated attempt snapshot and locks; [prompt](PHASE-2-HANDOFFS.md#d02-dispatch-prompt) |
 | S01 | 2 | [Pure objective scoring](02-CORE-LIFECYCLE.md#s01-pure-objective-scoring) | F02 | active | B.C. | Assigned 21 October 2026; executable now on `553a2c8`; independent scoring/tests only; [prompt](PHASE-2-HANDOFFS.md#s01-dispatch-prompt); evidence pending |
 | D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | active | B.C. | Assigned 21 October 2026; execution waits for both D02 and S01 accepted/integrated contracts; untimed learner UI while DEC-09 held; [prompt](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) |

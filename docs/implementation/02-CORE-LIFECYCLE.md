@@ -5,9 +5,12 @@ Use [BACKLOG.md](BACKLOG.md) for dependencies and the
 Each package delivers a small working slice, including its migrations, contract,
 minimal UI and relevant tests unless explicitly pure calculation.
 
-**Assignment, 21 October 2026:** all eight packages below are `active` under B.C.,
-with explicit producer execution gates. C01/S01 can start now; each consumer
-must first include its accepted producer commits. Use the
+**Assignment, 21 October 2026:** C01 and C02 are accepted and `done`; the other six
+packages below remain `active` under B.C., with explicit producer execution
+gates. C02's verified local delivery is accepted but still uncommitted on
+`e66f459`; D01 needs its actual integration commit recorded and included before
+execution. S01 remains independently executable. Each later consumer must first include
+its accepted producer commits. Use the
 [copy-ready package prompts](PHASE-2-HANDOFFS.md) and
 [approved demo defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
 The first UI is untimed, unscheduled, one-attempt and nonrandomized, with score-only

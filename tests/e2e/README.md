@@ -1,4 +1,4 @@
-# Real-browser identity and question-authoring gates
+# Real-browser identity, question and quiz-authoring gates
 
 This suite uses npm-locked Playwright Test 1.64.1 and its Chromium browser.
 Every successful journey uses native Quezo forms, the actual Keycloak login UI,
@@ -51,6 +51,9 @@ This executes, fail-fast, the exact root scripts `npm run typecheck`, `npm test`
 `npm run test:web:production`. The actual-provider HTTP test removes its owned
 realm before browser provisioning. Root `npm test` still does not run browsers.
 `npm run typecheck` now also type-checks these TypeScript fixtures.
+The expanded Python/database checks have a bounded 20-minute launcher timeout;
+other check commands retain 10 minutes. This is a runner safety limit, not an
+approved product performance target.
 
 For a focused regression or the repeatable working-foundations demonstration:
 
@@ -83,7 +86,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0005_questions`, and calls I01's allowlisted
+Next, migrates a fresh database to `0006_quizzes`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -169,7 +172,7 @@ tests; this loopback HTTP suite does not claim shared TLS deployment proof.
 The suite also checks no direct browser API/token calls, no callback referrer
 disclosure and empty localStorage/sessionStorage.
 
-This is the working-foundations and C01 demonstration, not A01 account management,
+This is the working-foundations, C01 and C02 demonstration, not A01 account management,
 quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
@@ -199,3 +202,33 @@ screenshots, video, HAR and storage-state exports remain disabled. No raw
 question/key payload is persisted as an artifact. Full search/category/tag,
 move/archive management belongs to C03; two-quiz reuse and publication/attempt
 preservation belong to C02 and later lifecycle acceptance, not these initial cases.
+
+## C02 AT-04/05 publication cases
+
+`quizzes.spec.ts` extends the same fixture/discovery path with three real-login
+journeys. Focus with `npm run test:e2e -- --grep C02`; acceptance still requires
+the complete `npm run test:e2e -- --checks`.
+
+- Author creates both types, composes/reorders exact revisions with a point
+  override, selects withheld policy, previews without private fields/writes,
+  publishes and reloads. Two quizzes reuse a question; later question edits and
+  an explicit new draft/publication leave the original published snapshot intact.
+- Two tabs expose stale draft conflict while preserving unsaved edits. An actual
+  API outage during publication displays failure; recovery retries the same
+  command without claiming success prematurely.
+- Actual signed-in API publication retries return identical acknowledgement;
+  changed payload conflicts. A foreign author, learner and administrator cannot
+  replay/read the quiz or disclose its content through HTML/RSC or preview.
+
+Backend tests provide the real-database concurrency, rollback, independent policy
+bounds, clean/prior-head migrations and immutable snapshot/ledger constraints.
+No assignment, attempt, grade or timed learner UI is introduced here. Existing
+privacy settings, content sentinels, disabled artifacts and owned-service cleanup
+remain in force.
+
+The 21 October 2026 local complete gate passed all 24 browser cases (16 I02,
+5 C01, 3 C02) on Chromium 156.0.8078.4. Exact commands, environment, iteration
+corrections and full database/web results are in the
+[C02 review handoff](../../docs/DEVELOPMENT.md#c02-immutable-quiz-publication).
+B.C.'s subsequent local-delivery acceptance is recorded in that handoff;
+this browser run does not claim hosted CI or default-branch integration.
