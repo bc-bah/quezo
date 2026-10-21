@@ -83,7 +83,8 @@ Production database privileges should enforce this separation.
 generated OpenAPI/TypeScript contracts, F03 OIDC/server sessions/navigation and
 I01 independent token validation/current-actor `/me`. I02 proves the combined
 real-browser flow and closes EX-I02-01 without relaxing origin validation.
-Phase 2 is assigned but no assessment persistence/workflow is implemented yet;
+C01 adds the question-authoring module, owned banks, immutable versions and a
+thin server-only author UI facade. Quiz publication/delivery remains future work;
 shared documentation exposure remains a deployment decision.
 
 ## 4. Module responsibilities and interfaces

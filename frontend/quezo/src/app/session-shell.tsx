@@ -45,13 +45,15 @@ export function SessionShell({ view }: { view: SessionView }) {
               view.actor.roles.some((assigned) => assigned === role) && (
                 <section key={role} id={role} tabIndex={-1} aria-label={label}>
                   <h2>{label}</h2>
-                  <p>This workspace is not implemented yet.</p>
+                  {role === "author"
+                    ? <p><a href="/author">Manage question banks</a></p>
+                    : <p>This workspace is not implemented yet.</p>}
                 </section>
               ),
             )}
           </>
         )}
-        <p>This foundation provides sign-in and navigation only. Assessment features are not available.</p>
+        <p>Authors can manage versioned objective questions. Quiz delivery is not available yet.</p>
       </main>
     </>
   );

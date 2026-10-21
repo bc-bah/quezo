@@ -1,4 +1,4 @@
-# I02 real-browser login and access gate
+# Real-browser identity and question-authoring gates
 
 This suite uses npm-locked Playwright Test 1.64.1 and its Chromium browser.
 Every successful journey uses native Quezo forms, the actual Keycloak login UI,
@@ -83,7 +83,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0004_identity`, and calls I01's allowlisted
+Next, migrates a fresh database to `0005_questions`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -144,10 +144,10 @@ cooldown 1s, identity timeout 1s; API pool wait is 1s. Session defaults and
 provider token lifetime remain unchanged. Fixture-only SQL revocations are
 explicitly restored in `finally`; runtime provisioning never restores access.
 
-There are no product role-protected routes yet. I01's retained lower-level
-`test_identity_access.py` directly tests role/ownership denial independently of
-navigation, including administrator non-inheritance. Those controlled-peer
-checks **supplement**, not replace, the real browser/API journeys above.
+C01 adds author-only product routes. I01's retained lower-level
+`test_identity_access.py` and C01's `test_questions.py` test role/ownership denial
+independently of navigation, including administrator non-inheritance.
+Those controlled-peer checks **supplement**, not replace, the real browser/API journeys.
 F03's existing PKCE/nonce/replay/host/cookie tests remain required too.
 
 ## Evidence privacy and limits
@@ -169,8 +169,33 @@ tests; this loopback HTTP suite does not claim shared TLS deployment proof.
 The suite also checks no direct browser API/token calls, no callback referrer
 disclosure and empty localStorage/sessionStorage.
 
-This is the working-foundations demonstration, not A01 account management,
-assessment workflows, Q02/WCAG, full P0, hosting or pilot acceptance. Keyboard
+This is the working-foundations and C01 demonstration, not A01 account management,
+quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
-audit. C01/T01 should reuse the login/session fixtures and add their own real
-business routes, authorization and lifecycle scenarios after separate dispatch.
+audit. Later assigned packages should extend these same fixtures after their
+producer gates, not introduce a second runner.
+
+## C01 AT-03/04 initial cases
+
+`questions.spec.ts` adds five real signed-in journeys to the existing discovery
+configuration. Run a focused iteration with `npm run test:e2e -- --grep C01`;
+the complete review gate remains `npm run test:e2e -- --checks`.
+
+- Both MCQ and true/false: create/rename a bank, create/select/read a question,
+  reload the exact revision, edit prompt/feedback/key/points, and select the old
+  revision again. Actual API reads prove stable question/option IDs, distinct
+  version IDs and byte-equivalent old content. Literal HTML-like input is not markup.
+- A second author (the existing combined-role account), learner and
+  administrator cannot obtain another author's prompt/key via lists, direct
+  or nested API IDs, or rendered HTML/RSC. No second account provisioner is added.
+- Two real tabs demonstrate stale-edit conflict with retained unsaved input;
+  committed application-role revocation blocks a subsequent form save/read.
+- Stopping the actual API leaves the form unsaved with a visible safe error;
+  recovery permits an explicit save, never a fabricated success.
+
+Existing identity scenarios are retained. The fixtures additionally check
+assessment-content sentinels never appear in captured application logs. Traces,
+screenshots, video, HAR and storage-state exports remain disabled. No raw
+question/key payload is persisted as an artifact. Full search/category/tag,
+move/archive management belongs to C03; two-quiz reuse and publication/attempt
+preservation belong to C02 and later lifecycle acceptance, not these initial cases.

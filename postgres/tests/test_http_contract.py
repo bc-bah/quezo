@@ -248,7 +248,12 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths() -> None:
     exported = Path(__file__).resolve().parents[1] / "openapi.json"
     assert json.loads(exported.read_text(encoding="utf-8")) == document
     assert document == create_app().openapi()
-    assert set(document["paths"]) == {"/health/live", "/api/v1/me"}
+    assert set(document["paths"]) == {
+        "/health/live", "/api/v1/me", "/api/v1/question-banks", "/api/v1/question-banks/{bank_id}",
+        "/api/v1/questions", "/api/v1/questions/{question_id}",
+        "/api/v1/questions/{question_id}/versions",
+        "/api/v1/questions/{question_id}/versions/{version_id}",
+    }
     schemas = document["components"]["schemas"]
     assert set(schemas["Actor"]["properties"]) == {"userId", "roles", "status"}
     assert schemas["Actor"]["additionalProperties"] is False
@@ -257,6 +262,10 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths() -> None:
     responses = document["paths"]["/health/live"]["get"]["responses"]
     assert responses["default"]["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorEnvelope")
     assert "X-Request-ID" in responses["200"]["headers"]
+    for path, methods in document["paths"].items():
+        if path.startswith(("/api/v1/questions", "/api/v1/question-banks")):
+            for operation in methods.values():
+                assert operation["responses"]["422"]["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorEnvelope")
 
 
 def test_every_error_code_has_safe_status_and_message() -> None:

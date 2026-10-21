@@ -11,10 +11,13 @@ def test_clean_database_migrates_with_only_delivered_tables(
     with psycopg.connect(empty_database.migration_url) as connection:
         assert connection.execute(
             "SELECT version_num FROM public.alembic_version"
-        ).fetchone() == ("0004_identity",)
+        ).fetchone() == ("0005_questions",)
         assert connection.execute(
             "SELECT tablename FROM pg_tables WHERE schemaname = 'quezo' ORDER BY tablename"
-        ).fetchall() == [("account_roles",), ("accounts",), ("identity_mappings",)]
+        ).fetchall() == [
+            ("account_roles",), ("accounts",), ("identity_mappings",),
+            ("question_banks",), ("question_versions",), ("questions",),
+        ]
         assert connection.execute(
             "SELECT has_schema_privilege('quezo_runtime', 'quezo', 'USAGE')"
         ).fetchone() == (True,)
@@ -40,7 +43,7 @@ def test_previous_schema_revision_upgrades_to_runtime_privileges(
     with psycopg.connect(empty_database.migration_url) as connection:
         assert connection.execute(
             "SELECT version_num FROM public.alembic_version"
-        ).fetchone() == ("0004_identity",)
+        ).fetchone() == ("0005_questions",)
 
 
 @pytest.mark.parametrize(

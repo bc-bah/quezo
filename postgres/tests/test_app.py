@@ -52,7 +52,12 @@ def test_openapi_describes_only_implemented_contracts(client: TestClient) -> Non
 
     assert response.status_code == 200
     document = response.json()
-    assert set(document["paths"]) == {"/health/live", "/api/v1/me"}
+    assert set(document["paths"]) == {
+        "/health/live", "/api/v1/me", "/api/v1/question-banks", "/api/v1/question-banks/{bank_id}",
+        "/api/v1/questions", "/api/v1/questions/{question_id}",
+        "/api/v1/questions/{question_id}/versions",
+        "/api/v1/questions/{question_id}/versions/{version_id}",
+    }
     schema = document["paths"]["/health/live"]["get"]["responses"]["200"]["content"][
         "application/json"
     ]["schema"]
