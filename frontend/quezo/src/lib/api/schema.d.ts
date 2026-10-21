@@ -123,6 +123,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/quizzes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Quizzes */
+        get: operations["quizzes_api_v1_quizzes_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_quizzes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quizzes/{quiz_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Quiz */
+        get: operations["quiz_api_v1_quizzes__quiz_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit */
+        patch: operations["edit_api_v1_quizzes__quiz_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/quizzes/{quiz_id}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** New Draft */
+        post: operations["new_draft_api_v1_quizzes__quiz_id__drafts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quizzes/{quiz_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_quizzes__quiz_id__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quizzes/{quiz_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish */
+        post: operations["publish_api_v1_quizzes__quiz_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quizzes/{quiz_id}/versions/{version_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Version */
+        get: operations["version_api_v1_quizzes__quiz_id__versions__version_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -174,6 +278,26 @@ export interface components {
         BankWrite: {
             /** Name */
             name: string;
+        };
+        /** DraftCommand */
+        DraftCommand: {
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
+        /** DraftEdit */
+        DraftEdit: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /**
+             * Instructions
+             * @default
+             */
+            instructions?: string;
+            policy?: components["schemas"]["QuizPolicy"];
+            /** Questions */
+            questions?: components["schemas"]["Selection"][];
+            /** Title */
+            title: string;
         };
         /**
          * ErrorCode
@@ -237,6 +361,13 @@ export interface components {
             /** Nextcursor */
             nextCursor: string | null;
         };
+        /** Page[QuizSummary] */
+        Page_QuizSummary_: {
+            /** Items */
+            items: components["schemas"]["QuizSummary"][];
+            /** Nextcursor */
+            nextCursor: string | null;
+        };
         /** PaginationParams */
         PaginationParams: {
             /**
@@ -249,6 +380,86 @@ export interface components {
              * @default 25
              */
             pageSize?: number;
+        };
+        /** PreviewQuestion */
+        PreviewQuestion: {
+            /** Effectivepoints */
+            effectivePoints: number;
+            /** Options */
+            options: components["schemas"]["Option"][];
+            /** Position */
+            position: number;
+            /** Prompt */
+            prompt: string;
+            /**
+             * Questiontype
+             * @enum {string}
+             */
+            questionType: "mcq" | "true_false";
+        };
+        /** PublishAcknowledgement */
+        PublishAcknowledgement: {
+            /** Draftrevision */
+            draftRevision: number;
+            /**
+             * Publishedat
+             * Format: date-time
+             */
+            publishedAt: string;
+            /**
+             * Quizid
+             * Format: uuid
+             */
+            quizId: string;
+            /**
+             * Requestid
+             * Format: uuid
+             */
+            requestId: string;
+            /**
+             * Versionid
+             * Format: uuid
+             */
+            versionId: string;
+        };
+        /** PublishedQuestion */
+        PublishedQuestion: {
+            /** Effectivepoints */
+            effectivePoints: number;
+            /** Pointoverride */
+            pointOverride: number | null;
+            /** Position */
+            position: number;
+            question: components["schemas"]["QuestionVersion"];
+        };
+        /** PublishedQuiz */
+        PublishedQuiz: {
+            /** Draftrevision */
+            draftRevision: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Instructions */
+            instructions: string;
+            policy: components["schemas"]["QuizPolicy"];
+            /** Possiblepoints */
+            possiblePoints: number;
+            /**
+             * Publishedat
+             * Format: date-time
+             */
+            publishedAt: string;
+            /** Questions */
+            questions: components["schemas"]["PublishedQuestion"][];
+            /**
+             * Quizid
+             * Format: uuid
+             */
+            quizId: string;
+            /** Title */
+            title: string;
         };
         /** QuestionCreate */
         QuestionCreate: {
@@ -371,11 +582,140 @@ export interface components {
              */
             versionId: string;
         };
+        /** Quiz */
+        Quiz: {
+            draft: components["schemas"]["QuizComposition"] | null;
+            /** Draftrevision */
+            draftRevision: number;
+            /** Hasdraft */
+            hasDraft: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Publishedversionid */
+            publishedVersionId: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "draft" | "published" | "closed" | "archived";
+            /** Title */
+            title: string;
+        };
+        /** QuizComposition */
+        QuizComposition: {
+            /**
+             * Instructions
+             * @default
+             */
+            instructions?: string;
+            policy?: components["schemas"]["QuizPolicy"];
+            /** Questions */
+            questions?: components["schemas"]["Selection"][];
+            /** Title */
+            title: string;
+        };
+        /** QuizPolicy */
+        QuizPolicy: {
+            /**
+             * Answerkeyrelease
+             * @default never
+             * @enum {string}
+             */
+            answerKeyRelease?: "after_finalization" | "after_availability_end" | "never";
+            /**
+             * Attemptlimit
+             * @default 1
+             */
+            attemptLimit?: number | null;
+            /** Availabilityend */
+            availabilityEnd?: string | null;
+            /** Availabilitystart */
+            availabilityStart?: string | null;
+            /** Durationseconds */
+            durationSeconds?: number | null;
+            /**
+             * Explanationrelease
+             * @default never
+             * @enum {string}
+             */
+            explanationRelease?: "after_finalization" | "after_availability_end" | "never";
+            /**
+             * Randomizeoptions
+             * @default false
+             */
+            randomizeOptions?: boolean;
+            /**
+             * Randomizequestions
+             * @default false
+             */
+            randomizeQuestions?: boolean;
+            /**
+             * Scorerelease
+             * @default after_finalization
+             * @enum {string}
+             */
+            scoreRelease?: "after_finalization" | "after_availability_end" | "never";
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timeZone?: string;
+        };
+        /** QuizPreview */
+        QuizPreview: {
+            /** Instructions */
+            instructions: string;
+            /** Possiblepoints */
+            possiblePoints: number;
+            /** Questions */
+            questions: components["schemas"]["PreviewQuestion"][];
+            /** Title */
+            title: string;
+        };
+        /** QuizSummary */
+        QuizSummary: {
+            /** Draftrevision */
+            draftRevision: number;
+            /** Hasdraft */
+            hasDraft: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Publishedversionid */
+            publishedVersionId: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "draft" | "published" | "closed" | "archived";
+            /** Title */
+            title: string;
+        };
         /**
          * Role
          * @enum {string}
          */
         Role: "administrator" | "author" | "learner";
+        /** Selection */
+        Selection: {
+            /** Pointoverride */
+            pointOverride?: number | null;
+            /**
+             * Questionid
+             * Format: uuid
+             */
+            questionId: string;
+            /**
+             * Versionid
+             * Format: uuid
+             */
+            versionId: string;
+        };
         /** ValidationDetails */
         ValidationDetails: {
             /** Fields */
@@ -1409,6 +1749,847 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuestionVersion"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    quizzes_api_v1_quizzes_get: {
+        parameters: {
+            query?: {
+                pageSize?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_QuizSummary_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_api_v1_quizzes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuizComposition"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quiz"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    quiz_api_v1_quizzes__quiz_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quiz_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quiz"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    edit_api_v1_quizzes__quiz_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quiz_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quiz"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    new_draft_api_v1_quizzes__quiz_id__drafts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quiz_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quiz"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_api_v1_quizzes__quiz_id__preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quiz_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuizPreview"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    publish_api_v1_quizzes__quiz_id__publish_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                quiz_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftCommand"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishAcknowledgement"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishAcknowledgement"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    version_api_v1_quizzes__quiz_id__versions__version_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quiz_id: string;
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishedQuiz"];
                 };
             };
             /** @description Unauthorized */

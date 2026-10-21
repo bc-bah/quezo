@@ -166,7 +166,7 @@ def main() -> None:
                 ["run", "test:identity:integration"], ["run", "test:web:production"],
             ):
                 print("CHECK: npm " + " ".join(command), flush=True)
-                run([npm, *command], env)
+                run([npm, *command], env, 1200 if command in (["test"], ["run", "test:db"]) else 600)
         else:
             run([npm, "run", "build"], env)
         with isolated_database() as database:

@@ -175,7 +175,8 @@ def test_real_routes_have_consistent_envelopes_and_unchanged_health() -> None:
     assert first.json() == {"status": "ok", "scope": "process-only"}
     assert first.headers["x-request-id"] != second.headers["x-request-id"]
     assert client.get("/api/v1/me").json()["code"] == "UNAUTHENTICATED"
-    for path in ("/api/v1/quizzes", "/health/ready", "/test-only/input"):
+    assert client.get("/api/v1/quizzes").json()["code"] == "UNAUTHENTICATED"
+    for path in ("/api/v1/assignments", "/health/ready", "/test-only/input"):
         response = client.get(path)
         assert response.status_code == 404
         assert response.json()["code"] == "NOT_FOUND"
@@ -258,6 +259,9 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths(
         "/api/v1/questions", "/api/v1/questions/{question_id}",
         "/api/v1/questions/{question_id}/versions",
         "/api/v1/questions/{question_id}/versions/{version_id}",
+        "/api/v1/quizzes", "/api/v1/quizzes/{quiz_id}", "/api/v1/quizzes/{quiz_id}/drafts",
+        "/api/v1/quizzes/{quiz_id}/preview", "/api/v1/quizzes/{quiz_id}/publish",
+        "/api/v1/quizzes/{quiz_id}/versions/{version_id}",
     }
     schemas = document["components"]["schemas"]
     assert set(schemas["Actor"]["properties"]) == {"userId", "roles", "status"}
@@ -268,7 +272,7 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths(
     assert responses["default"]["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorEnvelope")
     assert "X-Request-ID" in responses["200"]["headers"]
     for path, methods in document["paths"].items():
-        if path.startswith(("/api/v1/questions", "/api/v1/question-banks")):
+        if path.startswith(("/api/v1/questions", "/api/v1/question-banks", "/api/v1/quizzes")):
             for operation in methods.values():
                 assert operation["responses"]["422"]["content"]["application/json"]["schema"]["$ref"].endswith("/ErrorEnvelope")
 

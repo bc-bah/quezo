@@ -26,7 +26,7 @@ claims are not treated as independently validated evidence.
 | --- | --- |
 | Web | Next.js 16.4.2 App Router, React 19.3.1, TypeScript 5.9.3 |
 | Application backend | Python 3.12+, FastAPI 0.156.1, Pydantic 2.14.1 and Uvicorn 0.54.0; separate ASGI backend process |
-| Persistence | PostgreSQL 17 local image; Psycopg async pool/transactions and Alembic foundation migrations integrated; no domain tables yet |
+| Persistence | PostgreSQL 17 local image; Psycopg async pool/transactions and Alembic migrations; identity, immutable questions and quiz publication storage |
 | Identity | Keycloak 26.4.7 local-development image; web code + PKCE and independent backend JWT validation implemented; I02 combined browser gate accepted |
 | Packaging | Docker and environment configuration; local dependency Compose file now; production application images/pipeline after review |
 | Automation | npm for the frontend; uv 0.12.17 and `pyproject.toml` for the backend; root npm convenience wrappers work on Windows/Linux |
@@ -84,7 +84,9 @@ generated OpenAPI/TypeScript contracts, F03 OIDC/server sessions/navigation and
 I01 independent token validation/current-actor `/me`. I02 proves the combined
 real-browser flow and closes EX-I02-01 without relaxing origin validation.
 C01 adds the question-authoring module, owned banks, immutable versions and a
-thin server-only author UI facade. Quiz publication/delivery remains future work;
+thin server-only author UI facade. C02 adds quiz composition, learner-shaped
+nonpersistent preview, revision CAS and immutable publication with retained
+command acknowledgements. Delivery remains future work;
 shared documentation exposure remains a deployment decision.
 
 ## 4. Module responsibilities and interfaces

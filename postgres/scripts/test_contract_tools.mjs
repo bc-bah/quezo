@@ -72,8 +72,14 @@ async function typesOnly() {
   if (me.data) {
     const actor: components["schemas"]["Actor"] = me.data;
   }
-  // @ts-expect-error I01 must not invent assessment endpoints.
-  await client.GET("/api/v1/quizzes");
+  const quizzes = await client.GET("/api/v1/quizzes");
+  if (quizzes.data) {
+    const items: components["schemas"]["QuizSummary"][] = quizzes.data.items;
+  }
+  // @ts-expect-error C02 does not implement assignments.
+  await client.GET("/api/v1/assignments");
+  // @ts-expect-error Publication requires a UUID idempotency header.
+  await client.POST("/api/v1/quizzes/{quiz_id}/publish", { params: { path: { quiz_id: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313" } }, body: { expectedRevision: 1 } });
   // @ts-expect-error Health has no POST operation.
   await client.POST("/health/live");
   // @ts-expect-error Health accepts no write payload.

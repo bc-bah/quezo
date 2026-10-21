@@ -1,25 +1,36 @@
 # Phase 2 coding-agent handoffs
 
 **Approved and assigned:** B.C., 21 October 2026.
-All eight packages are `active` assignments, **not simultaneously executable**.
+C01 and C02 are accepted and `done`; the remaining six packages are `active`
+assignments, **not simultaneously executable**.
 I02 is done, EX-I02-01 is closed, and the integrated foundation is
 `553a2c8b77a770667f4cef6825f57c3b55f477ed` ([PR #7](https://github.com/bc-bah/quezo/pull/7)).
 Every checkout also needs this approval/tracker update. Later consumers need
 their accepted producer commits, not just the foundation commit.
+C01 [PR #8](https://github.com/bc-bah/quezo/pull/8) is accepted and integrated at
+`e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, migration `0005_questions`.
+C02's verified local delivery is accepted at B.C.'s direction; see its
+[accepted publication contract/evidence](../DEVELOPMENT.md#c02-immutable-quiz-publication).
+C02 is still uncommitted on the C01 merge. Before D01 executes, record the
+actual C02 integration commit and include it with this acceptance record in
+D01's checkout. The `done` tracking update does not waive that checkout gate.
+The copy-ready prompts below retain their original assignments and gate checks;
+they do not redispatch completed C01/C02.
 
 | Package | Prompt | Required producer acceptance/integration |
 | --- | --- | --- |
 |  |  |  |
-| C01 | [Versioned objective questions](#c01-dispatch-prompt) | I02, already done |
-| C02 | [Immutable quiz publication](#c02-dispatch-prompt) | C01 |
-| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 |
+| C01 | [Versioned objective questions](#c01-dispatch-prompt) | Done; accepted merge `e66f459` |
+| C02 | [Immutable quiz publication](#c02-dispatch-prompt) | Done; local delivery accepted, integration commit pending |
+| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 accepted; record/include its actual integration commit |
 | D02 | [Durable response save and resume](#d02-dispatch-prompt) | D01 |
 | S01 | [Pure objective scoring](#s01-dispatch-prompt) | F02, already done |
 | D03 | [Finalization and expiration](#d03-dispatch-prompt) | D02 and S01 |
 | R01 | [Policy-filtered result](#r01-dispatch-prompt) | D03 |
 | T01 | [First lifecycle acceptance](#t01-dispatch-prompt) | R01 and I02 |
 
-C01 and S01 may run independently. The persistence/UI chain is
+S01 remains independently executable. D01 follows C02's checkout/integration
+gate; no successor is dispatched by this record. The persistence/UI chain is
 C01 -> C02 -> D01 -> D02 -> D03 -> R01 -> T01, with S01 joining at D03.
 The [backlog](BACKLOG.md), not this diagram, is authoritative for current status.
 
@@ -51,7 +62,7 @@ for one package per isolated session, not permission to launch successor agents.
   transactions; F02 schemas, sanitized errors and generated TypeScript client;
   F03 server-only session/facade; I02 Playwright fixtures and secret-safe reporter.
   Do not add another database/session/auth framework or parallel web business API.
-- **Shared writes:** C01 initially owns the integration window. S01 touches only
+- **Shared writes:** C01's initial integration window is complete. S01 touches only
   pure scoring/tests unless B.C. grants a narrow expansion. B.C. serializes
   later app/lifespan/router wiring, root navigation, manifests/locks/scripts,
   CI/Compose, common fixtures, generated artifacts and documentation. Domain

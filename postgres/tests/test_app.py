@@ -42,7 +42,7 @@ def test_liveness_is_process_only(client: TestClient) -> None:
     assert "x-powered-by" not in response.headers
 
 
-@pytest.mark.parametrize("path", ["/health/ready", "/api/v1/quizzes"])
+@pytest.mark.parametrize("path", ["/health/ready", "/api/v1/assignments"])
 def test_product_and_readiness_routes_are_absent(client: TestClient, path: str) -> None:
     assert client.get(path).status_code == 404
 
@@ -57,6 +57,9 @@ def test_openapi_describes_only_implemented_contracts(client: TestClient) -> Non
         "/api/v1/questions", "/api/v1/questions/{question_id}",
         "/api/v1/questions/{question_id}/versions",
         "/api/v1/questions/{question_id}/versions/{version_id}",
+        "/api/v1/quizzes", "/api/v1/quizzes/{quiz_id}", "/api/v1/quizzes/{quiz_id}/drafts",
+        "/api/v1/quizzes/{quiz_id}/preview", "/api/v1/quizzes/{quiz_id}/publish",
+        "/api/v1/quizzes/{quiz_id}/versions/{version_id}",
     }
     schema = document["paths"]["/health/live"]["get"]["responses"]["200"]["content"][
         "application/json"

@@ -17,9 +17,11 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0003_web_sessions` | `0002_runtime_grants` | Create isolated `quezo_session` tables and explicit DML grants to `quezo_web` only |
 | `0004_identity` | `0003_web_sessions` | Create backend accounts, unique issuer/subject mappings and current role assignments; no seeded grants |
 | `0005_questions` | `0004_identity` | Owned banks/questions, immutable objective revisions, content checks and restricted version privileges |
+| `0006_quizzes` | `0005_questions` | Revisioned quiz drafts, immutable publications/ordered question snapshots, retained command acknowledgements and publication events |
 
-Only `public.alembic_version` records migration state. C01 adds question tables,
-but no quiz, attempt, grade, seed, audit or acknowledgement tables. F03 adds sessions
+Only `public.alembic_version` records migration state. C01 adds question tables;
+C02 adds quiz publication, acknowledgement and publication-event tables, but no
+assignment, attempt, grade or seed tables. F03 adds sessions
 and single-use login transactions in `quezo_session`. Upcoming packages
 provide their own reviewed schema and section 6 constraints. Default runtime
 grants apply only to tables/sequences created **by `quezo_migrator` in `quezo`**;
@@ -35,9 +37,43 @@ I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
+### C02 quiz publication storage
+
+`0006_quizzes` is the single head, parent `0005_questions`. `quizzes` stores the
+owned mutable draft, separate monotonic revision, state and last published UUID.
+Composition/policy JSON retains independent validated fields, not a preset flag.
+`quiz_versions` freezes title, instructions, policy, positive possible total and
+publication time. `quiz_questions` stores ordered exact C01 snapshots, overrides
+and effective points. Composite foreign keys enforce author ownership and exact
+question/version nesting; unique constraints reject duplicate identities/positions.
+An insert trigger verifies copied content against the owned immutable C01 version.
+Deferred checks require 1-200 densely ordered items, matching total and a
+publication event before commit. Sealed versions cannot receive additional items.
+
+`quiz_publication_commands` is unique by actor, quiz, operation and request UUID.
+It stores the canonical fingerprint and stable acknowledgement indefinitely;
+there is no automatic retention cleanup. `quiz_publication_events` records
+publication metadata only, including distinct command and HTTP correlation UUIDs
+and a foreign key to the retained command. Runtime UPDATE/DELETE grants are revoked on all four
+publication tables and triggers also forbid owner-level mutation.
+`quezo_web` has no access to any of these tables.
+
+All draft mutations and publish lock the owning quiz first. Authority is resolved
+inside the bounded transaction; ownership precedes ledger replay, which precedes
+fresh-command revision/state validation. Publication rows, command acknowledgement,
+event and quiz pointer commit together before HTTP success. A rollback leaves
+no partial publication or acknowledgement.
+
+`test_quiz_migrations.py` covers the actual `0005_questions -> head` upgrade,
+preserved question rows, repeat head, failed-upgrade rollback, SQL policy bounds,
+immutable publication rows and incomplete-publication rejection. Retained F01
+tests cover clean `base -> head`. An unapplied failure rolls back DDL and ledger.
+After application, use a reviewed forward migration; recovery must preserve
+publication/acknowledgement/question relationships. This is not backup acceptance.
+
 ### C01 question storage
 
-`0005_questions` is the single head, parent `0004_identity`. Applied foundation
+`0005_questions` has parent `0004_identity` (C02 now follows it). Applied foundation
 revisions are unchanged. `question_banks` references its owning account.
 `questions` has a stable UUID, bank/owner composite foreign key, current revision
 and reserved archive marker. Bank/question archive commands and movement remain

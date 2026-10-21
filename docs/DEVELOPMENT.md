@@ -7,7 +7,9 @@ Python/FastAPI backend with a typed liveness endpoint, generated OpenAPI, pytest
 checks and strict mypy configuration. F01 adds real PostgreSQL connectivity,
 ordered migrations, restricted database roles and isolated database tests.
 Separate frontend/backend CI jobs are included. C01 adds owned question banks,
-immutable MCQ/true-false revisions and author forms; quiz delivery is not implemented.
+immutable MCQ/true-false revisions and author forms. C02 adds draft composition,
+nonpersistent learner-shaped preview and immutable quiz publication; quiz delivery
+is not implemented.
 F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
 bounded request bodies and a generated TypeScript client for implemented routes.
 
@@ -15,7 +17,7 @@ F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
 independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
 
-Quiz/attempt schemas and routes,
+Assignment/attempt schemas and routes,
 background expiration, grading, real readiness checks, application containers,
 and deployment are intentionally absent. A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
@@ -26,6 +28,7 @@ for both server lifecycles.
 
 For the C01 author workflow, migration and consumer contract, see
 [C01 versioned objective questions](#c01-versioned-objective-questions).
+For quiz composition and publication, see [C02](#c02-immutable-quiz-publication).
 
 Use Node.js 22+ and npm 10+ for the frontend, plus Python 3.12+ and
 [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.12.17 for the backend.
@@ -59,9 +62,10 @@ points to an older version.
 The web shell listens on `127.0.0.1:3000`; the backend on `127.0.0.1:4000`.
 Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
-no `/health/ready` or quiz/attempt routes. FastAPI exposes local interactive docs at
+no `/health/ready` or assignment/attempt routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
-`http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me` and C01 question authoring are implemented.
+`http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me`, C01 question
+authoring and C02 quiz publication are implemented.
 Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
@@ -135,13 +139,233 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## C02 immutable quiz publication
+
+### Acceptance record: 21 October 2026
+
+B.C. explicitly accepted the verified C02 local delivery and directed the
+backlog status change from `active` to `done` on 21 October 2026. The publication,
+effective-points, independent-policy and lock/replay contracts below are accepted
+unchanged, with the recorded passing database/web/browser evidence.
+
+This acceptance is recorded against the uncommitted C02 worktree on C01 merge
+`e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, with migration `0006_quizzes`.
+There is not yet a C02 commit/PR or default-branch integration. Before D01
+execution, record the actual integration commit and ensure its checkout
+contains that commit and this accepted handoff; acceptance does not copy local
+changes into another session. No additional acceptance decision is pending,
+but the downstream checkout/integration gate remains. No new test run, commit,
+PR or successor dispatch is implied by this tracking update.
+
+### Review handoff: 21 October 2026
+
+**Work item:** C02, Immutable quiz publication.
+
+**State at handoff:** ready for B.C.'s review; superseded by the acceptance
+record above. The complete
+`npm run test:e2e -- --checks` passed with all 24 browser cases and owned-resource
+cleanup. B.C. retains acceptance/integration. No commit, PR or successor dispatch.
+
+**Changes:** `postgres/src/quezo_api/modules/quizzes/` owns composition,
+independent policy validation, draft CAS, preview projection and atomic
+publication. `policies.py` is separate from composition schemas/service;
+the author UI similarly separates `composition.tsx` from `policy-settings.tsx`.
+`/author/quizzes` provides owned lists, explicit current or historical version
+selection, ordering, point overrides, saved-draft preview, confirmed publication
+and explicit new revision drafts. Unsaved edits survive safe errors; a stale
+revision requires reload/reconciliation, not an automatic overwrite.
+
+**Requirement coverage:** AUTH-02/03, IAM-02, section 6 bounds and section 7
+revision/idempotency rules. This is the C02 construction/publication slice, not
+the full close/archive/delivery lifecycle or advanced C03/D04 controls.
+
+**Acceptance:** all assigned C02 scenarios below passed in the final unfiltered
+real-database/web/browser gate. AT-04 attempt/grade preservation and AT-05
+close/archive execution remain later-package cases, not C02 acceptance claims.
+
+| Acceptance | Evidence |
+| --- | --- |
+| AT-04 | `test_quizzes.py` and `quizzes.spec.ts`: two quizzes reuse the same exact question version; later question edits, draft edits and a second explicit publication preserve the original content, order, option IDs, effective points and policy |
+| AT-05 | Saved draft/preview/confirmed publish/new draft; concurrent CAS and publish; one version/event/acknowledgement on replay; changed-key payload, foreign owner, revoked role, stale revision and invalid state rejection; rollback on publication-event failure |
+| Preview | Database row/count comparisons show no writes; JSON and browser HTML/RSC omit keys/feedback. Radio selections are local only, with no assignment/attempt/grade/reporting/allowance writes |
+| Bounds/policy | Strict content and point limits, 200-question/2,000,000-point publication, duplicate identity rejection, positive-total gate, 27 independent release combinations, finite-end compatibility and backend timed/unlimited/randomized fixtures |
+| Persistence | `test_quiz_migrations.py`: actual `0005_questions -> 0006_quizzes`, repeat head, preserved question history, failed-upgrade rollback, SQL policy enforcement, immutable publication/ledger/event rows and incomplete-publication rejection; retained F01 clean migration test |
+
+**Checks:** local Windows x64, Node 24.20.0, npm 11.19.0, uv 0.12.17,
+Python 3.12.10, Docker Engine 29.7.2, PostgreSQL 17.11 and Chromium 156.0.8078.4
+(Playwright 1.64.1); actual Keycloak 26.4.7. Commands run from this worktree:
+
+```powershell
+npm run api:generate
+npm run api:check
+npm run typecheck
+uv run --directory postgres --locked pytest tests\test_quiz_schemas.py tests\test_http_contract.py
+node --test postgres\scripts\test_contract_tools.mjs
+npm run test:e2e -- --grep C02
+npm run test:e2e -- --grep "C02 stale"
+npm run test:e2e -- --checks
+```
+
+Generation and drift checks passed. Type checks passed for web, e2e and all 57
+Python source/test modules. The non-database schema/HTTP selectors passed 106
+cases; both Node contract/tooling cases passed, including stale-output detection
+and a compile-time rejection of publish without its idempotency header.
+Focused real PostgreSQL runs use the existing `run_browser` environment/Compose
+helpers with `--env-file NUL`, UUID-owned tmpfs projects and the existing guarded
+`db_helpers` databases. The final focused API selector
+`python -m pytest postgres\tests\test_quizzes.py --tb=short -x` passed all 12
+cases; earlier focused schema/migration cases passed before a test-token failure.
+
+Iteration found and fixed incomplete JWT claims in a new ownership-test fixture,
+an ambiguous unscoped browser alert locator (now scoped to `main`), and the
+retained clean-schema/client tests' pre-C02 inventory expectations. No runtime
+authorization or privacy checks were relaxed. The first complete gate hit the
+old 600-second launcher limit; the enlarged database suite took 613 seconds in
+the next run. Only `npm test`/`test:db` now get a bounded 1,200-second allowance.
+The subsequent full pytest run had 448 passes and the stale schema-inventory
+assertion, since corrected. These iteration failures are superseded by the
+final complete gate below, not counted as passing runs.
+
+Final `npm run test:e2e -- --checks` exited 0 using owned project
+`quezo-i02-b374d6649f9c`. PostgreSQL/Keycloak used disposable tmpfs storage and
+guarded UUID-named databases; both containers and their network were removed.
+No development volume, real account, trace, screenshot, HAR, storage-state or
+assessment-payload artifact was created.
+
+| Final command / stage | Result |
+| --- | --- |
+| `npm run typecheck` | Web/e2e TypeScript and strict mypy over 57 modules passed |
+| `npm test` | 12 web tests and 449 Python tests passed; Python 569.52s |
+| `npm run build` | Production Next build passed with all C02 author routes |
+| `npm run api:check` | OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | 88 Python cases and 2 Node generation/client cases passed |
+| `npm run test:db` | 166 real-database cases passed; 553.31s, including clean and actual prior-head migration paths |
+| `npm run test:identity` | All 108 retained identity cases passed |
+| `npm run test:identity:integration` | Actual Keycloak integration passed |
+| `npm run test:web:production` | Built-web boundary/redaction case passed |
+| Unfiltered Playwright suite | All 24 cases passed: 16 I02, 5 C01 and 3 C02, including genuine provider-token expiry |
+
+Generation was separately repeated with `npm run api:generate` and checked with
+`npm run api:check`; contract tests also verify that stale/missing output fails
+without mutation and regeneration is deterministic. No hosted CI, Node 22 or
+Python 3.14 execution result is claimed by this local C02 handoff.
+
+**Contracts:** generated OpenAPI/TypeScript, not parallel handwritten DTOs:
+
+| Operation | Input/output |
+| --- | --- |
+| `GET, POST /api/v1/quizzes` | Owned paginated `QuizSummary` list; create a `QuizComposition`, returning `Quiz` |
+| `GET, PATCH /api/v1/quizzes/{quiz_id}` | Read own quiz; full composition replacement with `expectedRevision`, returning incremented `draftRevision` |
+| `POST /api/v1/quizzes/{quiz_id}/drafts` | Explicit `DraftCommand` after publication, copying the last publication's exact selections and policies; advances draft revision without demoting published state |
+| `POST /api/v1/quizzes/{quiz_id}/preview` | `DraftCommand` pins the expected saved draft; returns `QuizPreview` without keys, feedback, scoring definitions or persistence |
+| `POST /api/v1/quizzes/{quiz_id}/publish` | `DraftCommand` plus UUID `Idempotency-Key`; 201 for new publication, 200 for exact replay, stable `PublishAcknowledgement` |
+| `GET /api/v1/quizzes/{quiz_id}/versions/{version_id}` | Owning-author-only `PublishedQuiz`; foreign or mismatched nested IDs are concealed as 404 |
+
+`QuizComposition` holds title, instructions, ordered `Selection` entries and
+`QuizPolicy`. Each selection is an exact `(questionId, versionId)` plus nullable
+integer `pointOverride`. Null means the selected revision's `defaultPoints`, not
+the latest question default. Zero is an explicit override. Duplicate question
+identities are rejected even with different version IDs. Empty/zero-total drafts
+may be saved/previewed but cannot publish; publication requires 1-200 questions
+and a positive total, at most 2,000,000.
+
+`PublishedQuiz` contains its `id`, `quizId`, source `draftRevision`, title,
+instructions, full independent `policy`, ordered `PublishedQuestion` entries,
+`possiblePoints` and `publishedAt`. Each item contains a one-based `position`,
+the actual C01 `QuestionVersion` (including stable option IDs/order and private
+correct option/feedback), nullable override and frozen `effectivePoints`.
+This is a **private author/scoring contract**, never a learner payload. The
+learner-shaped preview uses an explicit allowlist: prompt, type, ordered options,
+effective points, title/instructions and total. It never serializes the private
+question model. Advanced randomization flags shuffle preview presentation only
+in memory; default previews retain authored order.
+
+Policy JSON stores independent duration, attempt limit, UTC availability start/end,
+IANA time zone, question/option randomization flags and score/key/explanation
+release fields, not a preset flag. Null duration/attempt limit means unlimited;
+null availability means no corresponding bound. UI creation uses the approved
+untimed/no-window/one-attempt/nonrandomized UTC defaults, with score-only or fully
+withheld release. Advanced backend fixtures remain supported and validated.
+The minimal editor refuses to rewrite a draft with advanced policies instead
+of silently replacing them with demo defaults.
+
+**Data:** `0006_quizzes` follows accepted `0005_questions`; applied revisions
+are unchanged. Mutable `quizzes` owns a separately revisioned draft. Immutable
+`quiz_versions` and ordered `quiz_questions` retain publication snapshots;
+composite foreign keys enforce owner/question/version nesting and uniqueness.
+Append-only publication command/event tables retain acknowledgements and trace
+metadata without assessment content. Clean `base -> head`, actual
+`0005_questions -> 0006_quizzes`, repeat-head, preserved content and
+failed-upgrade rollback scenarios passed in the final common gate.
+There is no cleanup/expiry of command acknowledgements.
+Events retain both the command UUID and the separate server-generated HTTP
+correlation UUID; exact replays do not create another event.
+
+**Integration:** accepted C01 [PR #8](https://github.com/bc-bah/quezo/pull/8),
+merge `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, includes I02 `553a2c8` and
+Phase 2 approval `49eb37b`; B.C.'s acceptance is recorded in this worktree.
+C02 reuses `questions.service.get_question(connection, actor, question_id,
+version_id)` inside its transaction and the original `QuestionVersion`/`Option`
+schemas. Shared changes are limited to required router/navigation registration,
+generated artifacts, test discovery/head assertions and documentation. I02's
+real login fixtures and secret-safe reporter are retained.
+
+All writes resolve live identity/roles inside `Database.transaction()`. Draft
+edit, new-draft and publish lock the owned quiz row first. Publish authorizes
+before checking the ledger, whose primary key is actor/quiz/operation/request ID;
+SHA-256 fingerprints canonical actor/target/operation/key/payload. Exact replay
+returns the original acknowledgement before current state/revision checks, even
+after a later revision; a changed payload conflicts. A fresh command must match
+the draft revision and allowed state. Publication, items, acknowledgement, trace
+and pointer update commit atomically before success. No automatic database
+retries are added; callers explicitly retry an uncertain publish with its same
+key/payload. The UI retains that key for retries while the command panel remains
+mounted; after reload, inspect persisted quiz/publication state.
+
+**Known gaps:** no unresolved criterion within the assigned C02 slice.
+Assignments/start/scoring/grades, complete
+close/archive/settings management and timed learner UX are intentionally absent;
+unsupported commands return explicit errors, not fabricated success.
+
+**Successor handoff (D01):** C02 acceptance is recorded above; record/include
+the actual integration commit and accepted handoff in the consumer checkout
+before execution. Pin the
+publication UUID, never the mutable quiz draft/current pointer. Use frozen
+effective points, C01 option IDs/order and independent policy to build the
+attempt's private scoring snapshot and separate learner projection. Keep
+author-only `PublishedQuiz` out of learner HTML/JSON. Distribution must add
+its own assignment/allowance/start admission and lock rules; C02 does not supply
+placeholder implementations for them. No D01 execution is authorized by this
+handoff alone.
+
 ## C01 versioned objective questions
+
+### Acceptance and integration: 21 October 2026
+
+B.C. explicitly confirmed C01 acceptance/integration on 21 October 2026.
+[PR #8](https://github.com/bc-bah/quezo/pull/8) is merged as
+`e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, including implementation `eb9d62d`
+and deterministic OpenAPI correction `1f2cd53`. The accepted evidence is the
+local handoff below and passing [hosted CI](https://github.com/bc-bah/quezo/actions/runs/39596126267)
+at `1f2cd53848804c6ea47cf8595ffb5907d4f98bd4`: browser, Python 3.12/3.14 and
+Node 22/24 jobs. This documentation update does not claim a new application
+test run or an independent code review.
+
+The [backlog](implementation/BACKLOG.md) now records C01 as `done`. Acceptance
+covers the assigned question slice and initial AT-03/04 evidence, not C02
+publication or complete C03 management. C02's producer gate is satisfied when
+its checkout includes this acceptance record and the merge above, with migration
+`0005_questions`, I02 foundation `553a2c8` and Phase 2 approval `49eb37b`.
+The exact-version consumer contract below is accepted unchanged; shared writes
+remain B.C.-serialized. No successor dispatch or later lifecycle acceptance is
+implied.
 
 ### Review handoff: 21 October 2026
 
 **Work item:** C01, Versioned objective questions.
 
-**State:** ready for B.C.'s review, not accepted/done. The final unfiltered
+**State at handoff:** ready for B.C.'s review; superseded by the acceptance
+record above. The final unfiltered
 `npm run test:e2e -- --checks` exited 0, including all 21 browser cases and owned
 service/network cleanup. B.C. retains acceptance and tracker updates.
 
@@ -320,8 +544,9 @@ C02 owns quiz reuse/composition/publication; no publication/attempt/grade
 preservation claim is possible yet. No Q02/WCAG, Node 22/Python 3.14 local matrix,
 hosted CI, deployment or real-data/pilot acceptance is claimed by this run.
 
-**Successor handoff (C02):** wait for B.C.'s acceptance/integration, then include
-the actual C01 commit and migration. Consume the generated schemas, not a copied
+**Successor handoff (C02):** acceptance/integration is recorded above; include
+merge `e66f459`, this acceptance record and migration `0005_questions`.
+Consume the generated schemas, not a copied
 DTO. Persist explicit `(questionId, versionId)` selections; never resolve
 "current" while publishing a prior selection. Within the caller's
 `Database.transaction`, resolve the live actor, then call
@@ -1485,10 +1710,14 @@ restart demonstration works, but no question, quiz or attempt route is supplied.
 
 ## Phase 2 assignments and remaining review gates
 
-All eight Phase 2 packages are active assignments under B.C., not eight packages
-ready for simultaneous implementation. C01/S01 can start on the accepted
-`553a2c8` baseline; each downstream consumer must first verify its own integrated
-producer evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).
+C01 is accepted and integrated at `e66f459`; C02 is accepted and tracked as
+`done` for its verified local delivery, with integration commit still pending.
+The other six Phase 2 packages remain active assignments under B.C., not
+simultaneously executable packages. D01 needs the actual C02 integration commit
+in its checkout, not another C02 acceptance decision. S01 remains independently
+executable on the accepted `553a2c8` foundation plus Phase 2
+approval. Each later consumer must first verify its own integrated producer
+evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).
 Preserve `Database.transaction`, live actor checks, generated client/error
 conventions, the I02 fixtures and secret-safe browser reporting.
 

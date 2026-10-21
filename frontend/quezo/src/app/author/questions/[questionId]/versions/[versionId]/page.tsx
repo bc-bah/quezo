@@ -13,7 +13,7 @@ export default async function VersionPage({ params }: {
       params: { path: { question_id: questionId, version_id: versionId } },
     }));
     return <AuthorPage><h1>Selected question revision {version.revision}</h1>
-      <p role="status">This exact revision is saved and selected for inspection. Quiz composition is not available yet.</p>
+      <p role="status">This exact revision is saved. Use its question and version IDs to select it explicitly in a quiz.</p>
       <p>{version.questionType === "mcq" ? "Single-answer MCQ" : "True/false"}</p>
       <p className="plain-text" data-testid="question-prompt">{version.prompt}</p>
       <p>Default points: {version.defaultPoints}</p>
@@ -25,6 +25,7 @@ export default async function VersionPage({ params }: {
       <h2>Explanatory feedback</h2><p className="plain-text">{version.feedback || "No feedback supplied."}</p>
       <label>Selected version ID<input readOnly value={version.versionId} /></label>
       <p>Question ID: <code>{version.questionId}</code></p>
+      <a href="/author/quizzes">Compose a quiz</a>{" | "}
       <a href={`/author/questions/${version.questionId}`}>Edit current revision or select another</a>{" | "}
       <a href={`/author/banks/${version.bankId}`}>Back to bank</a>
     </AuthorPage>;
