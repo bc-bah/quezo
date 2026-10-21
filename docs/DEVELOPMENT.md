@@ -10,9 +10,9 @@ Separate frontend/backend CI jobs are included. No assessment feature is impleme
 F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
 bounded request bodies and a generated TypeScript client for implemented routes.
 
-F03 adds server-only OIDC and durable web sessions with navigation. Backend
-identity authorization and the real `/api/v1/me` producer remain I01 work;
-without that producer sign-in ends in an explicit error, never a runtime fixture.
+F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
+independent JWT validation, live application authorization and `/api/v1/me`.
+Explicit local synthetic provisioning is required; sign-in never grants access.
 
 Domain schemas, business routes,
 background expiration, grading, real readiness checks, application containers,
@@ -39,7 +39,8 @@ npm run dev:web
 ```
 
 Set up and migrate the local database as described below. In a second terminal,
-export `QUEZO_DATABASE_URL` using the restricted runtime identity, then:
+export `QUEZO_DATABASE_URL` using the restricted runtime identity, plus
+`QUEZO_OIDC_ISSUER` and `QUEZO_API_AUDIENCE` from the I01 configuration below, then:
 
 ```powershell
 npm run dev:api
@@ -54,11 +55,10 @@ points to an older version.
 The web shell listens on `127.0.0.1:3000`; the backend on `127.0.0.1:4000`.
 Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
-no `/health/ready` or `/api/v1` routes. FastAPI exposes local interactive docs at
+no `/health/ready` or assessment routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
-`http://localhost:4000/openapi.json`; only liveness is exposed as an operation.
-Shared actor, error and pagination schemas are also exported, without `/me` or
-business endpoints. This is not the
+`http://localhost:4000/openapi.json`; liveness and `GET /api/v1/me` are implemented.
+Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
 To choose another backend port:
@@ -233,8 +233,9 @@ without starting lifespan, reading database credentials or connecting to a
 dependency. `api:generate` exports first, then runs
 `node postgres/scripts/generate-client.mjs`, producing
 `frontend/quezo/src/lib/api/schema.d.ts`. Do not hand-edit either generated file.
-Only `GET /health/live` is an operation; unattached Actor/PaginationParams
-components are schema contracts, not promises that endpoints exist.
+I01 adds `GET /api/v1/me` alongside `GET /health/live`; Actor is now that route's
+response contract. PaginationParams remains an unattached schema contract, not
+a promise of an implemented list endpoint.
 
 `api:check` executes these read-only checks and fails for missing/stale output:
 
@@ -686,8 +687,8 @@ Synthetic identity creation and application `(issuer, subject)` mapping/role
 provisioning are explicit I01 owner actions. Creating a Keycloak account or
 signing in grants no application role. Empty/combined application roles are
 valid; the backend's current status and operation/ownership decisions are final.
-No admin credential is accepted by the web interface. The placeholder
-`infra/keycloak/README.md` is not a realm export or proof of combined login.
+No admin credential is accepted by the web interface. I01's `infra/keycloak/README.md` documents the explicit local realm/provisioner.
+It does not establish I02's combined browser acceptance.
 
 ### Routes, storage and defaults
 
@@ -882,6 +883,217 @@ docker network rm quezo-f03-37862b8f_default
 
 F03 is returned **ready for B.C.'s review**, not done or integrated. No automatic
 commit/PR, successor launch, external provisioning or deployment is performed.
+
+## I01 identity and authorization
+
+**Approval:** B.C.'s 20 October 2026 I01 DEC-06/07 extension and explicit
+coordination-record reconciliation. Baseline: F01 PR #3 (`8732328`), F02 PR #4
+(`5f314125e13262139e1d3e28d190881d6fbd5f8b`), integrated F03 PR #5 (`b1a2fe0`).
+I01 does not claim acceptance or dispatch I02/A01.
+
+Runtime dependencies are uv-locked PyJWT 2.15.1 with cryptography 50.0.2 and
+the repository's existing HTTPX distribution, `httpx2==2.15.1`, imported as
+`httpx2 as httpx`. The HTTPX dependency moved from dev to runtime; no second
+HTTPX distribution was introduced.
+
+### Configuration and validation
+
+Export `QUEZO_OIDC_ISSUER` and `QUEZO_API_AUDIENCE` to the API process, in
+addition to its restricted `QUEZO_DATABASE_URL`. Issuer must be an exact
+Keycloak realm URL without trailing slash, credentials, query or fragment;
+HTTPS is required except for loopback HTTP. The defaults used by the local
+realm/F03 web configuration are `http://localhost:8080/realms/quezo-local`
+and `quezo-api`. Neither the API nor web receives Keycloak admin credentials.
+See [`infra/keycloak/README.md`](../infra/keycloak/README.md) for exact client,
+redirect/logout, synthetic-account and explicit provisioning steps.
+
+Lifespan creates one bounded database pool and one asynchronous HTTPX client
+(two connections, proxy/environment trust and redirects disabled), and closes
+both on shutdown. Import/OpenAPI generation reads no credentials and connects
+to nothing. `/health/live` remains process-only and never fetches identity keys.
+Missing/invalid identity configuration fails startup, not authentication-open.
+
+| Setting | Default | Allowed bound |
+| --- | --- | --- |
+| `QUEZO_IDENTITY_TIMEOUT` | 5 seconds | Greater than 0, at most 10; total queue/lock/JWKS operation and HTTP timeout |
+| `QUEZO_IDENTITY_CACHE_SECONDS` | 300 seconds | 10-600; monotonic in-process key cache, never an actor cache |
+| `QUEZO_IDENTITY_REFRESH_SECONDS` | 10 seconds | 1-60, not above TTL; shared refresh/failure cooldown |
+| `QUEZO_IDENTITY_MAX_LIFETIME` | 300 seconds | 60-900; maximum `exp - iat`, align with the realm |
+| JWT / JWKS size | 32 KiB / 64 KiB | Fixed; streamed JWKS size enforcement |
+| JWKS keys / RSA size | At most 32 / 2048-8192 bits | Fixed |
+
+These are bounded local defaults authorized for review, **not DEC-08 performance
+gates**. The allowed algorithm is explicitly RS256, never taken from an arbitrary
+token choice. Signature, issuer, audience, subject, expiry, issued-at and access
+token type (`Bearer`) are required. Numeric dates must be integers; future
+issued-at/not-before, expired tokens, zero/overlong lifetimes and malformed
+subjects fail closed, with no expiry leeway. ID tokens are not API credentials.
+
+Only the configured issuer's `/protocol/openid-connect/certs` is fetched.
+Token-supplied `jku`, `x5u`, `jwk`, unsupported critical headers and algorithm
+changes are rejected; there is no unverified-claim fallback. A refresh replaces
+the key set atomically. Concurrent refreshes are serialized; unknown key IDs
+can trigger at most one fetch per cooldown across all IDs. A newly rotated key
+inside the cooldown is temporarily rejected, then becomes usable after refresh.
+Unknown keys after a successful refresh return 401, not a dependency error.
+
+Cached keys remain usable until their bounded TTL, including during an outage;
+this is signature verification, not a cached authorization decision. On expiry,
+keys must refresh successfully; no stale-key fallback is allowed. Network,
+timeout, redirect, malformed/oversized JWKS and unsupported key-set failures are
+explicit 503 `DEPENDENCY_UNAVAILABLE`. Failed refreshes are also cooldown-bounded.
+Cancellation propagates and releases the refresh lock. No retry loop is added.
+
+### Actor and authorization interface
+
+`quezo_api.modules.identity.access.get_actor` is the FastAPI dependency for
+read operations. It validates one Bearer credential and then resolves the actor
+from the database on **every** request. The token's role claims are never used.
+Missing/inactive mappings return 401 `UNAUTHENTICATED`; mapped disabled accounts
+return 403 `ACCOUNT_DISABLED`. Database outages preserve F02's safe 503 envelope.
+
+For an atomic write, depend on `get_identity` to obtain a `VerifiedIdentity`,
+open one `Database.transaction()`, and call
+`resolve_actor(connection, identity)` **inside that same transaction**, before
+operation/ownership checks and the write. Pass this leased connection onward;
+do not open a second independent transaction or trust an earlier session actor.
+Committed revocation denies subsequent admitted requests; a transaction already
+admitted is not retroactively cancelled. No HTTP assessment/write route is
+introduced by this package.
+
+`require_role(actor, Role.AUTHOR)` requires the explicit operation role and active
+status. `require_owner(actor, owner_id, Role.AUTHOR)` checks that role first
+(403 if absent), then returns the same 404 `NOT_FOUND` for a missing/foreign owner.
+Use the actual persisted owner, never a request-supplied assertion. Administrator
+alone does not imply author/learner. Combined and empty roles remain valid.
+Collections and nested resources must apply these same relationships before
+serialization; future module owners own their queries, not generic middleware.
+
+`GET /api/v1/me` returns only the existing F02 Actor (`userId`, `roles`, `status`)
+for active mapped users. It exposes no tokens, email, issuer, subject or storage
+fields. Success and errors use `Cache-Control: private, no-store`; F02 correlation
+IDs and sanitized error envelopes remain unchanged. HTTPBearer security and
+typed 401/403/503 responses are exported. OpenAPI and TypeScript were regenerated
+using existing tooling, not edited by hand. F03's existing facade calls this
+exact endpoint and validates its Actor; no frontend session/UI code changed.
+
+The single migration chain now ends in `0004_identity`, parent
+`0003_web_sessions`. The new backend tables contain no automatic seed grants.
+F03 schema/role/bootstrap and all applied revisions are unchanged. Read the
+[migration runbook](../postgres/migrations/README.md) for invariants and recovery.
+
+### Checks and evidence boundaries
+
+Use only the isolated synthetic database and, for the explicit actual-provider
+check, the disposable `keycloak-test` service. Run from the repository root:
+
+```powershell
+npm run typecheck
+npm test
+npm run build
+npm run api:generate
+npm run api:check
+npm run test:contracts
+npm run test:db
+npm run test:identity
+npm run test:identity:integration
+npm run test:web:production
+```
+
+`test:identity` covers signature/algorithm/claim/lifetime rejection, key rotation,
+unknown IDs, cache/size/time limits, cancellation, safe dependency failures,
+real database mapping/role/status lookup, role/ownership denial, revocation with
+old tokens, database outage, controlled provisioning retry/concurrency/failure,
+actual prior-head upgrade, rollback, constraints and F03 privilege isolation.
+Verifier tests use generated RSA keys and a **synthetic HTTPX transport**; they
+are not evidence that a live Keycloak service issued the token.
+
+`test:identity:integration` is a separately invoked actual Keycloak 26.4.7 test,
+using code+PKCE and real PostgreSQL. It creates/refuses-overwrite/cleans up its
+own synthetic realm, provisions the five allowlisted account types, checks
+real tokens/JWKS through `/me`, denies ID tokens and password grants, and proves
+old-token role/status revocation. It uses HTTP clients rather than a browser
+and does not pass through F03. CI adds this explicit local-service check to the
+Python 3.12 job while retaining Node 22/24 and Python 3.12/3.14 checks and F03's
+built-server test. Hosted CI is distinct from local execution.
+
+| Requirement | I01 evidence / remaining boundary |
+| --- | --- |
+| IAM-01; FR-001/002; partial AT-01 | Independent signature/issuer/audience/lifetime validation; actual local Keycloak code+PKCE tokens; F03 owns session/nonce/state behavior, I02 owns combined browser acceptance |
+| IAM-02; FR-003/061; partial AT-01 | Real current mapping/roles/status, old-token revocation, direct role/owner checks, administrator non-inheritance and 404 concealment |
+| Identity portion of IAM-03; FR-004 | Explicit first-admin/synthetic provisioning; no new grant on identity/DB failure; safe retry and no revival of revoked accounts; no A01 UI/service privileges or mutation workflows |
+| Sections 6-7; QUAL-02 / NFR-007/008 | UUID mapping, relational constraints, safe Actor/error output, token nondisclosure and backend/web database isolation; real-data privacy/retention remains held |
+| QUAL-04 / NFR-010; partial AT-15 | Automated contracts, deterministic generation, clean/prior-head migrations and rollback/outage tests; not deployment/recovery acceptance |
+
+### I01 local verification: 20 October 2026
+
+Local review evidence, not hosted CI, accepted integration or full AT-01:
+Windows x64, Node 24.20.0, npm 11.19.0, uv 0.12.17, Python 3.12.10 and 3.14.7,
+Docker Engine 29.7.2, PostgreSQL 17.11 (Debian x86_64), Keycloak 26.4.7.
+The primary virtualenv remained Python 3.12; the 3.14 compatibility run used
+a separate session-artifact virtualenv through `UV_PROJECT_ENVIRONMENT`.
+
+The isolated dependencies were started with:
+
+```powershell
+docker compose -p quezo-i01-e2f6cba3 --profile test --profile identity-test up -d --wait postgres-test keycloak-test
+```
+
+The provisioning/test shell used `QUEZO_TEST_PORT=55503`,
+`KEYCLOAK_TEST_PORT=58083`, `KEYCLOAK_LOCAL_ORIGIN=http://localhost:58083`,
+the four isolated PostgreSQL test credentials, and distinct synthetic
+Keycloak/client/account credentials. The test admin URL targeted only
+`quezo_test_admin` at `127.0.0.1:55503/quezo_test_control`. F01's database
+marker/name/owner guards and non-FORCE teardown remained in use. No development
+database, shared identity service or real identity data was used.
+
+| Exact command, repository root | Final outcome |
+| --- | --- |
+| `uv add --directory postgres 'pyjwt[crypto]'`, then `uv lock --directory postgres` after pinning the selected version | Approved PyJWT/cryptography dependencies locked; HTTPX moved to runtime |
+| `npm ci --no-audit --no-fund` | Restored missing web tools; npm lock unchanged |
+| `npm run typecheck` | Web route/TypeScript checks and strict mypy passed, 37 Python source files |
+| `npm test` | 10 web tests and 262 Python cases passed, no skips |
+| `npm run build` | Production Next build passed; no frontend session/UI changes |
+| `npm run api:generate` | Generated both OpenAPI and TypeScript `/me` output |
+| `npm run api:check` | Both generated artifacts current |
+| `npm run test:contracts` | 87 Python cases and 2 Node generation/client tests passed, including missing/stale output detection and identical regeneration |
+| `npm run test:db` | 87 real database/migration/lifespan/isolation cases passed, including retained F03 session suite |
+| `npm run test:identity` | 108 focused cases passed; synthetic RSA/JWKS transport plus real PostgreSQL |
+| `npm run test:identity:integration` | Actual Keycloak test passed: all five account types, real code+PKCE exchange/JWKS/tokens, `/me`, old-token role/status revocation, ID-token/password-grant denial and provisioning replay refusal |
+| `npm run test:web:production` | Preserved F03 built-Next HTTP/cookie/cache/redaction test passed against its controlled OIDC/backend peers and real PostgreSQL |
+| `uv run --directory postgres --locked --python 3.14 mypy` | Passed, 37 files |
+| `uv run --directory postgres --locked --python 3.14 pytest tests/test_identity_tokens.py tests/test_keycloak_provisioning.py` | 78 compatibility cases passed |
+| `uv run --directory postgres --locked --python 3.14 python scripts/export_openapi.py --check` | Identical OpenAPI across Python 3.12/3.14 |
+| `uv run --directory postgres --locked alembic heads` | Exactly `0004_identity` |
+| `uv run --directory postgres --locked alembic history` | One linear chain from `base` through `0001_application_schema`, `0002_runtime_grants`, `0003_web_sessions`, `0004_identity` |
+| `docker compose --profile identity --profile identity-test --profile test config --quiet` | Passed with synthetic interpolation values |
+| `git diff --check` | Passed |
+
+Initial checks exposed an incorrect HTTPX import, fixture typing/indentation
+errors and actual Keycloak integration requirements: server-generated subjects,
+admin-managed provisioning markers, required synthetic profile fields and an
+explicit access-token subject mapper. These were corrected before the final
+results above; no signature/issuer/audience/lifetime check was weakened.
+The HTTP integration harness explicitly handles localhost Secure login cookies;
+this is not a claim of browser or F03-facade execution.
+
+Node 22, hosted Linux CI, the full Python 3.14 real-database suite and combined
+real-browser login were not executed locally. The configured matrices remain
+review evidence to obtain; I02 still owns the final browser/facade/API identity
+gate. A01's administration UI/service privileges and later release/data gates
+remain excluded. No automatic commit, PR, successor launch or deployment occurred.
+
+After a second successful actual-Keycloak run, the following cleanup removed
+only the two owned disposable services/network, leaving development volumes
+untouched:
+
+```powershell
+docker compose -p quezo-i01-e2f6cba3 --profile test --profile identity-test rm -s -f postgres-test keycloak-test
+docker network rm quezo-i01-e2f6cba3_default
+```
+
+I01 is returned **ready for B.C.'s review**, not done. The tracker remains active;
+B.C. owns review, accepted integration and final status updates.
 
 ## Remaining review gates
 

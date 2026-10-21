@@ -1,7 +1,7 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** F01/F02 accepted and integrated; F03 active for synthetic-data development.
+**Status:** F01/F02 accepted and integrated; F03 code integrated; I01 active for synthetic-data development.
 Later work remains subject to its decision gates and explicit dispatch.
 
 ## 1. Start here
@@ -15,7 +15,11 @@ those into individually assignable work packages.
 on 20 October 2026 and owns F03 integration/review. F01/F02 are done and integrated.
 F03 has the first exclusive second-wave shared-file window; use
 [handoff section 5](AGENT-HANDOFF.md#5-second-wave-f03-assignment).
-I01 remains undispatched and later decision gates remain held.
+B.C. subsequently dispatched I01, approved PyJWT/cryptography and async HTTPX,
+and authorized reconciliation of these records without claiming acceptance.
+I01 uses the integrated F03 PR #5 (`b1a2fe0`) baseline and the following exclusive
+shared-file window. B.C. retains final acceptance/tracker updates; later decision
+gates remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).

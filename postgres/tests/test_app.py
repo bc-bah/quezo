@@ -47,12 +47,12 @@ def test_product_and_readiness_routes_are_absent(client: TestClient, path: str) 
     assert client.get(path).status_code == 404
 
 
-def test_openapi_describes_only_the_liveness_contract(client: TestClient) -> None:
+def test_openapi_describes_only_implemented_contracts(client: TestClient) -> None:
     response = client.get("/openapi.json")
 
     assert response.status_code == 200
     document = response.json()
-    assert set(document["paths"]) == {"/health/live"}
+    assert set(document["paths"]) == {"/health/live", "/api/v1/me"}
     schema = document["paths"]["/health/live"]["get"]["responses"]["200"]["content"][
         "application/json"
     ]["schema"]

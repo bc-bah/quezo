@@ -46,8 +46,8 @@ approval means the decision is not approved.
 | DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved as written by B.C., 20 October 2026 |
-| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC | Identity implementation | B.C. | Second-wave F03 approval by B.C., 20 October 2026; backend JWT/admin implementation remains I01's separate decision/assignment |
-| DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; pg and compatible npm-locked OIDC/session dependencies approved by B.C., 20 October 2026 |
+| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation | Identity implementation | B.C. | Second-wave F03 and I01 approvals by B.C., 20 October 2026; explicit local provisioning only, no runtime admin credentials |
+| DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions; PyJWT with cryptography and repository-convention HTTPX for I01 | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; F03 npm-locked dependencies and I01 uv-locked dependencies approved by B.C., 20 October 2026 |
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
 | DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
@@ -104,6 +104,23 @@ Keycloak/browser/backend acceptance. Neither successor is dispatched here.
 DEC-08 through DEC-11 remain held except for the scoped ownership above.
 No deployment, external resources, real data, commit or PR is authorized.
 B.C. retains F03 acceptance and final tracker updates.
+
+**I01 extension, 20 October 2026:** B.C. explicitly dispatches I01 and authorizes
+reconciling the approval/checkpoint documents and marking I01 active, without
+claiming acceptance. The execution baseline includes F03 PR #5 (`b1a2fe0`),
+following the integrated F01/F02 revisions above. B.C. owns I01, integration,
+review and its exclusive shared-file window after F03 integration.
+DEC-06/07 select PyJWT with cryptography and asynchronous HTTPX, following the
+repository's existing package/import conventions and locking with uv.
+Application roles/status remain authoritative on every protected request.
+Keycloak administration is confined to explicit synthetic local provisioning;
+no automatic grants, bootstrap-admin application user, runtime admin credentials
+or A01 service privileges. Bounded documented timeout/cache defaults are
+authorized for review, not DEC-08 performance gates or relaxed token validation.
+Preserve F03 bootstrap, session grants and applied migrations. I02 retains the
+combined browser/facade/API gate and is not dispatched. No external resources,
+deployment, real data, automatic commit or PR are authorized. B.C. retains final
+review, acceptance and integration/tracker updates.
 
 ## 3. Actors and authorization
 

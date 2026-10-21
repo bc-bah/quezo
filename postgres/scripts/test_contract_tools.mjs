@@ -68,8 +68,12 @@ async function typesOnly() {
   if (result.error) {
     const error: components["schemas"]["ErrorEnvelope"] = result.error;
   }
-  // @ts-expect-error F02 must not invent a current-actor endpoint.
-  await client.GET("/api/v1/me");
+  const me = await client.GET("/api/v1/me");
+  if (me.data) {
+    const actor: components["schemas"]["Actor"] = me.data;
+  }
+  // @ts-expect-error I01 must not invent assessment endpoints.
+  await client.GET("/api/v1/quizzes");
   // @ts-expect-error Health has no POST operation.
   await client.POST("/health/live");
   // @ts-expect-error Health accepts no write payload.

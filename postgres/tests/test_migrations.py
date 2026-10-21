@@ -4,17 +4,17 @@ import pytest
 from db_helpers import IsolatedDatabase, run_migrations
 
 
-def test_clean_database_migrates_without_domain_tables(
+def test_clean_database_migrates_with_only_delivered_tables(
     empty_database: IsolatedDatabase,
 ) -> None:
     run_migrations(empty_database.migration_url, "head")
     with psycopg.connect(empty_database.migration_url) as connection:
         assert connection.execute(
             "SELECT version_num FROM public.alembic_version"
-        ).fetchone() == ("0003_web_sessions",)
+        ).fetchone() == ("0004_identity",)
         assert connection.execute(
-            "SELECT tablename FROM pg_tables WHERE schemaname = 'quezo'"
-        ).fetchall() == []
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'quezo' ORDER BY tablename"
+        ).fetchall() == [("account_roles",), ("accounts",), ("identity_mappings",)]
         assert connection.execute(
             "SELECT has_schema_privilege('quezo_runtime', 'quezo', 'USAGE')"
         ).fetchone() == (True,)
@@ -40,7 +40,7 @@ def test_previous_schema_revision_upgrades_to_runtime_privileges(
     with psycopg.connect(empty_database.migration_url) as connection:
         assert connection.execute(
             "SELECT version_num FROM public.alembic_version"
-        ).fetchone() == ("0003_web_sessions",)
+        ).fetchone() == ("0004_identity",)
 
 
 @pytest.mark.parametrize(

@@ -104,10 +104,15 @@ Use openid-client and pg with npm-locked compatible versions, a restricted
 separate session schema and migration-only schema creation. Bounded documented
 session/timeout defaults are authorized for review; business semantics are not.
 
-I01's real `/api/v1/me` remains absent. F03 tests may use schema-validated actors;
-runtime must fail explicitly without its producer and must not trust cached roles
-on outage. I02 owns the combined identity/browser gate and full AT-01 evidence.
-No successor is dispatched, and later decision/pilot gates remain held.
+B.C.'s I01 extension on the same date dispatches I01 with PyJWT/cryptography and
+async HTTPX (repository package/import conventions, uv lock). The checkout
+includes F03 PR #5 (`b1a2fe0`); I01 now owns the exclusive shared-file window.
+Preserve `0003_web_sessions` and its isolation. Keycloak administration is explicit
+local provisioning only, without runtime admin credentials or automatic grants.
+I01 produces real `/api/v1/me`; no cached actor may authenticate on outage.
+I02 owns the combined identity/browser gate and full AT-01 evidence and is not
+dispatched. B.C. authorized coordination-record reconciliation, not acceptance;
+later decision/pilot gates remain held.
 
 ## I01: Identity and authorization backend
 

@@ -4,16 +4,24 @@ from typing import Literal
 
 from fastapi import FastAPI
 from pydantic import BaseModel, ConfigDict
+import httpx2 as httpx
 
 from quezo_api.database import Database, DatabaseSettings
 from quezo_api.errors import ErrorEnvelope, install_error_handling
 from quezo_api.openapi import ContractAPI
+from quezo_api.modules.identity.router import router as identity_router
+from quezo_api.modules.identity.tokens import IdentitySettings, TokenVerifier
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    async with Database(DatabaseSettings.from_env()) as database:
+    settings = IdentitySettings.from_env()
+    async with Database(DatabaseSettings.from_env()) as database, httpx.AsyncClient(
+        timeout=settings.timeout, trust_env=False, follow_redirects=False,
+        limits=httpx.Limits(max_connections=2, max_keepalive_connections=2),
+    ) as identity_client:
         app.state.database = database
+        app.state.token_verifier = TokenVerifier(settings, identity_client)
         yield
 
 
@@ -26,13 +34,14 @@ class LivenessResponse(BaseModel):
 
 def create_app() -> FastAPI:
     app = ContractAPI(
-        title="Quezo API scaffold",
+        title="Quezo API",
         version="0.0.0",
-        description="Process liveness only. Assessment features await architecture review.",
+        description="Process liveness and current application identity. No assessment routes.",
         lifespan=lifespan,
         responses={"default": {"model": ErrorEnvelope, "description": "Sanitized error"}},
     )
     install_error_handling(app)
+    app.include_router(identity_router)
 
     @app.get("/health/live", response_model=LivenessResponse)
     async def liveness() -> LivenessResponse:

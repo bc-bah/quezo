@@ -26,7 +26,9 @@
     "api:check": "npm run api:export -- --check && node postgres/scripts/generate-client.mjs --check",
     "test:contracts": "uv run --directory postgres --locked pytest tests/test_contract_schemas.py tests/test_http_contract.py && node --test postgres/scripts/test_contract_tools.mjs",
     "db:upgrade": "uv run --directory postgres --locked alembic upgrade head",
-    "test:db": "uv run --directory postgres --locked pytest tests/test_migrations.py tests/test_database.py tests/test_database_isolation.py tests/test_app.py tests/test_web_sessions.py"
+    "test:db": "uv run --directory postgres --locked pytest tests/test_migrations.py tests/test_database.py tests/test_database_isolation.py tests/test_app.py tests/test_web_sessions.py tests/test_identity_access.py tests/test_identity_provisioning.py tests/test_identity_migrations.py",
+    "test:identity": "uv run --directory postgres --locked pytest tests/test_identity_tokens.py tests/test_identity_access.py tests/test_identity_provisioning.py tests/test_identity_migrations.py tests/test_keycloak_provisioning.py",
+    "test:identity:integration": "uv run --directory postgres --locked pytest --tb=short tests/keycloak_integration.py"
   },
   "devDependencies": {
     "openapi-typescript": "7.13.0",

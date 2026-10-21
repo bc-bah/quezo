@@ -256,6 +256,17 @@ Report readiness for review, not done; B.C. owns tracker and integration updates
 
 ## 5. Second-wave F03 assignment
 
+**Subsequent I01 dispatch:** B.C. authorized I01 on 20 October 2026, followed by
+explicit permission to reconcile the approval/checkpoint records and mark I01
+active without acceptance. Use integrated F03 PR #5 (`b1a2fe0`), its exact web
+OIDC/session requirements, and the exclusive I01 shared-file window. Approved
+backend dependencies are PyJWT with cryptography and asynchronous HTTPX using
+existing repository conventions, locked with uv. Local Keycloak administration
+is explicit provisioning only; no runtime admin credentials or automatic grants.
+Preserve applied migrations and session privileges. Return section 3, without
+committing, opening a PR, claiming done or launching I02. The F03 assignment below
+is retained as the producer contract, not a new dispatch.
+
 **Approval/dispatch:** B.C., 20 October 2026, including explicit authorization
 to reconcile the coordination documents before implementation. See the
 [second-wave approval](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026).
