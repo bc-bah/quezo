@@ -46,12 +46,12 @@ approval means the decision is not approved.
 | DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved as written by B.C., 20 October 2026 |
-| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; review realm/client, session/JWT libraries and administration privileges | Identity implementation | B.C. | Held by B.C., 20 October 2026; F03/I01 cannot start until identity/session choices are approved |
-| DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; session storage implementation still unselected | Foundation implementation; session choice before F03 | B.C. | Scoped approval by B.C., 20 October 2026: F01/F02 tool selection approved; session storage implementation held |
+| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC | Identity implementation | B.C. | Second-wave F03 approval by B.C., 20 October 2026; backend JWT/admin implementation remains I01's separate decision/assignment |
+| DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; pg and compatible npm-locked OIDC/session dependencies approved by B.C., 20 October 2026 |
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
 | DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
-| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped approval by B.C., 20 October 2026: B.C. owns integration and F01/F02 review/merge; later reviewers, release approval, dates and budget held |
+| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped approval by B.C., 20 October 2026: B.C. owns integration and F01/F02/F03 review/merge; later reviewers, release approval, dates and budget held |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
@@ -78,6 +78,32 @@ and review/merge authority above; B.C. owns obtaining the relevant reviews at th
 listed gates. No successors, deployment, external resources, real learner data,
 shared pilot, delivery date or budget are authorized by G00. Domain decisions
 DEC-01 through DEC-05 are approved but do not dispatch their future packages.
+
+### Second-wave approval record: 20 October 2026
+
+B.C. explicitly dispatched F03 and approved reconciling this record, the tracker,
+foundation checkpoint, implementation README and handoff section 5 in the F03
+session on 20 October 2026. F01 is accepted/integrated via PR #3 (`8732328`);
+F02 via PR #4 (`5f314125e13262139e1d3e28d190881d6fbd5f8b`). Both are done.
+This record supersedes the first-wave identity/session holds for F03 only.
+
+**Authorized work:** F03 under B.C. as owner, integration owner and reviewer,
+with the first exclusive second-wave shared-file window. Select compatible
+openid-client and node-postgres (pg) versions and lock with npm. Use a local
+Keycloak realm, confidential web client, exact redirects, authorization code +
+PKCE, state/nonce and a dedicated API audience. Identity belongs to Keycloak;
+current application roles/status/ownership belong to the backend on every
+protected request. No runtime Keycloak-admin credential, bypass, automatic role
+grant, runtime fixture or outage fallback is authorized.
+
+B.C. authorizes documented bounded session/timeout defaults for review, not
+business-semantic changes. Separate restricted session storage must not inherit
+assessment-schema default grants. I01 owns the real `/api/v1/me` producer;
+schema-validated controlled actors are test-only. I02 owns combined real
+Keycloak/browser/backend acceptance. Neither successor is dispatched here.
+DEC-08 through DEC-11 remain held except for the scoped ownership above.
+No deployment, external resources, real data, commit or PR is authorized.
+B.C. retains F03 acceptance and final tracker updates.
 
 ## 3. Actors and authorization
 

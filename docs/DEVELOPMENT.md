@@ -10,10 +10,16 @@ Separate frontend/backend CI jobs are included. No assessment feature is impleme
 F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
 bounded request bodies and a generated TypeScript client for implemented routes.
 
-Authentication, domain schemas, business routes,
+F03 adds server-only OIDC and durable web sessions with navigation. Backend
+identity authorization and the real `/api/v1/me` producer remain I01 work;
+without that producer sign-in ends in an explicit error, never a runtime fixture.
+
+Domain schemas, business routes,
 background expiration, grading, real readiness checks, application containers,
-and deployment are intentionally absent. Keycloak is not wired into either
-application. Database configuration is required for backend lifespan startup.
+and deployment are intentionally absent. A configured local Keycloak can be
+used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
+I02, not established by F03 protocol tests. Database configuration is required
+for both server lifecycles.
 
 ## Prerequisites and startup
 
@@ -85,7 +91,9 @@ before `npm test`, `npm run test:db` or `pytest`. Missing database configuration
 or an unavailable database is a failure, never a skip or an in-memory substitute.
 
 `typecheck` runs Next.js route type generation/TypeScript checks and strict mypy
-over Python application and test sources. `test` runs pytest through uv. FastAPI's
+over Python application and test sources. `test` runs focused web tests and pytest
+through uv. `test:db` includes the real web-session tests, using the same isolated
+Python fixture to supply database URLs to Node. FastAPI's
 in-process test client uses a real migrated database and checks exact liveness,
 absent product/readiness routes, OpenAPI and lifespan cleanup. Database tests
 also verify migrations, permissions, transaction commit/rollback, cancellation,
@@ -153,8 +161,9 @@ This is a descriptive DTO, **not** authentication or authorization. I01 must
 resolve current application roles/status and enforce operation/ownership checks;
 administrator alone never implies author or learner access. F03 must keep
 session secrets separately on the server and must not turn an actor fixture or
-dependency outage into an authenticated session. DEC-06/07 session choices
-remain held. There is deliberately no `/api/v1/me` route in F02.
+dependency outage into an authenticated session. The second-wave DEC-06/07
+approval selects openid-client + pg for F03. There is deliberately no
+`/api/v1/me` route in F02.
 
 **Pagination:** use `Annotated[PaginationParams, Query()]` for collection query
 inputs: `pageSize` defaults to 25 and accepts 1-100, `cursor` defaults to null.
@@ -265,8 +274,8 @@ on Node 22/24; the original Python 3.12/3.14 PostgreSQL jobs remain intact.
 | QUAL-04 / NFR-010; F02 generation criteria | Contract fixtures, deterministic export, negative drift tests, typed client checks, root type/build checks and preserved F01 suite | No assessment transitions, grading or disclosure acceptance |
 | AT-15 partial support / QUAL-06 structured errors | Correlated 500/503 errors, explicit synthetic dependency failures and F01 process-only liveness | No deployment/readiness/metrics/recovery evidence; **full AT-15 not established** |
 
-F03/I01 can rely on the agreed actor and generated types after B.C. accepts
-integration, but their decision holds remain. S01 can reuse UUID and strict
+F03 can rely on the integrated actor and generated types under B.C.'s second-wave
+approval; I01 remains separately dispatched. S01 can reuse UUID and strict
 nonnegative integer conventions without implementing HTTP/authentication; its
 domain inputs, scoring enums and AT-11 evidence remain S01's responsibility.
 
@@ -343,7 +352,8 @@ Copy-Item .env.example .env
 ```
 
 Use `cp .env.example .env` in Bash. Fill `POSTGRES_PASSWORD`,
-`QUEZO_MIGRATION_PASSWORD`, `QUEZO_RUNTIME_PASSWORD` and `KEYCLOAK_ADMIN_PASSWORD`
+`QUEZO_MIGRATION_PASSWORD`, `QUEZO_RUNTIME_PASSWORD`, `QUEZO_WEB_PASSWORD`
+and `KEYCLOAK_ADMIN_PASSWORD`
 with distinct local-only credentials. Compose validates interpolations even for
 inactive profiles, so the bootstrap and Keycloak passwords are required even
 when only PostgreSQL is started. Test role passwords may remain empty unless
@@ -362,7 +372,7 @@ The database has a readiness check; wait for Keycloak's console to respond befor
 using it. The admin credentials bootstrap a fresh volume only; changing `.env`
 does not rotate credentials already stored in either persisted volume.
 On a fresh PostgreSQL volume, `postgres/bootstrap/roles.sql` creates
-`quezo_migrator` and `quezo_runtime` and restricts database access. Initialization
+`quezo_migrator`, `quezo_runtime` and `quezo_web` and restricts database access. Initialization
 failure must be resolved before using the service; `pg_isready` alone does not
 prove roles or migrations are installed.
 
@@ -386,6 +396,7 @@ B.C.'s coordination; this runbook does not authorize their modification.
 | `POSTGRES_PORT` | Host port; default 5432 |
 | `QUEZO_MIGRATION_PASSWORD` | Bootstrap-only password for restricted schema owner `quezo_migrator` |
 | `QUEZO_RUNTIME_PASSWORD` | Bootstrap-only password for restricted data identity `quezo_runtime` |
+| `QUEZO_WEB_PASSWORD` | Bootstrap-only password for restricted session identity `quezo_web` |
 | `KEYCLOAK_ADMIN` | Local bootstrap administrator name |
 | `KEYCLOAK_ADMIN_PASSWORD` | Required local bootstrap password |
 | `KEYCLOAK_PORT` | Host port; default 8080 |
@@ -484,7 +495,7 @@ liveness does not assert schema, identity or deployment readiness.
 
 Never point tests at the application database. Use the separate `postgres-test`
 Compose service, a loopback-only PostgreSQL 17 instance with disposable tmpfs
-data, separate credentials and no development volume. Populate the three
+data, separate credentials and no development volume. Populate the four
 `QUEZO_TEST_*_PASSWORD` values in `.env`, using distinct synthetic credentials.
 `QUEZO_TEST_PORT` defaults to 55432; choose a free port/project for each worktree.
 
@@ -498,6 +509,7 @@ Export these variables to the test shell (the passwords must match the service):
 QUEZO_TEST_ADMIN_URL=postgresql://quezo_test_admin:<encoded-password>@127.0.0.1:55432/quezo_test_control
 QUEZO_TEST_MIGRATION_PASSWORD=<test-migration-password>
 QUEZO_TEST_RUNTIME_PASSWORD=<test-runtime-password>
+QUEZO_TEST_WEB_PASSWORD=<test-web-password>
 ```
 
 Run from the root:
@@ -607,17 +619,271 @@ and >=3.11 for SQLAlchemy, compatible with the repository's >=3.12 baseline.
 Only the synthetic control database remained after each suite; the disposable
 local database services were removed after verification.
 
-## Approved first wave and remaining review gates
+## F03 web session and navigation interface
 
-B.C. approved the [scoped G00 baseline](SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
-on 20 October 2026. F02 is active under B.C.'s exclusive shared-file write window,
-using integrated F01 baseline `8732328` (PR #3). The stale F01 tracker row awaits
-B.C.'s integration/evidence reconciliation.
-Use their [prepared handoff prompts](implementation/AGENT-HANDOFF.md#4-approved-first-wave-prompts);
-B.C. owns integration and review, and moves each item to `active` at dispatch.
-F01 persistence tools are locked in the backend manifest; F02 contract tools
-are locked in the npm manifests.
-Identity/session implementation and later gates remain held.
+B.C.'s [second-wave approval](SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
+accepts integrated F01/F02 and dispatches F03, with B.C. owning integration,
+review and the exclusive shared-file window. I01 is not dispatched by this work;
+later approval gates remain held. The historic F01/F02 evidence above is unchanged.
+
+### Configuration, lifecycle and OIDC requirements
+
+Runtime packages are npm-locked: `openid-client` 6.8.8, `pg` 8.23.1,
+`server-only` 0.0.1, `ajv` 8.20.0 and `ajv-formats` 3.0.1.
+AJV validates the **existing exported server schemas**, not parallel web DTOs.
+Focused test tooling adds `tsx` 4.23.15 and `@types/pg` 8.23.1; Node's built-in
+test runner and React's server renderer suffice for package-level checks.
+I02 still owns browser-runner selection and combined real identity acceptance.
+
+Export these variables to the web server process, not `NEXT_PUBLIC_*` and not
+the backend. The root `.env` is Compose input only.
+
+| Variable | Exact contract |
+| --- | --- |
+| `QUEZO_WEB_ENV` | Required `local` or `shared`; local URLs must use loopback hosts |
+| `QUEZO_WEB_ORIGIN` | Required exact public origin, e.g. `http://localhost:3000`; no credentials/path/query/fragment |
+| `QUEZO_BACKEND_ORIGIN` | Required backend origin, locally `http://localhost:4000` |
+| `QUEZO_OIDC_ISSUER` | Exact issuer, locally `http://localhost:8080/realms/quezo-local`; no query/fragment/credentials |
+| `QUEZO_OIDC_CLIENT_ID` | Confidential web client ID, locally `quezo-web` |
+| `QUEZO_OIDC_CLIENT_SECRET` | Required client secret, server environment only; never a Keycloak-admin credential |
+| `QUEZO_API_AUDIENCE` | Dedicated API audience **and client-scope name**, locally `quezo-api`; 1-100 ASCII letters/digits/underscores/hyphens |
+| `QUEZO_WEB_DATABASE_URL` | Explicit PostgreSQL URL with `quezo_web`, password, host and database; no query parameters; shared mode verifies database TLS certificates |
+
+Shared mode requires HTTPS for all HTTP dependencies and sets Secure cookies.
+For a private database CA use the process trust store / `NODE_EXTRA_CA_CERTS`;
+never disable certificate verification. Local mode is exclusively loopback and
+may use HTTP and non-TLS PostgreSQL. Runtime configuration rejects migration,
+backend and bootstrap database identities. Privileged startup is forbidden.
+
+After explicit bootstrap/migration, run `npm run dev:web` or, after
+`npm run build`, `npm run start --workspace @quezo/web`.
+The launcher defaults to `127.0.0.1` and sets `NEXT_MANUAL_SIG_HANDLE=1`.
+Next instrumentation opens/verifies one shared pg pool per process and installs
+SIGINT/SIGTERM cleanup; failed pool startup also closes all connections.
+Use the launcher rather than bare `next start/dev`, whose competing default
+signal handler can exit before application cleanup. Windows forced process
+termination cannot run graceful handlers; connection teardown still invalidates
+no persisted sessions. Build/type generation requires no database or OIDC secret.
+
+For I01's local realm/client provisioning (no realm is auto-created by F03):
+
+- Realm `quezo-local`; issuer exactly matches discovery, including scheme/host/port.
+- Client `quezo-web`: confidential/client authentication enabled, standard code
+  flow only; implicit flow, direct access grants and service accounts disabled;
+  PKCE method S256. RS256 ID tokens are required and signature/JWKS checks enabled.
+- Register only `${QUEZO_WEB_ORIGIN}/auth/callback` as a valid redirect URI
+  (default `http://localhost:3000/auth/callback`); no wildcard/path/alternate-host
+  entries. Login uses response type `code`, query callback, state, nonce and PKCE.
+- Create client scope `quezo-api`, attach it to the web client, and configure
+  its audience mapper to include `quezo-api` in **access tokens**. The web requests
+  `openid quezo-api`; I01 must independently verify that dedicated API audience,
+  issuer/signature/lifetime. ID tokens target the web client, not the API.
+- Configure any web origins exactly, not `*`. The web server calls discovery,
+  token/JWKS and backend endpoints; the browser receives only authorization
+  redirects and opaque cookies, never tokens.
+
+Synthetic identity creation and application `(issuer, subject)` mapping/role
+provisioning are explicit I01 owner actions. Creating a Keycloak account or
+signing in grants no application role. Empty/combined application roles are
+valid; the backend's current status and operation/ownership decisions are final.
+No admin credential is accepted by the web interface. The placeholder
+`infra/keycloak/README.md` is not a realm export or proof of combined login.
+
+### Routes, storage and defaults
+
+| Surface | Behavior |
+| --- | --- |
+| `POST /auth/login` | Require exact Origin and Host; reject cross-site/same-site fetch metadata; discover issuer, persist a fresh binding/state/nonce/verifier and invalidate prior browser session/login |
+| `GET /auth/callback` | Exact configured redirect; atomically consume matching browser binding once, verify state/nonce/PKCE and ID-token signature/issuer/audience/lifetime; call backend `/api/v1/me`; issue a new opaque session only for a valid active actor |
+| `POST /auth/logout` | Same origin protection; durably invalidate session and pending login before clearing cookies and redirecting home |
+| `GET /` | Server-only cookie lookup, expiry check and fresh backend `/me` for every authenticated render; native role-aware navigation, no assessment or administration screens |
+
+`src/lib/server/http.ts` validates Host against the configured public origin,
+then canonicalizes Next's internal bind URL. Never trust `X-Forwarded-*` to
+choose a redirect or origin. A reverse proxy must preserve the exact configured
+Host, strip untrusted forwarding headers, terminate HTTPS in shared mode and
+disable access/query/body/header logs. Origin is mandatory on login/logout;
+`null`, absent and nonmatching values fail. If `Sec-Fetch-Site` is present, only
+`same-origin` is accepted. This is strict Origin-based CSRF protection, not an
+unvalidated double-submit cookie; there are no GET logout/login mutations.
+The callback is the protocol exception, protected by a browser-bound, single-use
+state/nonce/PKCE transaction. There is no user-selected return URL.
+
+Cookies are `quezo_session` and `quezo_login` locally, or
+`__Host-quezo_session` and `__Host-quezo_login` in shared mode. Values are
+32 random bytes encoded base64url (43 characters), HttpOnly, SameSite=Lax,
+Path=/, no Domain; shared cookies are Secure. SHA-256 ID hashes, not usable
+cookie values, are stored in PostgreSQL. Login rotates both binding and session;
+logout also cancels a callback in flight through its originating login hash.
+Invalidation uses separate READ COMMITTED statements in one transaction so a
+callback holding the login-row lock cannot commit a session invisible to logout.
+No process-local authoritative sessions, actor snapshots or refresh-token path.
+
+| Fixed F03 default | Value / boundary |
+| --- | --- |
+| Login transaction/cookie lifetime | 5 minutes |
+| Session absolute/cookie maximum | 8 hours; database session also capped by access-token expiry |
+| Session idle timeout | 30 minutes; successful store lookup slides idle expiry, never absolute/token expiry |
+| Access-token expiry | Fail closed and sign in again; no automatic refresh or offline scope |
+| OIDC/backend request timeout | 5 seconds, no automatic retries |
+| Backend actor/error body limit | 256 KiB |
+| pg pool | Maximum 5 connections per process; at most 10 queued borrowers |
+| pg connection / statement / lock / client query timeout | 5s / 5s / 2s / 6s |
+| pg idle transaction / idle connection / connection maximum age | 5s / 10s / 300s |
+| Expired-row cleanup | At login, delete at most 100 expired sessions and 100 expired login transactions |
+
+These bounded defaults are authorized for B.C.'s review, not performance or
+business-policy gates. Multiply connection bounds by the number of server
+processes. No startup DDL or migration credential is used. Expired rows are
+unusable immediately, but plaintext tokens/verifiers can remain until bounded
+cleanup; a scheduled maintenance/retention policy remains required before real
+data. Logout is **local Quezo logout**, not global Keycloak SSO termination or
+access-token revocation. No provider logout URI is used; signing in again may
+reuse the Keycloak SSO identity but always resolves a fresh backend actor.
+
+`SessionStore.open/close`, `beginLogin/consumeLogin/createSession/session/logout`
+and `prune` are server-only. The new Alembic revision is `0003_web_sessions`,
+parent `0002_runtime_grants`; see the migration runbook for precise privileges,
+existing-install role bootstrap and recovery implications. `quezo_runtime` cannot
+read session secrets; `quezo_web` cannot read assessment tables or run DDL.
+
+### Facade and I01/I02 handoff
+
+`BackendFacade.actor(token)` calls the agreed `/api/v1/me` URL with no-store
+and strict server-schema validation. It deliberately does **not** add an OpenAPI
+path or hand-edit generated types while I01 is absent. Once I01 exports `/me`,
+regenerate via F02 tooling and switch this single adapter call to its typed
+operation. `BackendFacade.client(token)` supplies the existing `createApiClient`
+with the same `authorizedFetch`: fixed backend origin, bearer token, stripped
+Cookie, no redirects, bounded transport and no cache. Future route owners must
+enforce the same origin boundary before state-changing facade calls. Every
+backend protected operation must still enforce live roles/status/ownership.
+
+The web never reads assessment tables and contains no assessment rules.
+No actor cache is trusted on outage. Safe schema-valid backend errors preserve
+code/message/requestId/details; network/invalid-response failures are explicit
+503s. Unexpected errors become sanitized 500s. Only safe code/requestId events
+are logged, never raw exceptions, tokens, callback queries or cookie values.
+Next request logging is disabled. Instrumentation and route bundles preserve
+branded errors across module copies. Route failures produce the envelope for API
+requests or escaped actionable HTML for browser form submissions.
+
+I01 supplies issuer/API-audience validation and real `/me`, including disabled
+and revoked-role behavior, controlled provisioning and backend ownership checks.
+I02 supplies real Keycloak/browser acceptance, provider-outage journeys and
+manual keyboard/screen-reader/responsive review. F03's static-render checks
+verify native links/buttons, skip target, nonpositive tab order, visible focus,
+role-specific destinations and explicit status/error text; they are not full
+WCAG conformance. The focused built-server HTTP test uses a controlled local OIDC
+peer, never a runtime fixture/bypass, and is not the combined AT-01 gate.
+
+### F03 verification commands
+
+Export the four isolated test variables described above, start only the
+worktree-specific `postgres-test` service, then run from the repository root:
+
+```powershell
+npm run typecheck
+npm test
+npm run build
+npm run api:check
+npm run test:contracts
+npm run test:db
+npm run test:web:production
+```
+
+`npm run test:web` runs configuration/origin/cookie/schema/facade/redaction and
+semantic-navigation cases without a database. `test:db`/pytest create a fresh
+UUID-named database per test and run the Node session suite with that fixture's
+restricted web URL. No skip or memory substitute is used. The session suite
+exercises real PostgreSQL expiry, rotation, replay, logout, privileges, durable
+process restart, failed startup and a real broken TCP connection. A test-only
+RS256 protocol peer exercises actual openid-client exchange/validation. Migration
+tests prove clean head and `0002_runtime_grants -> head` upgrades and retain the
+F01 transaction/isolation checks.
+
+After building, `test:web:production` creates another isolated migrated database,
+starts a bounded Next child process with synthetic OIDC/backend peers, checks the
+real HTTP routes/rendered HTML/cache/error/log boundaries, stops it and drops
+only its owned database. It uses no browser, real accounts or external service.
+CI retains Node 22/24 and Python 3.12/3.14 checks; Python jobs install the locked
+Node tools for real session tests and run the built-server check.
+
+### F03 local verification: 20 October 2026
+
+These are package review evidence, not hosted CI or accepted integration.
+Environment: Windows x64, Node 24.20.0, npm 11.19.0, uv 0.12.17, Python 3.12.10,
+Docker Engine 29.7.2, PostgreSQL 17.11 (Debian x86_64). Node 22, Python 3.14,
+hosted CI, real Keycloak/browser login and assistive-technology review were not
+executed locally for F03; configured CI and I01/I02 remain separate evidence.
+
+Only the isolated synthetic test service was started:
+
+```powershell
+docker compose -p quezo-f03-37862b8f --profile test up -d --wait postgres-test
+```
+
+The shell set `QUEZO_TEST_PORT=55447`, distinct synthetic
+`QUEZO_TEST_ADMIN_PASSWORD`, `QUEZO_TEST_MIGRATION_PASSWORD`,
+`QUEZO_TEST_RUNTIME_PASSWORD`, `QUEZO_TEST_WEB_PASSWORD`, and unused development/
+Keycloak password placeholders for Compose interpolation. Test commands exported
+`QUEZO_TEST_ADMIN_URL` for `quezo_test_admin` at
+`127.0.0.1:55447/quezo_test_control`, plus the matching migration/runtime/web
+passwords. F01's control marker, generated database-name/owner guards and
+non-FORCE teardown remained in use. No development volume or real identity data
+was touched.
+
+| Exact command, repository root | Outcome |
+| --- | --- |
+| `npm install --ignore-scripts --no-audit --no-fund` | Installed the approved dependencies and regenerated npm lock |
+| `npm ls openid-client pg ajv ajv-formats server-only tsx @types/pg --depth=1` | Confirmed exact versions listed above |
+| `npm run typecheck` | Passed web route/TypeScript checks and strict mypy, 22 Python files |
+| `npm test` | 10 web tests and 154 Python cases passed, no skips; includes real Node/PostgreSQL session checks |
+| `npm run build` | Passed production Next build, including all three auth routes and dynamic navigation |
+| `npm run api:check` | OpenAPI and generated TypeScript unchanged/current |
+| `npm run test:contracts` | 87 Python cases and 2 Node tooling/client tests passed |
+| `npm run test:db` | 57 database/migration/lifespan/isolation cases passed, no skips |
+| `uv run --directory postgres --locked pytest -s tests/test_web_sessions.py::test_web_sessions_against_real_postgres` | Final focused run: 13 Node checks passed inside the real isolated database fixture |
+| `npm run test:web:production` | Built Next HTTP/HTML/cookie/cache/redaction test passed with local controlled protocol peers and real PostgreSQL |
+| `uv run --directory postgres --locked alembic heads` | Exactly `0003_web_sessions` |
+| `uv run --directory postgres --locked alembic history` | Linear `base -> 0001_application_schema -> 0002_runtime_grants -> 0003_web_sessions` |
+| `docker compose --profile identity --profile test config --quiet` | Passed with synthetic required interpolation values |
+| `git diff --check` | Passed |
+
+Initial checks caught test-environment typing and worker module-format issues,
+a loopback TCP test-proxy setup error, and two actual built-server integration
+issues: module-copy error identity and internal bind-origin canonicalization.
+They were corrected; the failed/hung runs are not counted as passes. Final
+review also hardened callback/logout interleaving and tested pool/queue bounds;
+subsequent runs caught and corrected a microsecond-sensitive expiry fixture and
+OIDC nonconforming-HTTP/timeout error classification. Final full, database,
+type/build and built-server commands passed after corrections; the unchanged
+producer/client contracts also passed the separate checks above.
+The interrupted test's disposable database is removed with the dedicated
+test service, not by weakening F01's non-FORCE teardown.
+
+After verification, no test application connections or scoped Node test
+processes remained. Only the dedicated disposable service/network were removed,
+including the interrupted run's synthetic database; no development volume was
+deleted:
+
+```powershell
+docker compose -p quezo-f03-37862b8f --profile test rm -s -f postgres-test
+docker network rm quezo-f03-37862b8f_default
+```
+
+| Requirement / acceptance boundary | F03 evidence |
+| --- | --- |
+| IAM-01; FR-001/002; partial AT-01 | Real openid-client code + PKCE, nonce/state/signature/issuer/client-audience/lifetime checks against a controlled peer; durable callback replay denial, rotation, expiry and logout; real Keycloak/API-audience gate remains I02 |
+| IAM-02; FR-003/061; partial AT-01 | Fresh schema-validated `/me` per render, changed/empty roles and disabled/401 behavior, no cache on outage, no auto grants; independent backend ownership and token validation remain I01 |
+| SRS sections 6-8; QUAL-02 / NFR-007,008 | Real database role isolation; strict Origin/Host/cookie checks; bounded store and dependency calls; token/secret absence from rendered HTML, responses and safe logs; no real-data privacy/retention acceptance |
+| QUAL-03 / NFR-009; partial AT-14 | Native keyboard-operable navigation, labels, skip/focus targets, wrapping layout and explicit states; static-render evidence only, not full keyboard/screen-reader/WCAG acceptance |
+| QUAL-04/05; partial AT-15 | Clean/prior-head migrations, process restart durability, failure/closure checks, locked dependencies, reproducible build and unchanged F02 contract checks; no deployment/readiness or recovery claim |
+
+F03 is returned **ready for B.C.'s review**, not done or integrated. No automatic
+commit/PR, successor launch, external provisioning or deployment is performed.
+
+## Remaining review gates
 
 Read [scope](PROTOTYPE-SCOPE.md), [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md)
 and the [software specification](SOFTWARE-SPECIFICATION.md) for behavior and

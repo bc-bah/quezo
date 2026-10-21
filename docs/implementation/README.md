@@ -1,8 +1,8 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** G00 approved with explicit holds; F01/F02 ready for synthetic-data development.
-No engineering work items have started.
+**Status:** F01/F02 accepted and integrated; F03 active for synthetic-data development.
+Later work remains subject to its decision gates and explicit dispatch.
 
 ## 1. Start here
 
@@ -11,13 +11,11 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint:** B.C. approved the [scoped G00 baseline](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026)
-on 20 October 2026 and owns the backlog, integration and first-wave review/merge.
-Use the [prepared F01/F02 prompts](AGENT-HANDOFF.md#4-approved-first-wave-prompts),
-dispatching F01 first and F02 next unless B.C. explicitly coordinates shared-file
-writes. Update each row to `active` at dispatch, not when preparing its prompt.
-Identity/session implementation and later decision gates remain held as recorded
-in the specification and backlog.
+**Current checkpoint:** B.C. approved the [second-wave F03 baseline](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
+on 20 October 2026 and owns F03 integration/review. F01/F02 are done and integrated.
+F03 has the first exclusive second-wave shared-file window; use
+[handoff section 5](AGENT-HANDOFF.md#5-second-wave-f03-assignment).
+I01 remains undispatched and later decision gates remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).

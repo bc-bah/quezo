@@ -1,16 +1,16 @@
-export default function HomePage() {
-  return (
-    <main>
-      <h1>Quezo</h1>
-      <p>Prototype scaffold. Product development is paused for architecture review.</p>
-      <p>
-        Planned scope: single-organization, low-stakes quizzes with authoring,
-        reliable attempts, objective grading, and controlled results.
-      </p>
-      <p>
-        Authentication and assessment features are not implemented. Review the
-        scope and high-level architecture in the repository&apos;s docs folder.
-      </p>
-    </main>
-  );
+import { cookies } from "next/headers";
+import { runtime } from "../lib/server/runtime";
+import { publicError } from "../lib/server/errors";
+import { SessionShell } from "./session-shell";
+
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  try {
+    const web = await runtime();
+    const cookie = (await cookies()).get(web.config.sessionCookie)?.value;
+    return <SessionShell view={await web.view(cookie)} />;
+  } catch (error) {
+    return <SessionShell view={{ state: "error", error: publicError(error).envelope }} />;
+  }
 }
