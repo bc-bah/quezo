@@ -216,11 +216,15 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
       await use(apps);
     } finally { await apps.close(); }
   }, { scope: "worker" }],
-  privacy: [async ({ page, apps }, use) => {
+  privacy: [async ({ page, apps }, use, testInfo) => {
     const checks: Promise<void>[] = [];
     const violations: string[] = [];
+    const pending = new Set<string>();
+    const diagnose = testInfo.title === "AT-01 callback state, browser binding and replay fail closed";
     page.on("response", (response) => {
       if (!response.url().startsWith(webOrigin + "/auth/")) return;
+      const stage = `response headers ${checks.length}`;
+      pending.add(stage);
       checks.push((async () => {
         for (const header of await response.headersArray()) {
           if (header.name.toLowerCase() === "set-cookie") {
@@ -229,6 +233,7 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
           }
         }
         if (response.headers()["referrer-policy"] !== "no-referrer") violations.push("Auth route referrer policy");
+        pending.delete(stage);
       })());
     });
     page.on("request", (request) => {
@@ -239,17 +244,30 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
           if (value) apps.secrets.add(value);
         }
       }
+      const stage = `request headers ${checks.length}`;
+      pending.add(stage);
       checks.push((async () => {
         if (url.origin === apiOrigin) violations.push("Browser called backend directly");
         if (url.origin === webOrigin && await request.headerValue("authorization")) violations.push("Browser exposed authorization");
         const referrer = await request.headerValue("referer");
         if (referrer?.includes("/auth/callback") || referrer?.includes("code=")) violations.push("Callback referrer leaked");
+        pending.delete(stage);
       })());
     });
     await use();
-    await Promise.all(checks);
+    const timer = diagnose ? setTimeout(() => {
+      console.log(`Privacy teardown: pending ${[...pending].join(", ")}`);
+    }, 5_000) : undefined;
+    try {
+      if (diagnose) console.log("Privacy teardown: awaiting header checks");
+      await Promise.all(checks);
+    } finally {
+      clearTimeout(timer);
+    }
+    if (diagnose) console.log("Privacy teardown: checking violations and DOM/storage");
     expect(violations).toEqual([]);
     if (page.url().startsWith(webOrigin) && !page.isClosed()) await privatePage(page, apps);
+    if (diagnose) console.log("Privacy teardown: complete");
   }, { auto: true }],
 });
 export { expect };
