@@ -122,6 +122,28 @@ combined browser/facade/API gate and is not dispatched. No external resources,
 deployment, real data, automatic commit or PR are authorized. B.C. retains final
 review, acceptance and integration/tracker updates.
 
+### I02 assignment and completion exception: 20 October 2026
+
+B.C. confirms F03 PR #5 (merge `b1a2fe035d52cdddf4db3a0c832a690773fe5688`)
+and I01 PR #6 (merge `6ef734faefbb52c76b78abb7d676ec9305f0c557`) done and
+integrated, and explicitly dispatches I02. B.C. owns the package, integration,
+review and exclusive shared-file write window. B.C. also explicitly authorizes
+the I02 session to reconcile the approval/tracker documents to this assignment.
+
+**EX-I02-01:** B.C. accepts the predicted `no-referrer`/native POST `Origin:null`
+interaction as a predecessor completion exception. At dispatch it was not a
+confirmed runtime failure and did not block starting I02. I02 must reproduce/fix or resolve
+it with native browser login AND logout evidence before I02/AT-01 acceptance.
+CSRF and foreign/null/missing Origin rejection must remain intact. B.C. owns
+exception closure; passing HTTP tests/hosted CI do not substitute for this proof.
+
+DEC-06/07 and the implemented session defaults remain unchanged. npm-locked
+Playwright Test may be added for isolated real PostgreSQL/Keycloak/API/built-web
+acceptance using synthetic data. No refresh tokens, global SSO logout, runtime
+admin credentials, automatic grants, outage fallback, schema redesign, A01,
+business routes, successors, external resources, deployment or real data are
+authorized. Return evidence for review, without automatic commit or PR.
+
 ## 3. Actors and authorization
 
 ### IAM-01: Identity and sessions

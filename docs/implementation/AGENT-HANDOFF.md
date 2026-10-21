@@ -303,3 +303,39 @@ blocker, not done. I02 owns combined Keycloak/browser acceptance; isolated F03
 checks do not establish full AT-01 or WCAG conformance. No successors, external
 resources, deployment, real data, automatic commit or PR. B.C. owns final
 acceptance and tracker updates.
+
+## 6. I02 integration assignment
+
+B.C. explicitly dispatches I02 on 20 October 2026 and authorizes this session
+to reconcile the coordination records. F03 PR #5 (`b1a2fe0`) and I01 PR #6
+(`6ef734f`) are done and integrated; preserve both producers and the single
+migration chain ending at `0004_identity`. B.C. owns integration, review and the
+exclusive I02 shared-file window.
+
+Connect real browser -> Next native auth forms/session facade -> FastAPI `/me`
+-> real Keycloak JWT/JWKS and PostgreSQL current roles/status. Add npm-locked
+Playwright Test and exact browser setup/run commands, reusable synthetic fixtures,
+owned isolated services, readiness/cleanup and focused CI coverage. No injected
+tokens/cookies, mocked actors, password grants or runtime bypasses for journeys.
+Keep sensitive captures disabled and assert token/session nondisclosure.
+
+EX-I02-01 is an accepted predecessor completion exception, not a start blocker:
+reproduce native login AND logout POST Origin behavior, then fix or resolve the
+predicted no-referrer problem with browser/version/header evidence. Preserve
+foreign/null/missing Origin rejection. B.C. owns exception closure.
+
+Cover administrator/author/learner and combined/empty roles, persistence, local
+logout, expiry, old-token revocation/disable, denied direct API calls, callback
+and CSRF protection, and explicit dependency outages respecting bounded JWKS
+caching. Keep lower-level hostile-request evidence alongside actual journeys.
+Record keyboard/error-state observations without claiming Q02/WCAG or P0.
+
+Permitted changes: browser tests/orchestration; narrow demonstrated producer
+integration fixes; I02-only manifests/locks/scripts/CI/Compose/env, existing
+isolated fixtures and development/e2e runbooks. No schema redesign, refresh,
+global logout, business routes, A01, successors, deployment or real data.
+Run all assignment checks and the new browser command; return section 3 with
+per-scenario AT-01 results, EX-I02-01 evidence, startup/cleanup commands,
+producer/generated changes and C01/T01 inputs. No automatic commit or PR.
+Report ready for review or an exact blocker, not done. B.C. owns acceptance and
+subsequent tracker updates.

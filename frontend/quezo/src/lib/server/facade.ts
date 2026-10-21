@@ -10,7 +10,7 @@ export class BackendFacade {
     private readonly transport: typeof fetch = fetch,
   ) {}
 
-  // Reused by the generated client once I01 exports /me; never forward browser headers.
+  // Never forward browser headers; bound success and error bodies before client parsing.
   authorizedFetch(accessToken: string): typeof fetch {
     return async (input, init) => {
       const request = new Request(input, init);
@@ -23,10 +23,26 @@ export class BackendFacade {
       headers.set("Authorization", `Bearer ${accessToken}`);
       headers.set("Accept", "application/json");
       try {
-        return await this.transport(new Request(request, {
+        const response = await this.transport(new Request(request, {
           headers, redirect: "error", cache: "no-store",
           signal: AbortSignal.timeout(limits.networkMs),
         }));
+        if (!response.body) return response;
+        const reader = response.body.getReader();
+        let size = 0;
+        const chunks: Uint8Array[] = [];
+        try {
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            size += value.length;
+            if (size > 262144) throw unavailable();
+            chunks.push(value);
+          }
+        } finally { await reader.cancel(); }
+        return new Response(Buffer.concat(chunks), {
+          status: response.status, statusText: response.statusText, headers: response.headers,
+        });
       } catch { throw unavailable(); }
     };
   }
@@ -36,30 +52,12 @@ export class BackendFacade {
   }
 
   async actor(accessToken: string): Promise<Actor> {
-    // /me is an agreed I01 producer, not yet an OpenAPI operation. Do not fabricate paths.
-    const response = await this.authorizedFetch(accessToken)(`${this.config.backend}/api/v1/me`);
-    let value: unknown;
-    try {
-      // Bound untrusted dependency responses before parsing or presenting them.
-      const reader = response.body?.getReader();
-      if (!reader) throw unavailable();
-      let size = 0;
-      const chunks: Uint8Array[] = [];
-      try {
-        for (;;) {
-          const { done, value: chunk } = await reader.read();
-          if (done) break;
-          size += chunk.length;
-          if (size > 262144) throw unavailable();
-          chunks.push(chunk);
-        }
-      } finally { await reader.cancel(); }
-      value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-    } catch { throw unavailable(); }
+    const { data, error, response } = await this.client(accessToken).GET("/api/v1/me")
+      .catch(() => { throw unavailable(); });
     if (!response.ok) {
-      if (errorValidator(value)) throw new WebError(response.status, value);
+      if (errorValidator(error)) throw new WebError(response.status, error);
       throw unavailable();
     }
-    return actorFrom(value);
+    return actorFrom(data);
   }
 }

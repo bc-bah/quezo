@@ -11,13 +11,13 @@ has permission to start. `review` means work is available but not yet accepted.
 owner, PR/commit and evidence links as work progresses. A blocked item records the
 specific decision or predecessor, not a generic "waiting."
 
-**Current state (20 October 2026):** B.C. explicitly dispatched I01 and authorized
-reconciliation of these coordination records. F01/F02 are done and integrated;
-the I01 checkout includes F03 PR #5, merge `b1a2fe0`. F03 acceptance/tracker
-completion remains B.C.'s decision. I01 is active under B.C. as owner, integrator
-and reviewer, with the exclusive shared-file window following F03 integration.
-DEC-06/07 select PyJWT with cryptography and asynchronous HTTPX for I01.
-No package acceptance, successor dispatch or later release approval is implied.
+**Current state (20 October 2026):** B.C. explicitly dispatched I02 and authorized
+reconciliation of these coordination records in the I02 session. F03/I01 are done
+and integrated through PR #5 (`b1a2fe0`) and PR #6 (`6ef734f`). B.C. accepts
+EX-I02-01 below as a predecessor completion exception, not a starting blocker.
+I02 is active under B.C. as owner, integrator and reviewer, with the exclusive
+integration shared-file window. No I02 acceptance, successor dispatch or later
+release approval is implied.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
 dependency. Decision gates still apply as specified by the package.
 
@@ -33,9 +33,9 @@ only after assigning non-overlapping shared-file write windows. Move each to
 | G00 | 0 | [Approve implementation baseline](01-FOUNDATIONS.md#g00-approve-implementation-baseline) | - | done | B.C. | [Scoped approval, 20 October 2026](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026); DEC-01 through DEC-05 approved; DEC-06/07 holds explicit; F01/F02 assigned |
 | F01 | 1 | [Database and integration-test foundation](01-FOUNDATIONS.md#f01-database-and-integration-test-foundation) | G00 | done | B.C. | Accepted/integrated PR #3, merge `8732328`; [local evidence](../DEVELOPMENT.md#f01-local-verification-20-october-2026); reconciliation authorized by B.C. 20 October 2026 |
 | F02 | 1 | [Contract and error foundation](01-FOUNDATIONS.md#f02-contract-and-error-foundation) | G00 | done | B.C. | Accepted/integrated PR #4, merge `5f314125e13262139e1d3e28d190881d6fbd5f8b`; [local evidence](../DEVELOPMENT.md#f02-local-verification-20-october-2026); reconciliation authorized by B.C. 20 October 2026 |
-| F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | active | B.C. | I01 baseline includes integrated PR #5 (`b1a2fe0`); openid-client + pg and `0003_web_sessions` preserved; final F03 acceptance/status reconciliation remains B.C.'s decision |
-| I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | active | B.C. | Explicit dispatch and coordination-record reconciliation authorized 20 October 2026; DEC-06/07 PyJWT + cryptography + asynchronous HTTPX; exclusive window after integrated F03 PR #5 (`b1a2fe0`); no runtime admin credentials; awaiting review |
-| I02 | 1 | [Integrated login and access gate](01-FOUNDATIONS.md#i02-integrated-login-and-access-gate) | F03, I01 | planned | B.C. | - |
+| F03 | 1 | [Web session and navigation foundation](01-FOUNDATIONS.md#f03-web-session-and-navigation-foundation) | F01, F02 | done | B.C. | Accepted/integrated PR #5, merge `b1a2fe035d52cdddf4db3a0c832a690773fe5688`; completion confirmed by B.C. 20 October 2026 with EX-I02-01; hosted CI is not browser evidence |
+| I01 | 1 | [Identity and authorization backend](01-FOUNDATIONS.md#i01-identity-and-authorization-backend) | F01, F02 | done | B.C. | Accepted/integrated PR #6, merge `6ef734faefbb52c76b78abb7d676ec9305f0c557`; completion confirmed by B.C. 20 October 2026; hosted CI is not browser evidence |
+| I02 | 1 | [Integrated login and access gate](01-FOUNDATIONS.md#i02-integrated-login-and-access-gate) | F03, I01 | active | B.C. | Explicit dispatch 20 October 2026; exclusive integration write window; real browser AT-01 and EX-I02-01 resolution required; B.C. owns acceptance/exception closure |
 | C01 | 2 | [Versioned objective questions](02-CORE-LIFECYCLE.md#c01-versioned-objective-questions) | I02 | planned | B.C. | - |
 | C02 | 2 | [Immutable quiz publication](02-CORE-LIFECYCLE.md#c02-immutable-quiz-publication) | C01 | planned | B.C. | - |
 | D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | planned | B.C. | - |
@@ -53,6 +53,17 @@ only after assigning non-overlapping shared-file write windows. Move each to
 | O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
 | Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | B.C. | DEC-08 benchmark/gates required |
 | G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | B.C. | DEC-11 later approvers/release commitments and release evidence required; DEC-10 gates any pilot |
+
+## EX-I02-01: Native form origin evidence
+
+B.C. accepts this predecessor completion exception on 20 October 2026.
+At dispatch, source/protocol review predicted that F03's `Referrer-Policy: no-referrer`
+could cause native login/logout POSTs to send `Origin: null` and receive 403.
+It was not yet a confirmed browser failure. I02 must reproduce and fix it,
+or resolve it with exact browser/version/request-header evidence before
+I02/AT-01 acceptance. Never allow null/missing/foreign origins, remove CSRF,
+or substitute manually supplied Origin headers for native browser actions.
+B.C. owns review and exception closure; F03/I01 completion permits I02 to start.
 
 ## Update protocol
 

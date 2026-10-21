@@ -1,0 +1,26 @@
+import type { FullResult, Reporter, TestCase, TestResult } from "@playwright/test/reporter";
+import { existsSync, unlinkSync } from "node:fs";
+import path from "node:path";
+
+// Playwright's normal error/step output can contain callback URLs or filled credentials.
+export default class SafeReporter implements Reporter {
+  onTestEnd(test: TestCase, result: TestResult) {
+    console.log(`${result.status.toUpperCase()}: ${test.title} (${result.duration}ms)`);
+    for (const error of result.errors) {
+      const line = error.stack?.match(/access\.spec\.ts:\d+:\d+/)?.[0];
+      console.log(`Failure location: ${line ?? "fixture/setup"}; raw error/call log withheld.`);
+      if (error.message?.includes("strict mode violation")) console.log("Failure kind: ambiguous locator");
+      else if (error.message?.includes("Timeout")) console.log("Failure kind: timeout");
+      else console.log("Failure kind: assertion or setup");
+    }
+    for (const attachment of result.attachments) {
+      if (attachment.path && path.basename(attachment.path) === "error-context.md"
+        && path.resolve(attachment.path).startsWith(path.resolve(process.env.I02_RESULTS!) + path.sep)
+        && existsSync(attachment.path)) {
+        unlinkSync(attachment.path);
+      }
+    }
+  }
+  onStdOut(chunk: string | Buffer) { process.stdout.write(chunk); }
+  onEnd(result: FullResult) { console.log(`I02 browser result: ${result.status}`); }
+}
