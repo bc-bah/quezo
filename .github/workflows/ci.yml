@@ -8,6 +8,30 @@ permissions:
   contents: read
 
 jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.17"
+          enable-cache: true
+          cache-dependency-glob: postgres/uv.lock
+      - run: npm ci
+      - run: uv sync --directory postgres --locked --python 3.12
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck:e2e
+      - name: Real browser, Keycloak, API and isolated PostgreSQL AT-01
+        run: npm run test:e2e
+      # No browser state, traces, HAR, screenshots or raw application logs are uploaded.
+
   web:
     runs-on: ubuntu-latest
     strategy:

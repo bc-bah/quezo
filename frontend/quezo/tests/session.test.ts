@@ -8,6 +8,13 @@ import { BackendFacade } from "../src/lib/server/facade";
 import { publicError, WebError } from "../src/lib/server/errors";
 import { requireOrigin } from "../src/lib/server/session";
 import { canonicalRequest, setCookie } from "../src/lib/server/http";
+import nextConfig from "../next.config";
+
+test("document referrer policy permits native POST Origin but never discloses paths/queries", async () => {
+  const rules = await nextConfig.headers!();
+  assert.equal(rules[0]!.headers.find((header) => header.key === "Referrer-Policy")?.value, "strict-origin");
+  assert.equal(rules.find((rule) => rule.source === "/auth/:path*")?.headers[0]?.value, "no-referrer");
+});
 
 test("configuration fails closed; HTTP is limited to explicitly local loopback", () => {
   assert.throws(() => readConfig({}));
@@ -119,6 +126,14 @@ test("safe backend errors preserve code/message/requestId/details; outages never
     async () => Response.json({ accessToken: "synthetic-access-token" }),
   ]) {
     await assert.rejects(new BackendFacade(config(), transport).actor("synthetic-access-token"));
+  }
+});
+
+test("generated actor operation bounds both success and error bodies before parsing", async () => {
+  for (const status of [200, 503]) {
+    const backend = new BackendFacade(config(), async () => new Response("x".repeat(262145), { status }));
+    await assert.rejects(backend.actor("synthetic-access-token"),
+      (error: unknown) => error instanceof WebError && error.status === 503);
   }
 });
 

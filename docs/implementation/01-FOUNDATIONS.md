@@ -114,6 +114,15 @@ I02 owns the combined identity/browser gate and full AT-01 evidence and is not
 dispatched. B.C. authorized coordination-record reconciliation, not acceptance;
 later decision/pilot gates remain held.
 
+**I02 checkpoint, 20 October 2026 (supersedes the dispatch state above):**
+B.C. confirms F03 PR #5 (`b1a2fe0`) and I01 PR #6 (`6ef734f`) done and integrated,
+accepts EX-I02-01 as a predecessor completion exception and explicitly dispatches
+I02. B.C. owns integration, review and the exclusive I02 shared-file window.
+The I02 session is authorized to reconcile these records. Real native browser
+login/logout evidence must resolve EX-I02-01 before I02/AT-01 acceptance.
+The migration head remains `0004_identity`; no schema redesign, successors,
+refresh tokens, global logout, deployment or real data are authorized.
+
 ## I01: Identity and authorization backend
 
 **Rules:** IAM-01/02, identity portion of IAM-03, AT-01.  

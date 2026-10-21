@@ -127,8 +127,9 @@ untrusted paths/query strings. Retain `--no-access-log` in custom launchers;
 do not enable request/body/token logging in HTTP clients, proxies or dependencies.
 These are local-only shells, not a production deployment. Build output, virtual
 environments, Python bytecode and test/type-check caches are ignored by Git.
-No linting tool or browser test runner is selected yet; add them deliberately
-with the approved implementation conventions.
+No linting tool is selected. I02 adds npm-locked Playwright Test; see
+[the real-browser runbook](../tests/e2e/README.md) for browser installation,
+owned isolated dependencies and `npm run test:e2e`.
 
 ## F02 HTTP contracts and generated client
 
@@ -750,13 +751,13 @@ read session secrets; `quezo_web` cannot read assessment tables or run DDL.
 
 ### Facade and I01/I02 handoff
 
-`BackendFacade.actor(token)` calls the agreed `/api/v1/me` URL with no-store
-and strict server-schema validation. It deliberately does **not** add an OpenAPI
-path or hand-edit generated types while I01 is absent. Once I01 exports `/me`,
-regenerate via F02 tooling and switch this single adapter call to its typed
-operation. `BackendFacade.client(token)` supplies the existing `createApiClient`
+`BackendFacade.actor(token)` now calls I01's generated `GET("/api/v1/me")`
+operation with no-store and strict server-schema validation. I02 switches this
+single adapter to the integrated operation without changing generated artifacts.
+`BackendFacade.client(token)` supplies the existing `createApiClient`
 with the same `authorizedFetch`: fixed backend origin, bearer token, stripped
-Cookie, no redirects, bounded transport and no cache. Future route owners must
+Cookie, no redirects, bounded transport and no cache. Success and error bodies
+are bounded to 256 KiB before generated-client parsing. Future route owners must
 enforce the same origin boundary before state-changing facade calls. Every
 backend protected operation must still enforce live roles/status/ownership.
 
@@ -1094,6 +1095,176 @@ docker network rm quezo-i01-e2f6cba3_default
 
 I01 is returned **ready for B.C.'s review**, not done. The tracker remains active;
 B.C. owns review, accepted integration and final status updates.
+
+## I02 integrated browser gate
+
+### Review handoff: 20 October 2026
+
+**Work item:** I02, Integrated login and access gate.
+
+**State:** ready for B.C.'s review, not accepted/done. EX-I02-01 closure remains
+B.C.'s decision. The final local combined command exited 0 with all 16 browser
+cases passing, no skipped cases, and owned-resource cleanup completed.
+
+**Changes:** `tests/e2e/` supplies locked Playwright configuration, reusable
+synthetic login/application fixtures, real-browser scenarios and a
+secret-safe reporter/runbook. `postgres/tests/run_browser.py` owns isolated
+Compose/provisioning/migration/startup/cleanup, with focused launcher tests.
+Root manifests/lock/scripts and one non-matrix CI browser job connect the suite.
+The approval/checkpoint documents were reconciled only after B.C.'s explicit
+permission in this session; I02 remains active for the human review boundary.
+
+Only two producer changes were needed: `frontend/quezo/next.config.ts` uses
+`strict-origin` on documents while explicitly retaining `no-referrer` on
+`/auth/:path*`; `src/lib/server/facade.ts` uses I01's generated `/me` operation
+and bounds success/error bodies before generated-client parsing. Native forms,
+CSRF checks, cookie/session defaults, issuer/audience/signature checks and
+account authority are unchanged. Focused frontend regressions cover the headers
+and bounded generated-client error path.
+
+**Requirement coverage:** IAM-01/02, AT-01, QUAL-02; FR-001/002/003/061 identity
+and role behavior; NFR-007/008 nondisclosure/security evidence; sections 6-8
+actor/error contracts and login states. Keyboard focus checks support only the
+foundation portion of QUAL-03, not Q02/WCAG acceptance. Existing type, migration
+and contract checks continue supporting QUAL-04/05; no full P0/AT-15/pilot claim.
+
+### EX-I02-01 reproduction and proposed resolution
+
+Browser: **Chromium 156.0.8078.4**, Playwright Test **1.64.1**, Windows x64.
+All observations below used native clicks/submissions, no test-API Origin
+injection or global request-header overrides.
+
+| Observation | Exact evidence |
+| --- | --- |
+| Original login red | `npm run test:e2e -- --grep native`, project `quezo-i02-5b0f74463418`, web `http://127.0.0.1:52316`: native POST logged `Origin=null; status=403`; expected exact origin/303 failed |
+| Original logout diagnosis | Temporary diagnostic case, `npm run test:e2e -- --grep diagnostic`, project `quezo-i02-18334a263d17`: changing **only that login document's** meta referrer policy to `strict-origin` yielded `Origin=http://127.0.0.1:50270; status=303`; actual provider UI completed login; the newly loaded original-policy page's native logout sent literal `Origin: null` and returned 403 |
+| Final normal behavior | Final combined run, web `http://127.0.0.1:58572`: both native login and logout sent `Origin=http://127.0.0.1:58572`, returned 303 and completed the expected signed-in/signed-out UI |
+| Retained negative control | Final `EX-I02-01 no-referrer negative control` case sets only a document meta policy to `no-referrer`: both forms again send literal `Origin: null` and receive 403 |
+| Disclosure/CSRF safeguards | Normal login Referer contains origin only, never the query sentinel; auth-route responses explicitly remain `no-referrer`; callback URLs are not forwarded as referrers; foreign/null/missing Origin requests are still rejected |
+
+The temporary diagnostic was replaced by the permanent negative control and
+normal-path tests. An initial full run also caught Next's global header rule
+overriding the intended route-level policy; the explicit `/auth/:path*` rule
+fixes that precedence. The exception is **reproduced and fixed with closure
+evidence returned**, not administratively closed by the agent.
+
+### AT-01 scenario results
+
+These are final **local automated browser** results from the unfiltered
+`npm run test:e2e -- --checks` run, project `quezo-i02-85a400c9e613`.
+See `tests/e2e/access.spec.ts` for executable assertions.
+
+| Case | Result and observed behavior |
+| --- | --- |
+| EX-I02-01 negative control | PASS: native null-Origin login/logout both 403 |
+| Native login/local logout | PASS: actual provider callback, exact-Origin forms, durable session deletion, new opaque session on re-login; Keycloak SSO/old API token remain valid after local logout |
+| Administrator | PASS: administrator-only navigation; real `/me` actor; reload persistence; cookie/DOM/storage checks |
+| Author | PASS: author-only navigation and same actor/privacy checks |
+| Learner | PASS: learner-only navigation and same actor/privacy checks |
+| Combined | PASS: author plus learner, no administrator inheritance |
+| Empty | PASS: authenticated empty-role actor, no workspace links, explicit no-role message |
+| Persistence/keyboard | PASS: same session survives built-web restart; Tab/Enter skip link, native login, provider password focus, workspace anchor and native logout |
+| Old-token revocation/disable | PASS: removing author role removes navigation and changes `/me` immediately; disabled account returns 403, invalidates session and cannot reactivate through existing provider SSO |
+| Inactive mapping | PASS: old token 401; existing browser session becomes expired |
+| Independent direct API | PASS: missing/malformed/tampered token 401; actual signed provider token 401 with wrong expected audience or issuer; restored exact configuration returns 200 |
+| Callback/state/binding/replay | PASS: wrong state, new-context missing binding and replay of a completed real callback return 401 with an actionable error |
+| CSRF | PASS: real different-origin browser form 403 without invalidating the valid session; supplemental missing/null/foreign HTTP requests deny both auth actions |
+| Backend/database outages | PASS: stopped actual API and severed real API/web PostgreSQL transports each produce explicit errors with no authenticated fallback; recovery revalidates the session |
+| Identity outage | PASS: paused real Keycloak permits warm cached keys only within the configured 10s TTL; expired/cold caches return 503; cold web discovery returns an actionable 503; unpause restores validation |
+| Actual expiry | PASS in 303087ms: unchanged 300s provider lifetime expires naturally; retained opaque cookie cannot authenticate; old API token returns 401; no refresh, time shift or row/token injection |
+
+All cases also completed the fixture's application-log secret checks. Browser
+checks confirm tokens/usable login and session secrets are absent from DOM,
+localStorage/sessionStorage and readable cookies, and the browser does not
+call the backend with a token. HttpOnly local session cookies are intentional.
+Shared Secure/host-prefix policy remains unit-tested, not a shared-TLS browser
+deployment claim. Traces/HAR/video/screenshots/storage-state are not retained.
+
+The role/ownership enforcement helpers have no product routes to exercise yet.
+Retained I01 `test_identity_access.py` supplies direct test-route role/ownership
+denials (including administrator non-inheritance), while this suite supplies
+actual provider/browser `/me`, invalid-token and revoked-account evidence.
+These evidence types are complementary, not interchangeable.
+
+### Exact commands, environment and cleanup
+
+Final environment: Windows x64; Node **24.20.0**, npm **11.19.0**;
+uv **0.12.17**, Python **3.12.10**; Docker Engine **29.7.2**, Compose **5.4.0**;
+PostgreSQL **17.11** (Debian x86_64); Keycloak image **26.4.7**;
+Next **16.4.2**; Playwright **1.64.1**, Chromium **156.0.8078.4**.
+The final owned services used PostgreSQL port **58570**, Keycloak **58571**,
+built web **58572**, API **58573**; application database transports used
+additional ephemeral loopback listeners. Realm/client/scope/audience were
+`quezo-local` / `quezo-web` / `openid quezo-api` / `quezo-api`, with exact
+issuer `http://localhost:58571/realms/quezo-local` and registered callback
+`http://127.0.0.1:58572/auth/callback`.
+
+| Exact command, repository root | Final result |
+| --- | --- |
+| `npm install --ignore-scripts --no-audit --no-fund` | Installed approved browser dependency and regenerated npm lock |
+| `npx playwright install chromium` | Installed the actual Chromium/headless-shell dependency |
+| `npm run typecheck` | Web, strict mypy (39 Python files) and browser TypeScript passed |
+| `npm test` | 12 web checks plus 264 Python cases passed, no skips |
+| `npm run build` | Built actual Next production routes successfully |
+| `npm run api:check` | OpenAPI and generated TypeScript current/unchanged |
+| `npm run test:contracts` | 87 Python cases plus 2 Node tooling/client checks passed |
+| `npm run test:db` | 87 cases passed, including clean/prior-revision migrations and restricted role/session checks |
+| `npm run test:identity` | 108 cases passed |
+| `npm run test:identity:integration` | 1 actual-Keycloak HTTP integration case passed; separately identified as HTTP, not browser proof |
+| `npm run test:web:production` | 1 retained built-Next/controlled-peer HTTP test passed; not used as browser proof |
+| `npm run test:e2e -- --checks` | Executed the nine checks above then all 16 real-browser cases; overall exit 0, cleanup completed |
+| `npm ls @playwright/test openid-client openapi-fetch pg next --depth=1` | Confirmed locked versions; existing producer dependencies preserved |
+| `git diff --check` | Passed |
+
+Initial failures are not counted as passes: missing web dependencies were
+restored after the initial typecheck failed; the runner needed Windows
+ProgramFiles environment for Compose plugin discovery; the native-form
+exception was reproduced before fixing; ambiguous global alert locators were
+scoped to `main`; explicit auth header precedence was corrected. Two combined
+attempts hit Windows nested-command exit `3221226505` with a newly created
+console process group. The isolated command passed, and removing that unnecessary
+Windows group flag allowed the complete final command to pass. PID-tree timeout
+cleanup remains; no test or assertion was skipped to bypass these failures.
+
+The full startup/installation/focused-demo/emergency-cleanup commands are in
+[`tests/e2e/README.md`](../tests/e2e/README.md). Normal cleanup executed the exact
+owned Compose service removal and network removal for
+`quezo-i02-85a400c9e613`. A post-run inspection found no containers/network for
+that project or its web/API/browser processes. Failed earlier runs also removed
+their owned services. No development volume or existing realm was targeted.
+
+**Contracts:** no new endpoint/DTO, generated artifact or schema change.
+The existing generated `/me` operation is now the frontend adapter's typed call;
+Actor stays `userId`, explicit `roles`, `status`. No runtime backend/Keycloak
+producer code changes were necessary.
+
+**Data:** migration head remains `0004_identity`, after `0003_web_sessions`.
+The retained database suite passed clean and prior-head upgrades, durability,
+constraints and role isolation. No applied revision, data retention or recovery
+policy changed; existing recovery cautions about restoring revoked accounts or
+locally invalidated sessions still apply.
+
+**Integration:** verified ancestors F03 PR #5
+(`b1a2fe035d52cdddf4db3a0c832a690773fe5688`) and I01 PR #6
+(`6ef734faefbb52c76b78abb7d676ec9305f0c557`); checkout and remote main initially
+matched the latter. Missing I02 coordination records were reconciled only after
+B.C.'s explicit follow-up authorization. Work remains uncommitted on
+`bc-bah-i02-login-access-gate`; no PR, successor, external resource or deployment.
+
+**Known gaps:** no unresolved local I02 scenario; B.C.'s acceptance/exception
+closure and hosted CI are outstanding. Node 22/Linux and Python 3.14 were not
+rerun locally for I02. Keyboard observations are automated Chromium checks;
+human screen-reader/full WCAG, assessment workflows, A01 and pilot gates remain
+outside this work.
+
+**Successor handoff (C01/T01):** after B.C.'s acceptance and separate dispatch,
+reuse `test`, `login`, `beginLogin`, `privatePage` and the owned application fixture
+in `tests/e2e/fixtures.ts`. Use fresh browser contexts when changing identities;
+local logout intentionally preserves Keycloak SSO. Keep mutation scenarios serial
+or provide independently owned accounts. Consume `BackendFacade.client/actor`
+and the generated schema; backend writes must resolve live actor/roles inside
+their transaction before operation/ownership checks. The repeatable navigation/
+restart demonstration works, but no question, quiz or attempt route is supplied.
 
 ## Remaining review gates
 

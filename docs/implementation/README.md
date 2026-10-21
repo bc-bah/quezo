@@ -1,7 +1,7 @@
 # Phased implementation plan
 
 **Date:** 20 October 2026  
-**Status:** F01/F02 accepted and integrated; F03 code integrated; I01 active for synthetic-data development.
+**Status:** F01/F02/F03/I01 done and integrated; I02 active for synthetic-data integration.
 Later work remains subject to its decision gates and explicit dispatch.
 
 ## 1. Start here
@@ -11,15 +11,14 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint:** B.C. approved the [second-wave F03 baseline](../SOFTWARE-SPECIFICATION.md#second-wave-approval-record-20-october-2026)
-on 20 October 2026 and owns F03 integration/review. F01/F02 are done and integrated.
-F03 has the first exclusive second-wave shared-file window; use
-[handoff section 5](AGENT-HANDOFF.md#5-second-wave-f03-assignment).
-B.C. subsequently dispatched I01, approved PyJWT/cryptography and async HTTPX,
-and authorized reconciliation of these records without claiming acceptance.
-I01 uses the integrated F03 PR #5 (`b1a2fe0`) baseline and the following exclusive
-shared-file window. B.C. retains final acceptance/tracker updates; later decision
-gates remain held.
+**Current checkpoint:** B.C.'s 20 October 2026 I02 assignment confirms F03 PR #5
+(`b1a2fe0`) and I01 PR #6 (`6ef734f`) done and integrated, accepts EX-I02-01 as a
+predecessor completion exception and authorizes coordination-record reconciliation.
+I02 owns the exclusive integration shared-file window and must resolve the
+exception with native browser evidence before acceptance. Use
+[handoff section 6](AGENT-HANDOFF.md#6-i02-integration-assignment).
+B.C. owns review, exception closure, integration and final tracker updates.
+Later decision gates remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).
