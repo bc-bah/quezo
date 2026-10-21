@@ -173,7 +173,8 @@ def test_real_routes_have_consistent_envelopes_and_unchanged_health() -> None:
     second = client.get("/health/live")
     assert first.json() == {"status": "ok", "scope": "process-only"}
     assert first.headers["x-request-id"] != second.headers["x-request-id"]
-    for path in ("/api/v1/me", "/api/v1/quizzes", "/health/ready", "/test-only/input"):
+    assert client.get("/api/v1/me").json()["code"] == "UNAUTHENTICATED"
+    for path in ("/api/v1/quizzes", "/health/ready", "/test-only/input"):
         response = client.get(path)
         assert response.status_code == 404
         assert response.json()["code"] == "NOT_FOUND"
@@ -247,7 +248,7 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths() -> None:
     exported = Path(__file__).resolve().parents[1] / "openapi.json"
     assert json.loads(exported.read_text(encoding="utf-8")) == document
     assert document == create_app().openapi()
-    assert set(document["paths"]) == {"/health/live"}
+    assert set(document["paths"]) == {"/health/live", "/api/v1/me"}
     schemas = document["components"]["schemas"]
     assert set(schemas["Actor"]["properties"]) == {"userId", "roles", "status"}
     assert schemas["Actor"]["additionalProperties"] is False

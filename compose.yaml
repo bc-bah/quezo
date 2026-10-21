@@ -42,6 +42,18 @@ services:
       timeout: 5s
       retries: 20
 
+  keycloak-test:
+    image: quay.io/keycloak/keycloak:26.4.7
+    profiles: ["identity-test"]
+    command: ["start-dev"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-quezo-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set KEYCLOAK_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:${KEYCLOAK_TEST_PORT:-58080}:8080"
+    tmpfs:
+      - /opt/keycloak/data:uid=1000,gid=0
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.7
     profiles: ["identity"]

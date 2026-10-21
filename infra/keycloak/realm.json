@@ -1,0 +1,71 @@
+{
+  "realm": "quezo-local",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "verifyEmail": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": false,
+  "accessTokenLifespan": 300,
+  "defaultSignatureAlgorithm": "RS256",
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "administrator", "description": "Label only; not application authorization" },
+      { "name": "author", "description": "Label only; not application authorization" },
+      { "name": "learner", "description": "Label only; not application authorization" }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "quezo-api",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" },
+      "protocolMappers": [
+        {
+          "name": "quezo-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "quezo-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        },
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "quezo-web",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
+      "redirectUris": ["http://localhost:3000/auth/callback"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000"
+      },
+      "defaultClientScopes": [],
+      "optionalClientScopes": ["quezo-api"]
+    }
+  ]
+}

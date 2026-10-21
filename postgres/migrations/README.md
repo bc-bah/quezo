@@ -15,9 +15,10 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0001_application_schema` | `base` | Revoke public schema access; create migration-owned `quezo` namespace |
 | `0002_runtime_grants` | `0001_application_schema` | Restrict database access, grant runtime schema usage and future table/sequence DML privileges; remove default public function execution |
 | `0003_web_sessions` | `0002_runtime_grants` | Create isolated `quezo_session` tables and explicit DML grants to `quezo_web` only |
+| `0004_identity` | `0003_web_sessions` | Create backend accounts, unique issuer/subject mappings and current role assignments; no seeded grants |
 
 Only `public.alembic_version` records migration state. There are no assessment,
-application-identity, seed, audit or acknowledgement tables. F03 adds sessions
+seed, audit or acknowledgement tables. F03 adds sessions
 and single-use login transactions in `quezo_session`. Upcoming packages
 provide their own reviewed schema and section 6 constraints. Default runtime
 grants apply only to tables/sequences created **by `quezo_migrator` in `quezo`**;
@@ -29,6 +30,30 @@ access is absent before the second revision and present afterwards, as well as
 a separate clean `base -> head` path and repeat `head` execution.
 F03 also tests the actual integrated prior head `0002_runtime_grants -> 0003_web_sessions`.
 Applied F01 revisions are unchanged.
+I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
+F03 session, repeat-head execution, constraint/privilege enforcement and failure
+rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
+
+### I01 identity storage
+
+All three new tables are in `quezo`, owned by `quezo_migrator` and covered by the
+existing restricted backend DML grants. No bootstrap role or default-grant change
+is needed. `quezo_web` cannot read or write identity tables; `quezo_runtime` still
+cannot access F03 session secrets.
+
+`accounts` has the application UUID and active/disabled status (default disabled).
+`identity_mappings` has a unique `(issuer, subject)` primary key, a unique
+account foreign key and an active flag (default false). `account_roles` has one
+row per account/administrator-author-learner pair, constrained by foreign key,
+role check and composite primary key. There are no passwords, token role
+snapshots, emails or session fields. Empty/combined roles are valid.
+
+Migration does not grant anyone access. Use the explicit synthetic identity
+provisioner only after a successful upgrade. An unapplied failure rolls back all
+identity DDL and the revision record; an applied revision is forward-only.
+Restoring an old database can restore revoked roles/status/mappings, so recovery
+must review and reapply revocations before exposing traffic. This is not a
+backup/recovery acceptance claim. See the [identity runbook](../../infra/keycloak/README.md).
 
 ## Execution and identities
 

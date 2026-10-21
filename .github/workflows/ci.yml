@@ -88,5 +88,30 @@ jobs:
           docker exec -i "${{ job.services.postgres.id }}" psql -U quezo_test_admin -d quezo_test_control < tests/bootstrap.sql
       - run: uv run --locked --python "${{ matrix.python }}" mypy
       - run: uv run --locked --python "${{ matrix.python }}" pytest
+      - name: Actual isolated Keycloak provisioning and token integration
+        if: matrix.python == '3.12'
+        working-directory: .
+        env:
+          POSTGRES_PASSWORD: unused-config-placeholder
+          KEYCLOAK_ADMIN: quezo-admin
+          KEYCLOAK_TEST_PORT: "58080"
+          KEYCLOAK_LOCAL_ORIGIN: http://localhost:58080
+        run: |
+          export KEYCLOAK_ADMIN_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          export QUEZO_OIDC_CLIENT_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          export QUEZO_SYNTHETIC_PASSWORD="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          echo "::add-mask::$KEYCLOAK_ADMIN_PASSWORD"
+          echo "::add-mask::$QUEZO_OIDC_CLIENT_SECRET"
+          echo "::add-mask::$QUEZO_SYNTHETIC_PASSWORD"
+          docker compose -p quezo-i01-ci --profile identity-test up -d keycloak-test
+          curl --retry 60 --retry-all-errors --retry-delay 2 --max-time 2 --fail --silent --output /dev/null http://localhost:58080/realms/master/.well-known/openid-configuration
+          npm run test:identity:integration
+      - name: Remove isolated Keycloak test service
+        if: always() && matrix.python == '3.12'
+        working-directory: .
+        env:
+          POSTGRES_PASSWORD: unused-config-placeholder
+          KEYCLOAK_ADMIN_PASSWORD: unused-config-placeholder
+        run: docker compose -p quezo-i01-ci --profile identity-test rm -s -f keycloak-test
       - run: npm run build --prefix ..
       - run: npm run test:web:production --prefix ..
