@@ -216,6 +216,18 @@ One subsequent full run stopped at a native Windows/npm startup failure
 unchanged complete command was rerun successfully as recorded above; no check,
 assertion or runtime authority was bypassed.
 
+**CI portability follow-up:** the hosted Python 3.14 contract check exposed a
+standard-library HTTP 422 description change from `Unprocessable Entity` to
+`Unprocessable Content`. Question routes now explicitly retain the committed
+description. The reproducibility test exercises both standard-library phrases
+on every Python version, comparing the complete schema with the committed
+artifact. The failure was reproduced before the fix. Targeted local checks on
+Python 3.12.10 and 3.14.7 each passed all 88 contract cases, strict mypy and
+`npm run api:check`; both Node contract/tooling cases also passed. Regeneration
+left OpenAPI and TypeScript artifacts unchanged. No runtime response, database
+or browser behavior changed; the full browser/database gate was not rerun for
+this metadata-only patch. Hosted CI must rerun after the patch is pushed.
+
 **Contracts:** all paths below are relative to `/api/v1`. Every operation
 requires a currently active mapped author. Administrator alone is denied (403);
 another owner's resources are concealed as 404, including bank filters, cursors

@@ -1,3 +1,4 @@
+import http.client
 import json
 import traceback
 from collections.abc import Iterator
@@ -243,7 +244,11 @@ async def test_failure_after_headers_never_reraises_original_secret(
     assert SECRET not in caplog.text
 
 
-def test_openapi_is_reproducible_and_contains_only_implemented_paths() -> None:
+@pytest.mark.parametrize("validation_reason", ["Unprocessable Entity", "Unprocessable Content"])
+def test_openapi_is_reproducible_and_contains_only_implemented_paths(
+    monkeypatch: pytest.MonkeyPatch, validation_reason: str,
+) -> None:
+    monkeypatch.setitem(http.client.responses, 422, validation_reason)
     document = create_app().openapi()
     exported = Path(__file__).resolve().parents[1] / "openapi.json"
     assert json.loads(exported.read_text(encoding="utf-8")) == document

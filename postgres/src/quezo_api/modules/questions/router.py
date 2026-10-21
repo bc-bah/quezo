@@ -20,7 +20,9 @@ router = APIRouter(
     responses={
         401: {"model": ErrorEnvelope}, 403: {"model": ErrorEnvelope},
         404: {"model": ErrorEnvelope}, 409: {"model": ErrorEnvelope},
-        422: {"model": ErrorEnvelope}, 503: {"model": ErrorEnvelope},
+        # Preserve the contract across Python's differing HTTP 422 reason phrases.
+        422: {"model": ErrorEnvelope, "description": "Unprocessable Entity"},
+        503: {"model": ErrorEnvelope},
     },
 )
 
