@@ -266,6 +266,7 @@ def test_openapi_is_reproducible_and_contains_only_implemented_paths(
         "/api/v1/quizzes/{quiz_id}/versions/{version_id}",
         "/api/v1/eligible-learners", "/api/v1/assignments", "/api/v1/assignments/{assignment_id}",
         "/api/v1/assignments/{assignment_id}/attempts", "/api/v1/attempts/{attempt_id}",
+        "/api/v1/attempts/{attempt_id}/responses/{question_id}",
     }
     schemas = document["components"]["schemas"]
     assert set(schemas["Actor"]["properties"]) == {"userId", "roles", "status"}

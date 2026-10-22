@@ -1,7 +1,7 @@
 import json
 import logging
 from enum import StrEnum
-from typing import get_args
+from typing import Literal, get_args
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, Request
@@ -14,7 +14,7 @@ from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from quezo_api.schemas import ApiModel
+from quezo_api.schemas import ApiModel, NonNegativeInteger, PublicId, UtcTimestamp
 
 MAX_BODY_BYTES = 256 * 1024
 logger = logging.getLogger("quezo_api.http")
@@ -80,15 +80,31 @@ class ValidationDetails(ApiModel):
     fields: list[FieldError]
 
 
+class ResponseConflictDetails(ApiModel):
+    current_revision: NonNegativeInteger
+    selected_option_id: PublicId | None
+    saved_at: UtcTimestamp | None
+
+
+class AttemptAdmissionDetails(ApiModel):
+    attempt_state: Literal["in_progress", "finalized", "expired"]
+    deadline: UtcTimestamp | None
+    server_time: UtcTimestamp
+
+
+ErrorDetails = ValidationDetails | ResponseConflictDetails | AttemptAdmissionDetails
+
+
 class ErrorEnvelope(ApiModel):
     code: ErrorCode
     message: str
     request_id: UUID
-    details: ValidationDetails | None = None
+    details: ErrorDetails | None = None
 
 
 class ApiError(Exception):
-    def __init__(self, code: ErrorCode, *, retry_after: int | None = None) -> None:
+    def __init__(self, code: ErrorCode, *, retry_after: int | None = None,
+                 details: ErrorDetails | None = None) -> None:
         if retry_after is not None and (
             code != ErrorCode.RATE_LIMITED
             or type(retry_after) is not int
@@ -98,13 +114,14 @@ class ApiError(Exception):
         super().__init__(code.value)
         self.code = code
         self.retry_after = retry_after
+        self.details = details
 
 
 def error_response(
     request_id: str,
     code: ErrorCode,
     *,
-    details: ValidationDetails | None = None,
+    details: ErrorDetails | None = None,
     headers: dict[str, str] | None = None,
     status: int | None = None,
 ) -> JSONResponse:
@@ -117,9 +134,12 @@ def error_response(
     envelope = ErrorEnvelope.model_validate({
         "code": code, "message": message, "requestId": request_id, "details": details,
     })
+    content = envelope.model_dump(mode="json", exclude_none=True)
+    if details is not None:
+        content["details"] = details.model_dump(mode="json")
     return JSONResponse(
         status_code=status,
-        content=envelope.model_dump(mode="json", exclude_none=True),
+        content=content,
         headers={
             **(headers or {}),
             "X-Request-ID": request_id,
@@ -194,7 +214,7 @@ async def api_error_handler(request: Request, exception: Exception) -> JSONRespo
         {"Retry-After": str(exception.retry_after)}
         if exception.retry_after is not None else None
     )
-    return error_response(request.state.request_id, exception.code, headers=headers)
+    return error_response(request.state.request_id, exception.code, headers=headers, details=exception.details)
 
 
 async def http_error_handler(request: Request, exception: Exception) -> JSONResponse:

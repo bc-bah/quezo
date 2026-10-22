@@ -11,10 +11,39 @@ class StartCommand(ApiModel):
     pass
 
 
+ResponseRevision = Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+AttemptState = Literal["in_progress", "finalized", "expired"]
+
+
+class SavedResponse(ApiModel):
+    selected_option_id: PublicId | None
+    revision: ResponseRevision
+    saved_at: UtcTimestamp | None
+
+
+class SaveCommand(ApiModel):
+    request_id: PublicId
+    expected_revision: ResponseRevision
+    selected_option_id: PublicId | None
+
+
+class SaveAcknowledgement(ApiModel):
+    request_id: PublicId
+    response_revision: ResponseRevision
+    saved_at: UtcTimestamp
+
+
+class SaveResult(ApiModel):
+    acknowledgement: SaveAcknowledgement
+    attempt_state: AttemptState
+    server_time: UtcTimestamp
+
+
 class AttemptQuestion(PreviewQuestion):
     attempt_question_id: PublicId
     question_id: PublicId
     version_id: PublicId
+    response: SavedResponse
 
 
 class Attempt(ApiModel):
@@ -22,7 +51,7 @@ class Attempt(ApiModel):
     assignment_id: PublicId
     version_id: PublicId
     attempt_number: Annotated[StrictInt, Field(ge=1)]
-    state: Literal["in_progress", "finalized", "expired"]
+    state: AttemptState
     title: Title
     instructions: Instructions
     policy: QuizPolicy

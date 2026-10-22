@@ -1,7 +1,7 @@
 # Phase 2 coding-agent handoffs
 
 **Approved and assigned:** B.C., 21 October 2026.
-C01 and C02 are accepted and `done`; the remaining six packages are `active`
+C01, C02 and D01 are accepted and `done`; the remaining five packages are `active`
 assignments, **not simultaneously executable**.
 I02 is done, EX-I02-01 is closed, and the integrated foundation is
 `553a2c8b77a770667f4cef6825f57c3b55f477ed` ([PR #7](https://github.com/bc-bah/quezo/pull/7)).
@@ -13,25 +13,29 @@ C02's verified local delivery is accepted at B.C.'s direction; see its
 [accepted publication contract/evidence](../DEVELOPMENT.md#c02-immutable-quiz-publication).
 C02 integration was verified on 22 October 2026: [PR #9](https://github.com/bc-bah/quezo/pull/9)
 merged at `03797bcbb545ec188da941ff6bb02e380f5b9f1b`. D01's checkout contains
-that merge, its producer ancestors and the wave approval. The accepted contract
-is unchanged; this verification does not accept D01 or dispatch a successor.
+that merge, its producer ancestors and the wave approval.
+D01 was reviewed, accepted and integrated as confirmed by B.C. on 22 October:
+[PR #10](https://github.com/bc-bah/quezo/pull/10), merge
+`b5751a94ce2ab36be8add8070bbbd99573175d0a`, implementation `cbb74f5`,
+migration `0007_attempt_start`. Its snapshot/locking handoff is accepted.
+B.C. directed D02 execution after updating these records.
 The copy-ready prompts below retain their original assignments and gate checks;
-they do not redispatch completed C01/C02.
+they do not redispatch completed C01/C02/D01.
 
 | Package | Prompt | Required producer acceptance/integration |
 | --- | --- | --- |
 |  |  |  |
 | C01 | [Versioned objective questions](#c01-dispatch-prompt) | Done; accepted merge `e66f459` |
 | C02 | [Immutable quiz publication](#c02-dispatch-prompt) | Done; accepted merge `03797bc` |
-| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 accepted; merge `03797bc` verified in checkout |
-| D02 | [Durable response save and resume](#d02-dispatch-prompt) | D01 |
+| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | Done; accepted merge `b5751a9` |
+| D02 | [Durable response save and resume](#d02-dispatch-prompt) | D01 accepted; merge `b5751a9` verified in checkout |
 | S01 | [Pure objective scoring](#s01-dispatch-prompt) | F02, already done |
 | D03 | [Finalization and expiration](#d03-dispatch-prompt) | D02 and S01 |
 | R01 | [Policy-filtered result](#r01-dispatch-prompt) | D03 |
 | T01 | [First lifecycle acceptance](#t01-dispatch-prompt) | R01 and I02 |
 
-S01 remains independently executable. D01 follows C02's checkout/integration
-gate; no successor is dispatched by this record. The persistence/UI chain is
+S01 remains independently executable. D02's producer gate is satisfied;
+no later successor is dispatched by this record. The persistence/UI chain is
 C01 -> C02 -> D01 -> D02 -> D03 -> R01 -> T01, with S01 joining at D03.
 The [backlog](BACKLOG.md), not this diagram, is authoritative for current status.
 

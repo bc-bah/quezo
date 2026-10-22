@@ -13,9 +13,9 @@ export const issuer = process.env.I02_ISSUER!;
 type Account = { username: string; password: string; id: string; roles: string[] };
 export const accounts: Record<string, Account> = JSON.parse(process.env.I02_ACCOUNTS!);
 
-// Forward bytes unchanged to real PostgreSQL; closing sockets induces an actual
-// transport outage without stopping/reinitializing its tmpfs database.
-class DatabaseTransport {
+// Forward bytes unchanged to a real dependency; closing sockets induces an actual
+// transport outage without substituting application/database responses.
+class DependencyTransport {
   private readonly sockets = new Set<Socket>();
   private readonly server;
   private port = 0;
@@ -62,9 +62,11 @@ export class Applications {
   ]);
   readonly assessmentContent = new Set<string>();
   readonly webDb = new pg.Pool({ connectionString: process.env.I02_WEB_DATABASE, max: 1, connectionTimeoutMillis: 5000 });
-  readonly apiDb = new pg.Pool({ connectionString: process.env.I02_API_DATABASE, max: 1, connectionTimeoutMillis: 5000 });
-  readonly webTransport = new DatabaseTransport(process.env.I02_WEB_DATABASE!);
-  readonly apiTransport = new DatabaseTransport(process.env.I02_API_DATABASE!);
+  // D02 holds one parent lock while a second connection observes the queued save.
+  readonly apiDb = new pg.Pool({ connectionString: process.env.I02_API_DATABASE, max: 2, connectionTimeoutMillis: 5000 });
+  readonly webTransport = new DependencyTransport(process.env.I02_WEB_DATABASE!);
+  readonly apiTransport = new DependencyTransport(process.env.I02_API_DATABASE!);
+  readonly backendTransport = new DependencyTransport(apiOrigin);
   private readonly paused = new Set<"postgres-test" | "keycloak-test">();
 
   private start(command: string, args: string[], cwd: string, env: NodeJS.ProcessEnv) {
@@ -105,7 +107,7 @@ export class Applications {
     this.web = this.start(process.execPath, ["scripts/run-next.mjs", "start", "--port", new URL(webOrigin).port],
       path.resolve("frontend/quezo"), {
         ...appEnvironment(), NEXT_TELEMETRY_DISABLED: "1", QUEZO_WEB_ENV: "local",
-        QUEZO_WEB_ORIGIN: webOrigin, QUEZO_BACKEND_ORIGIN: apiOrigin,
+        QUEZO_WEB_ORIGIN: webOrigin, QUEZO_BACKEND_ORIGIN: this.backendTransport.url,
         QUEZO_OIDC_ISSUER: issuer, QUEZO_OIDC_CLIENT_ID: "quezo-web",
         QUEZO_OIDC_CLIENT_SECRET: process.env.I02_CLIENT_SECRET, QUEZO_API_AUDIENCE: "quezo-api",
         QUEZO_WEB_DATABASE_URL: this.webTransport.url,
@@ -154,6 +156,7 @@ export class Applications {
       await this.apiDb.end();
       await this.webTransport.close();
       await this.apiTransport.close();
+      await this.backendTransport.close();
     }
     expect([...this.secrets].some((secret) => this.logs.includes(secret)), "Application logs contain no usable secrets").toBe(false);
     expect([...this.assessmentContent].some((value) => this.logs.includes(value)), "Application logs contain no assessment content").toBe(false);
@@ -211,6 +214,7 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
       await apps.ready(issuer + "/.well-known/openid-configuration");
       await apps.webTransport.open();
       await apps.apiTransport.open();
+      await apps.backendTransport.open();
       await apps.startApi();
       await apps.startWeb();
       await use(apps);
@@ -220,7 +224,23 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
     const checks: Promise<void>[] = [];
     const violations: string[] = [];
     const pending = new Set<string>();
-    const diagnose = testInfo.title === "AT-01 callback state, browser binding and replay fail closed";
+    const diagnose = testInfo.title === "AT-01 callback state, browser binding and replay fail closed"
+      || testInfo.title.startsWith("D02 ");
+    const inspectHeaders = (headers: Record<string, string>) => {
+      for (const [name, value] of Object.entries(headers)) {
+        if (name.toLowerCase() === "authorization") violations.push("Browser exposed authorization");
+        if (name.toLowerCase() === "referer" && (value.includes("/auth/callback") || value.includes("code="))) {
+          violations.push("Callback referrer leaked");
+        }
+      }
+    };
+    // Raw-header promises can hang for interrupted Chromium prefetches. Inspect
+    // intended headers immediately and actual wire headers even for failed requests.
+    const network = await page.context().newCDPSession(page);
+    network.on("Network.requestWillBeSentExtraInfo", (event: { headers: Record<string, string> }) => {
+      inspectHeaders(event.headers);
+    });
+    await network.send("Network.enable");
     page.on("response", (response) => {
       if (!response.url().startsWith(webOrigin + "/auth/")) return;
       const stage = `response headers ${checks.length}`;
@@ -244,15 +264,8 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
           if (value) apps.secrets.add(value);
         }
       }
-      const stage = `request headers ${checks.length}`;
-      pending.add(stage);
-      checks.push((async () => {
-        if (url.origin === apiOrigin) violations.push("Browser called backend directly");
-        if (url.origin === webOrigin && await request.headerValue("authorization")) violations.push("Browser exposed authorization");
-        const referrer = await request.headerValue("referer");
-        if (referrer?.includes("/auth/callback") || referrer?.includes("code=")) violations.push("Callback referrer leaked");
-        pending.delete(stage);
-      })());
+      if (url.origin === apiOrigin) violations.push("Browser called backend directly");
+      inspectHeaders(request.headers());
     });
     await use();
     const timer = diagnose ? setTimeout(() => {
@@ -261,12 +274,13 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
     try {
       if (diagnose) console.log("Privacy teardown: awaiting header checks");
       await Promise.all(checks);
+      if (diagnose) console.log("Privacy teardown: checking violations and DOM/storage");
+      if (page.url().startsWith(webOrigin) && !page.isClosed()) await privatePage(page, apps);
     } finally {
       clearTimeout(timer);
+      await network.detach();
     }
-    if (diagnose) console.log("Privacy teardown: checking violations and DOM/storage");
     expect(violations).toEqual([]);
-    if (page.url().startsWith(webOrigin) && !page.isClosed()) await privatePage(page, apps);
     if (diagnose) console.log("Privacy teardown: complete");
   }, { auto: true }],
 });

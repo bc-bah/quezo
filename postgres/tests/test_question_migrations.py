@@ -53,7 +53,7 @@ def test_actual_identity_head_upgrade_preserves_accounts_and_sessions(empty_data
     run_migrations(empty_database.migration_url)
     run_migrations(empty_database.migration_url)
     with psycopg.connect(empty_database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0007_attempt_start",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0008_responses",)
         assert connection.execute("SELECT id FROM quezo.accounts").fetchone() == (owner,)
         assert connection.execute("SELECT role FROM quezo.account_roles").fetchone() == ("author",)
     with psycopg.connect(empty_database.web_url) as connection:

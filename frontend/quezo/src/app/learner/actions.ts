@@ -14,3 +14,22 @@ Promise<ActionResult<components["schemas"]["Attempt"]>> {
     })) };
   } catch (error) { return { ok: false, error: publicError(error).envelope }; }
 }
+
+export async function readAttempt(attemptId: string): Promise<ActionResult<components["schemas"]["Attempt"]>> {
+  try {
+    const client = await assessmentClient("learner");
+    return { ok: true, value: await apiData(client.GET("/api/v1/attempts/{attempt_id}", {
+      params: { path: { attempt_id: attemptId } },
+    })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
+
+export async function saveResponse(attemptId: string, questionId: string, body: components["schemas"]["SaveCommand"]):
+Promise<ActionResult<components["schemas"]["SaveResult"]>> {
+  try {
+    const client = await assessmentClient("learner", true);
+    return { ok: true, value: await apiData(client.PUT("/api/v1/attempts/{attempt_id}/responses/{question_id}", {
+      params: { path: { attempt_id: attemptId, question_id: questionId } }, body,
+    })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
