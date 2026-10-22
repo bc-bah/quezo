@@ -7,6 +7,20 @@ import type { ActionResult } from "../actions";
 
 type S = components["schemas"];
 
+export async function assignLearner(body: S["AssignmentCreate"]): Promise<ActionResult<S["Assignment"]>> {
+  try {
+    const client = await questionClient(true);
+    return { ok: true, value: await apiData(client.POST("/api/v1/assignments", { body })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
+
+export async function eligibleLearners(cursor: string | null): Promise<ActionResult<S["Page_EligibleLearner_"]>> {
+  try {
+    const client = await questionClient();
+    return { ok: true, value: await apiData(client.GET("/api/v1/eligible-learners", { params: { query: { cursor } } })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
+
 export async function saveQuiz(body: S["QuizComposition"], target?: {
   id: string; expectedRevision: number;
 }): Promise<ActionResult<S["Quiz"]>> {

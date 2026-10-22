@@ -47,13 +47,14 @@ export function SessionShell({ view }: { view: SessionView }) {
                   <h2>{label}</h2>
                   {role === "author"
                     ? <p><a href="/author">Manage question banks</a></p>
+                    : role === "learner" ? <p><a href="/learner">My assignments</a></p>
                     : <p>This workspace is not implemented yet.</p>}
                 </section>
               ),
             )}
           </>
         )}
-        <p>Authors can manage versioned objective questions. Quiz delivery is not available yet.</p>
+        <p>Authors can publish and assign quizzes. Learners can start and resume assigned attempts; saving and submission are not available yet.</p>
       </main>
     </>
   );

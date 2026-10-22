@@ -7,6 +7,10 @@ import { runtime } from "./runtime";
 import { requireOrigin } from "./session";
 
 export async function questionClient(write = false) {
+  return assessmentClient("author", write);
+}
+
+export async function assessmentClient(role: "author" | "learner", write = false) {
   const web = await runtime();
   if (write) {
     const incoming = await headers();
@@ -22,8 +26,8 @@ export async function questionClient(write = false) {
   if (!session) throw unauthenticated();
   const backend = new BackendFacade(web.config);
   const actor = await backend.actor(session.access_token);
-  if (!actor.roles.includes("author")) {
-    throw failure(403, "FORBIDDEN", "An author role is required.");
+  if (!actor.roles.includes(role)) {
+    throw failure(403, "FORBIDDEN", `A ${role} role is required.`);
   }
   return backend.client(session.access_token);
 }

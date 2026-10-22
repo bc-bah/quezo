@@ -7,9 +7,9 @@ minimal UI and relevant tests unless explicitly pure calculation.
 
 **Assignment, 21 October 2026:** C01 and C02 are accepted and `done`; the other six
 packages below remain `active` under B.C., with explicit producer execution
-gates. C02's verified local delivery is accepted but still uncommitted on
-`e66f459`; D01 needs its actual integration commit recorded and included before
-execution. S01 remains independently executable. Each later consumer must first include
+gates. C02's accepted delivery is integrated by PR #9 at `03797bc`, verified
+in D01's checkout on 22 October 2026 alongside its producer ancestors and wave
+approval. S01 remains independently executable. Each later consumer must first include
 its accepted producer commits. Use the
 [copy-ready package prompts](PHASE-2-HANDOFFS.md) and
 [approved demo defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).

@@ -682,15 +682,15 @@ update. C01 is now accepted and `done` at merge `e66f459`, migration
 `0005_questions`; see its [accepted handoff](../DEVELOPMENT.md#c01-versioned-objective-questions).
 Consumers must also include their later accepted producer commits and the
 current backlog acceptance record. C02's verified local delivery is also accepted
-and tracked as `done`, but its actual integration commit is still pending.
-D01 must include that commit before execution. The original C01/C02 prompts
+and tracked as `done`; PR #9 integrated it at `03797bc`, verified in D01's
+checkout on 22 October 2026. The original C01/C02 prompts
 are historical, not new assignments.
 
 | Package | Copy-ready prompt | Implementation gate |
 | --- | --- | --- |
 | C01 | [Versioned objective questions](PHASE-2-HANDOFFS.md#c01-dispatch-prompt) | Done; accepted merge `e66f459` |
-| C02 | [Immutable quiz publication](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) | Done; local delivery accepted, integration commit pending |
-| D01 | [Assignment and attempt start](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) | C02 accepted; record/include its actual integration commit |
+| C02 | [Immutable quiz publication](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) | Done; accepted merge `03797bc` |
+| D01 | [Assignment and attempt start](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) | C02 accepted; merge `03797bc` verified in checkout |
 | D02 | [Durable response save and resume](PHASE-2-HANDOFFS.md#d02-dispatch-prompt) | D01 accepted and integrated |
 | S01 | [Pure objective scoring](PHASE-2-HANDOFFS.md#s01-dispatch-prompt) | F02 done; executable now |
 | D03 | [Finalization and expiration](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) | D02 and S01 accepted and integrated |

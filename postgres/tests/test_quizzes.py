@@ -51,7 +51,9 @@ def test_reuse_preview_publication_and_immutable_revisions(author: TestClient, d
         assert connection.execute("SELECT row_to_json(q) FROM quezo.quizzes q ORDER BY id").fetchall() == before
         for table in ["quiz_versions", "quiz_questions", "quiz_publication_commands", "quiz_publication_events"]:
             assert connection.execute(f"SELECT count(*) FROM quezo.{table}").fetchone() == (0,)
-        for table in ["assignments", "attempts", "grades"]:
+        for table in ["assignments", "attempts"]:
+            assert connection.execute(f"SELECT count(*) FROM quezo.{table}").fetchone() == (0,)
+        for table in ["grades"]:
             assert connection.execute("SELECT to_regclass(%s)", ("quezo." + table,)).fetchone() == (None,)
     key = str(uuid4())
     acknowledgement = publish(author, quiz, key)

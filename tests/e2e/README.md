@@ -1,4 +1,4 @@
-# Real-browser identity, question and quiz-authoring gates
+# Real-browser identity, authoring and attempt-start gates
 
 This suite uses npm-locked Playwright Test 1.64.1 and its Chromium browser.
 Every successful journey uses native Quezo forms, the actual Keycloak login UI,
@@ -86,7 +86,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0006_quizzes`, and calls I01's allowlisted
+Next, migrates a fresh database to `0007_attempt_start`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -173,7 +173,8 @@ The suite also checks no direct browser API/token calls, no callback referrer
 disclosure and empty localStorage/sessionStorage.
 
 This is the working-foundations, C01 and C02 demonstration, not A01 account management,
-quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. Keyboard
+full quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. D01 additionally
+demonstrates assignment/start/resume, not saving or submission. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
 producer gates, not introduce a second runner.
@@ -232,3 +233,27 @@ corrections and full database/web results are in the
 [C02 review handoff](../../docs/DEVELOPMENT.md#c02-immutable-quiz-publication).
 B.C.'s subsequent local-delivery acceptance is recorded in that handoff;
 this browser run does not claim hosted CI or default-branch integration.
+
+## D01 AT-06 assignment and start
+
+`attempts.spec.ts` uses the same real-login fixtures and secret-safe reporter.
+Focus with `npm run test:e2e -- --grep D01`; the required review gate remains
+`npm run test:e2e -- --checks`.
+
+The author creates and publishes an untimed quiz, selects an active learner by
+application UUID, assigns and repeats the assignment. The actual learner lists,
+starts, reloads and resumes that attempt. The case inspects application JSON and
+HTML/RSC in memory for pre-start question disclosure and private key/feedback
+leakage, verifies stored option IDs/order and one consumed allowance, and checks
+foreign learner/author links and API IDs. Content sentinels remain excluded from
+application logs and all browser artifacts remain disabled.
+
+Database fixtures, not the demo, cover configured randomization, finite deadlines,
+allowance exhaustion including expired attempts, concurrent starts and initial
+assignments, finalized-command replay and post-lock live-role/time checks.
+Fixture-only finalization is explicitly not D03 acceptance. Execution evidence
+and exact D02/D03 contracts live in the D01 section of `docs/DEVELOPMENT.md`.
+
+The 22 October 2026 complete local gate passed all 25 cases (16 I02, 5 C01,
+3 C02 and 1 D01) on Chromium 156.0.8078.4, with owned-resource cleanup.
+This is local review evidence, not B.C.'s acceptance or hosted CI.
