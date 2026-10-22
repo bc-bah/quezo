@@ -18,10 +18,12 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0004_identity` | `0003_web_sessions` | Create backend accounts, unique issuer/subject mappings and current role assignments; no seeded grants |
 | `0005_questions` | `0004_identity` | Owned banks/questions, immutable objective revisions, content checks and restricted version privileges |
 | `0006_quizzes` | `0005_questions` | Revisioned quiz drafts, immutable publications/ordered question snapshots, retained command acknowledgements and publication events |
+| `0007_attempt_start` | `0006_quizzes` | Unique pinned assignments, numbered attempts, frozen private/presentation snapshots and retained start command mappings |
 
 Only `public.alembic_version` records migration state. C01 adds question tables;
 C02 adds quiz publication, acknowledgement and publication-event tables, but no
-assignment, attempt, grade or seed tables. F03 adds sessions
+assignment, attempt, grade or seed tables in that revision. D01 adds assignment
+and attempt tables only, with no response, grade or submission implementation. F03 adds sessions
 and single-use login transactions in `quezo_session`. Upcoming packages
 provide their own reviewed schema and section 6 constraints. Default runtime
 grants apply only to tables/sequences created **by `quezo_migrator` in `quezo`**;
@@ -37,9 +39,54 @@ I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
+### D01 assignment and attempt storage
+
+`0007_attempt_start` is the single head, following actual integrated C02
+`0006_quizzes`. No applied revision changes. `assignments` uniquely pins
+`(learner_id, version_id)` and has an immutable quiz/version relationship.
+No allowance counter is resettable: successful committed attempt rows consume
+allowance; finalized and expired rows count too. `attempts` has a unique
+assignment/number and a partial unique index permitting one `in_progress` row.
+Composite foreign keys carry assignment/learner/version ownership through
+attempts, question snapshots and the command ledger.
+
+Attempt metadata (publication, title, instructions, points, policy, start and
+deadline) is frozen. `attempt_questions` stores an exact private C02 question
+JSON plus separately persisted presented options/position and its own UUID.
+Triggers validate the snapshot against its publication, all options as a complete
+permutation, nonrandomized order, effective points, exact deadline and dense
+complete question coverage. Deferred completeness requires a retained start
+command before commit. Sealed snapshots cannot gain questions. Immutable
+assignments/questions/commands reject UPDATE/DELETE; attempts reject deletion,
+metadata mutation and reopening a finalized state. Runtime receives only
+column-level `UPDATE(id)` on assignments so PostgreSQL permits `FOR UPDATE`;
+the immutable trigger still rejects even a no-op update. `quezo_web` has no
+access to any D01 table.
+
+Starts lock the owned assignment, re-resolve live identity, authorize and check
+the scoped ledger. New commands lock an existing active attempt or take a quiz
+share lock before new admission; the database wall clock is read after waits.
+Future close operations must retain the quiz-row lock convention. Future
+save/finalization operations lock the parent attempt and must not acquire an
+assignment/quiz lock after that lock (avoid reversing start's order).
+The command primary key is actor/assignment/operation/request UUID; its SHA-256
+fingerprint includes those fields and the normalized empty payload. The stored
+attempt ID is the acknowledgement, retained indefinitely. No automatic retry.
+
+`test_attempt_migrations.py` covers actual `0006_quizzes -> head` preserving
+published history, repeat head, failed-upgrade rollback, private table
+privileges and snapshot/relationship constraints. F01's retained migration
+tests cover clean `base -> head`. A failed upgrade rolls back DDL and ledger;
+after application use a reviewed forward correction. Preserve assignments,
+attempts, questions and command relationships together during recovery.
+Response storage is D02; finalization timestamps/grade/expiry reconciliation
+and the required forward extension of the metadata trigger are D03.
+Reserved `finalized`/`expired` states are exercised only by controlled database
+fixtures in D01; no runtime finalization or fake grade is provided.
+
 ### C02 quiz publication storage
 
-`0006_quizzes` is the single head, parent `0005_questions`. `quizzes` stores the
+`0006_quizzes` has parent `0005_questions` (D01 now follows it). `quizzes` stores the
 owned mutable draft, separate monotonic revision, state and last published UUID.
 Composition/policy JSON retains independent validated fields, not a preset flag.
 `quiz_versions` freezes title, instructions, policy, positive possible total and

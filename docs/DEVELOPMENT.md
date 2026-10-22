@@ -8,8 +8,8 @@ checks and strict mypy configuration. F01 adds real PostgreSQL connectivity,
 ordered migrations, restricted database roles and isolated database tests.
 Separate frontend/backend CI jobs are included. C01 adds owned question banks,
 immutable MCQ/true-false revisions and author forms. C02 adds draft composition,
-nonpersistent learner-shaped preview and immutable quiz publication; quiz delivery
-is not implemented.
+nonpersistent learner-shaped preview and immutable quiz publication. D01 adds
+named assignment and atomic start/resume with frozen learner/private snapshots.
 F02 adds strict HTTP DTOs, sanitized errors, server-generated correlation IDs,
 bounded request bodies and a generated TypeScript client for implemented routes.
 
@@ -17,8 +17,7 @@ F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
 independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
 
-Assignment/attempt schemas and routes,
-background expiration, grading, real readiness checks, application containers,
+Response saving, submission, background expiration, grading, real readiness checks, application containers,
 and deployment are intentionally absent. A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
 I02, not established by F03 protocol tests. Database configuration is required
@@ -139,6 +138,181 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## D01 assignment and attempt start
+
+**Work item:** D01. **Owner/integrator/reviewer:** B.C.; assigned 21 October 2026.
+**State:** ready for review, 22 October 2026. Implementation remains local and
+uncommitted; no PR, acceptance/status change or successor dispatch.
+The complete common gate passed, including all 25 real-browser cases.
+
+**Integration:** the live C02 acceptance was already recorded. On 22 October
+2026, `gh pr view 9 --json state,mergedAt,mergeCommit,url,headRefOid` verified
+[PR #9](https://github.com/bc-bah/quezo/pull/9) merged on 21 October at
+`03797bcbb545ec188da941ff6bb02e380f5b9f1b` (implementation `67ce98a`).
+Git ancestry checks verified C01 `e66f459`, I02 `553a2c8` and Phase 2 approval
+`49eb37b` in this checkout. The stale integration-pending text was corrected
+before implementation. C02's accepted publication/policy contract is unchanged.
+Shared edits use D01's post-C02 window: router registration, minimal navigation,
+generated artifacts, test discovery/head expectations and directly related docs.
+
+**Changes / requirement coverage:** `modules/distribution` owns minimal
+active-learner lookup and unique pinned assignments (AUTH-04/IAM-02).
+`modules/attempts` owns atomic start/resume, admission, allowance, ordering and
+private-to-learner projection (ATT-01, ATT-03 admission, sections 6-7).
+Author publication pages offer explicit assignment. `/learner` lists only the
+current learner's assignments; `/learner/attempts/{id}` renders the authorized
+stored snapshot with no answer controls or implied save/submit.
+The demo remains untimed, unscheduled, one attempt and nonrandomized.
+
+**HTTP contracts:** exported normally through `npm run api:generate`;
+TypeScript uses that output, not handwritten parallel DTOs.
+
+| Operation | Contract and authority |
+| --- | --- |
+| `GET /api/v1/eligible-learners` | Author role; paginated active accounts with learner role and active mapping. Items contain **only `userId`**. The existing identity producer has no name/email profile; selection uses the application UUID, not provider subject/email/roles. |
+| `POST /api/v1/assignments` | `AssignmentCreate {quizId, versionId, learnerId}`; author must own the quiz and nested immutable publication; recipient must be active/eligible. 201 for new pair, 200 for its existing assignment, never a counter reset. |
+| `GET /api/v1/assignments`, `/{assignment_id}` | Learner role and ownership; bounded UUID-ordered pagination. Summary contains IDs, title, state, started/completed/remaining counts, active attempt UUID and availability bounds, **no questions/options/private scoring**. |
+| `POST /api/v1/assignments/{assignment_id}/attempts` | Learner ownership, UUID `Idempotency-Key`, strict empty `StartCommand {}`. 201 only for a new committed attempt; 200 for active resume or original-command replay. |
+| `GET /api/v1/attempts/{attempt_id}` | Current active learner role and attempt ownership, including finalized fixture snapshots. Returns only the explicit `Attempt` learner projection. |
+
+All assessment responses are private/no-store; missing/foreign IDs are concealed
+as 404 after role checks. Missing role is 403, disabled account is denied even
+with an old token, and removed mappings are unauthenticated. Errors use F02's
+existing envelopes/codes. Browser writes reuse the server-only facade and
+Host/Origin checks; tokens remain server-side. Assignment writes re-resolve the
+author after the quiz lock; starts re-resolve the learner after lock waits.
+
+Assignment states are `not_yet_available`, `available`, `in_progress`,
+`completed_remaining`, `exhausted`, `closed`. Counts distinguish completed
+history even when a schedule/closure takes precedence. An active attempt takes
+precedence over closure/zero remaining allowance because closure does not revoke
+an already-started attempt. No overdue attempt is silently replaced or given
+another allowance; D03 must add the agreed reconciliation/finalization logic.
+Publication alone never adds assignments or updates existing version pins.
+
+**Frozen shapes / stable IDs:**
+
+| Shape | Fields and use |
+| --- | --- |
+| `Attempt` | `id`, `assignmentId`, `versionId`, `attemptNumber`, current `state`, frozen `title`, `instructions`, independent `policy`, `startedAt`, nullable `deadline`, `possiblePoints`, ordered `questions`. |
+| Learner `AttemptQuestion` | `attemptQuestionId`, original `questionId`/exact `versionId`, one-based `position`, `questionType`, literal `prompt`, ordered `{id,text}` options, `effectivePoints`. No correct option, feedback or default/scoring definition. |
+| Private `attempt_questions` | Exact C02 `question` JSON (C01 `QuestionVersion`, including `correctOptionId`/feedback), frozen `effective_points`, original question/version FKs, stored `options` presentation and `position`, generated question UUID. Backend only; never passed through learner serialization. |
+| Start acknowledgement | Retained `attempt_start_commands.attempt_id`, scoped to actor/assignment/`start`/request UUID, with canonical SHA-256 fingerprint. Replay reads that same attempt's current state and original snapshot, even after another attempt exists. |
+
+D02 must address saves by **`attemptQuestionId`**, not bank/question identity.
+C01 option UUIDs remain unchanged under shuffling. Each attempt gets new question
+UUIDs; question/version IDs retain provenance. Question and option flags permute
+the complete selected sets once; refresh never reshuffles. Policy includes all
+independent release fields and unlimited nulls. No private scoring model is used
+as an HTTP response model.
+
+**Transactions / replay / time:** reuse F01's bounded `Database.transaction()`;
+no manual commits, second pools, generic repositories or server retry loop.
+Starts acquire the owned assignment `FOR UPDATE`, recheck current identity,
+then consult the ledger. The canonical fingerprint includes actor, target,
+operation, key and normalized empty payload. A mismatched fingerprint conflicts;
+authorization always precedes replay. Each different command that resumes an
+active attempt gets its own retained mapping to that attempt.
+Active-attempt lookup uses `FOR UPDATE`; fresh admission takes a quiz `FOR SHARE`
+lock and reads PostgreSQL `clock_timestamp()` **after** the waits. State,
+inclusive start/exclusive end and remaining allowance are enforced there.
+Deadline is `min(availabilityEnd, startedAt + duration)` over present bounds,
+or null. All snapshots, numbering and the ledger commit before HTTP success.
+The number of committed attempts is the consumed allowance, including expiry.
+
+Lock order for successors: assignment -> existing attempt, or assignment ->
+quiz share for new starts. D02/D03 lock the parent attempt for response CAS and
+finalization; do not acquire assignment/quiz locks afterward. Close must serialize
+on the quiz row without reversing this order. There is no ledger cleanup policy.
+The UI retains its start command key while mounted for uncertain retries;
+after reload it reconciles via the assignment's existing active attempt.
+
+**Data / recovery:** `0007_attempt_start` follows actual prior head
+`0006_quizzes`; existing revisions are untouched. Composite foreign keys,
+unique learner/version and assignment/number pairs, one-active partial index,
+immutable snapshot triggers, complete-publication-copy checks and deferred
+attempt completeness back up application rules. Restricted column UPDATE on
+assignment ID permits row locking but its trigger rejects every mutation.
+No assignment deletion/reassignment/revocation is introduced. See the migration
+README for privileges, clean/prior-head tests and forward-only recovery.
+
+**AT-06 evidence:** `test_attempts.py`, `test_attempt_migrations.py` and
+`tests/e2e/attempts.spec.ts` cover initial/duplicate assignment races, identical
+and distinct concurrent start keys, one consumed allowance, finalized replay,
+expired allowance, role/foreign/nested IDs, strict payloads, rollback, active
+resume after closure, minimal lookup and pre-start nondisclosure.
+All four ordering flag combinations use a deterministic reversal fixture to prove
+both branches, complete sets and stored refresh order. Real-database finite
+deadline fixtures cover each bound; exact microsecond admission is also tested
+at the pure admission seam. Held assignment locks prove post-wait role revocation
+and database-time schedule rejection. Actual browser work creates/publishes/
+assigns and lists/starts/reloads/resumes, checking JSON and HTML/RSC in memory.
+Fixture-only `finalized`/`expired` updates test D01 contracts, not grading or D03.
+
+**Checks:** final `npm run test:e2e -- --checks` exited 0 with owned project
+`quezo-i02-40267e4ad2f7`. The preceding focused D01 browser run also exited 0
+with owned project `quezo-i02-7453f04875ed`. Both removed their disposable
+PostgreSQL/Keycloak containers and networks; no development volumes were used.
+Environment: Windows x64, Node 24.20.0, npm 11.19.0, uv 0.12.17,
+Python 3.12.10, Docker Engine 29.7.2, PostgreSQL 17.11, configured Keycloak
+26.4.7 and Chromium 156.0.8078.4 (Playwright 1.64.1).
+
+| Final command / stage | Result |
+| --- | --- |
+| `npm run api:generate` | OpenAPI and TypeScript regenerated normally |
+| `npm run typecheck` | Web/e2e TypeScript and strict mypy over 68 modules passed |
+| `npm test` | 12 web tests and 475 Python tests passed; Python 754.60 seconds |
+| `npm run build` | Production Next build passed, including author assignment and learner list/attempt routes |
+| `npm run api:check` | OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | 88 Python and 2 Node tooling/client cases passed; missing start idempotency header rejected at compile time |
+| `npm run test:db` | 192 cases passed in 712.14 seconds; includes real database race/rollback/constraint checks, clean/prior-head migrations and five pure exact-boundary cases |
+| `npm run test:identity` | All 108 retained identity cases passed |
+| `npm run test:identity:integration` | Actual Keycloak integration passed |
+| `npm run test:web:production` | Built-web boundary/redaction case passed |
+| `npm run test:e2e -- --grep D01` | Actual author/learner journey passed, 15.769 seconds |
+| Unfiltered browser suite in `--checks` | All 25 passed: 16 I02, 5 C01, 3 C02, 1 D01; D01 11.648 seconds |
+| `uv run --directory postgres --locked alembic heads` | Single head `0007_attempt_start` |
+
+The D01 Python files contribute 26 passing cases (21 database-backed cases and
+five pure boundary cases). All assigned AT-06 scenarios passed in the final
+common gate. `test_actual_publication_head_upgrade_preserves_history` verifies
+the actual `0006_quizzes -> 0007_attempt_start` path and repeat head against an
+existing publication; retained clean migration checks verify `base -> head`.
+Failed upgrade/transaction fixtures prove rollback without allowance consumption
+or partial snapshots. No hosted CI, Node 22/Python 3.14 or manual accessibility
+result is claimed.
+
+Earlier focused iteration used the existing `run_browser` environment/Compose
+and guarded `db_helpers` conventions in a temporary session-only launcher
+(subsequently removed). The final common gate discovers all package tests
+through committed test paths and root scripts; no custom runner is required.
+Docker was initially stopped and was started with `docker desktop start`.
+Missing npm dependencies were restored with `npm ci` after generation reported
+the missing package; no dependencies or lockfiles were changed.
+
+Initial
+iteration caught the required PostgreSQL column UPDATE privilege for assignment
+row locking, a browser assertion that observed the still-visible list heading
+before navigation, a foreign-FK fixture masked by duplicate-pair uniqueness and
+retained pre-D01 route-inventory expectations. These were corrected without
+weakening ownership, private-table access or nondisclosure checks.
+The first complete run had 471 passes, the two now-corrected inventory failures
+and a migration subprocess timeout with a large elapsed-time jump; a concurrent
+focused browser run also timed out in setup. Their exact host cause was not
+established. The final sequential runs passed without relaxing timeouts, adding
+runtime retries or bypassing services. No logs with raw assessment/credential
+payloads, screenshots, trace, HAR or browser storage-state artifacts were retained.
+
+**Known gaps:** no unresolved criterion within the assigned D01 slice.
+
+**Successor handoff / excluded scope:** no saves/responses, submission, Grade,
+result UI, worker expiry or timed accessibility UX. D02 adds response rows and
+revision/acknowledgement behavior using the frozen question/option IDs above.
+D03 adds actual expiry/finalization and grades, extends reserved state metadata
+with a forward migration, and wires overdue-read/write reconciliation without
+changing attempt deadlines or retained start mappings. These consumers still
+require B.C.'s D01 acceptance and integration; no successor is authorized here.
+
 ## C02 immutable quiz publication
 
 ### Acceptance record: 21 October 2026
@@ -150,12 +324,11 @@ unchanged, with the recorded passing database/web/browser evidence.
 
 This acceptance is recorded against the uncommitted C02 worktree on C01 merge
 `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, with migration `0006_quizzes`.
-There is not yet a C02 commit/PR or default-branch integration. Before D01
-execution, record the actual integration commit and ensure its checkout
-contains that commit and this accepted handoff; acceptance does not copy local
-changes into another session. No additional acceptance decision is pending,
-but the downstream checkout/integration gate remains. No new test run, commit,
-PR or successor dispatch is implied by this tracking update.
+Integration subsequently verified on 22 October 2026: [PR #9](https://github.com/bc-bah/quezo/pull/9)
+merged at `03797bcbb545ec188da941ff6bb02e380f5b9f1b` (implementation `67ce98a`).
+D01's checkout includes that merge, C01 `e66f459`, I02 `553a2c8` and wave
+approval `49eb37b`. No new acceptance decision, test result or successor
+dispatch is implied by recording this verified integration.
 
 ### Review handoff: 21 October 2026
 
@@ -1710,11 +1883,11 @@ restart demonstration works, but no question, quiz or attempt route is supplied.
 
 ## Phase 2 assignments and remaining review gates
 
-C01 is accepted and integrated at `e66f459`; C02 is accepted and tracked as
-`done` for its verified local delivery, with integration commit still pending.
+C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
+at `03797bc` (PR #9), verified in D01's checkout on 22 October 2026.
 The other six Phase 2 packages remain active assignments under B.C., not
-simultaneously executable packages. D01 needs the actual C02 integration commit
-in its checkout, not another C02 acceptance decision. S01 remains independently
+simultaneously executable packages. D01's producer checkout gate is satisfied;
+D01 itself still needs B.C.'s review/acceptance/integration. S01 remains independently
 executable on the accepted `553a2c8` foundation plus Phase 2
 approval. Each later consumer must first verify its own integrated producer
 evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).

@@ -11,9 +11,10 @@ C01 [PR #8](https://github.com/bc-bah/quezo/pull/8) is accepted and integrated a
 `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c`, migration `0005_questions`.
 C02's verified local delivery is accepted at B.C.'s direction; see its
 [accepted publication contract/evidence](../DEVELOPMENT.md#c02-immutable-quiz-publication).
-C02 is still uncommitted on the C01 merge. Before D01 executes, record the
-actual C02 integration commit and include it with this acceptance record in
-D01's checkout. The `done` tracking update does not waive that checkout gate.
+C02 integration was verified on 22 October 2026: [PR #9](https://github.com/bc-bah/quezo/pull/9)
+merged at `03797bcbb545ec188da941ff6bb02e380f5b9f1b`. D01's checkout contains
+that merge, its producer ancestors and the wave approval. The accepted contract
+is unchanged; this verification does not accept D01 or dispatch a successor.
 The copy-ready prompts below retain their original assignments and gate checks;
 they do not redispatch completed C01/C02.
 
@@ -21,8 +22,8 @@ they do not redispatch completed C01/C02.
 | --- | --- | --- |
 |  |  |  |
 | C01 | [Versioned objective questions](#c01-dispatch-prompt) | Done; accepted merge `e66f459` |
-| C02 | [Immutable quiz publication](#c02-dispatch-prompt) | Done; local delivery accepted, integration commit pending |
-| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 accepted; record/include its actual integration commit |
+| C02 | [Immutable quiz publication](#c02-dispatch-prompt) | Done; accepted merge `03797bc` |
+| D01 | [Assignment and attempt start](#d01-dispatch-prompt) | C02 accepted; merge `03797bc` verified in checkout |
 | D02 | [Durable response save and resume](#d02-dispatch-prompt) | D01 |
 | S01 | [Pure objective scoring](#s01-dispatch-prompt) | F02, already done |
 | D03 | [Finalization and expiration](#d03-dispatch-prompt) | D02 and S01 |

@@ -76,8 +76,14 @@ async function typesOnly() {
   if (quizzes.data) {
     const items: components["schemas"]["QuizSummary"][] = quizzes.data.items;
   }
-  // @ts-expect-error C02 does not implement assignments.
-  await client.GET("/api/v1/assignments");
+  const assignments = await client.GET("/api/v1/assignments");
+  if (assignments.data) {
+    const items: components["schemas"]["Assignment"][] = assignments.data.items;
+  }
+  // @ts-expect-error D01 does not implement grades.
+  await client.GET("/api/v1/grades");
+  // @ts-expect-error Start requires an idempotency header.
+  await client.POST("/api/v1/assignments/{assignment_id}/attempts", { params: { path: { assignment_id: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313" } }, body: {} });
   // @ts-expect-error Publication requires a UUID idempotency header.
   await client.POST("/api/v1/quizzes/{quiz_id}/publish", { params: { path: { quiz_id: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313" } }, body: { expectedRevision: 1 } });
   // @ts-expect-error Health has no POST operation.
