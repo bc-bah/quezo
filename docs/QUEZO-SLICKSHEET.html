@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101d2b">
+    <meta
+      name="description"
+      content="Meet Quezo: a focused workspace for authoring, delivering, and reviewing a complete low-stakes assessment workflow."
+    >
+    <title>Quezo — The complete assessment loop, without the LMS sprawl</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #142233;
+        --muted: #536273;
+        --paper: #f6f3eb;
+        --white: #fffefa;
+        --navy: #101d2b;
+        --navy-soft: #1b2d3e;
+        --mint: #b8efcf;
+        --lime: #d9f279;
+        --coral: #ff8e73;
+        --line: #d9ded7;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #dce2df;
+        color: var(--ink);
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .sheet {
+        position: relative;
+        isolation: isolate;
+        width: min(100%, 1440px);
+        min-height: 960px;
+        margin: 28px auto;
+        overflow: hidden;
+        background: var(--paper);
+        box-shadow: 0 24px 80px rgb(16 29 43 / 18%);
+      }
+
+      .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 34px 6.2% 18px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        color: var(--ink);
+        font-size: 22px;
+        font-weight: 750;
+        letter-spacing: -.06em;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 31px;
+        height: 31px;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--navy);
+        color: var(--lime);
+        font-family: Georgia, serif;
+        font-size: 21px;
+        font-style: italic;
+        line-height: 1;
+      }
+
+      .edition {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        min-height: 440px;
+        grid-template-columns: 1.03fr .97fr;
+        align-items: center;
+        gap: 36px;
+        padding: 35px 6.2% 45px;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 93% 5%, rgb(184 239 207 / 14%), transparent 36%),
+          var(--navy);
+        color: var(--white);
+      }
+
+      .hero::after {
+        position: absolute;
+        z-index: -1;
+        right: -150px;
+        bottom: -300px;
+        width: 660px;
+        height: 660px;
+        border: 1px solid rgb(184 239 207 / 17%);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 0 0 20px;
+        color: var(--mint);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--coral);
+        content: "";
+      }
+
+      h1, h2, p { margin-top: 0; }
+
+      h1 {
+        max-width: 610px;
+        margin-bottom: 20px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(46px, 5.4vw, 76px);
+        font-weight: 400;
+        letter-spacing: -.055em;
+        line-height: .99;
+      }
+
+      h1 span { color: var(--lime); font-style: italic; }
+
+      .hero-copy {
+        max-width: 510px;
+        margin-bottom: 27px;
+        color: #d4dde2;
+        font-size: 17px;
+        line-height: 1.6;
+      }
+
+      .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      .pill {
+        padding: 7px 11px;
+        border: 1px solid rgb(255 255 255 / 18%);
+        border-radius: 999px;
+        color: #e6eeed;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .loop {
+        position: relative;
+        width: 100%;
+        max-width: 470px;
+        justify-self: end;
+        padding: 22px;
+        border: 1px solid rgb(255 255 255 / 13%);
+        border-radius: 18px;
+        background: rgb(255 255 255 / 5%);
+        box-shadow: 0 22px 65px rgb(0 0 0 / 16%);
+        transform: rotate(1.3deg);
+      }
+
+      .loop-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 19px;
+        color: #b7c6cf;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+      }
+
+      .loop-head span:last-child { color: var(--mint); }
+
+      .flow {
+        display: grid;
+        grid-template-columns: 1fr 22px 1fr 22px 1fr;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .flow-card {
+        min-height: 113px;
+        padding: 13px 11px;
+        border-radius: 12px;
+        background: #f4f2e9;
+        color: var(--ink);
+      }
+
+      .flow-card:nth-of-type(2) { background: var(--mint); }
+      .flow-card:nth-of-type(3) { background: var(--lime); }
+
+      .flow-num {
+        display: block;
+        margin-bottom: 20px;
+        color: #63717c;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .1em;
+      }
+
+      .flow-title {
+        display: block;
+        margin-bottom: 4px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -.04em;
+      }
+
+      .flow-note {
+        color: #4a5b63;
+        font-size: 10px;
+        line-height: 1.35;
+      }
+
+      .arrow { color: var(--mint); font-size: 19px; text-align: center; }
+
+      .loop-foot {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+        color: #b7c6cf;
+        font-size: 10px;
+      }
+
+      .intro {
+        display: grid;
+        grid-template-columns: .78fr 1.22fr;
+        align-items: start;
+        gap: 48px;
+        padding: 34px 6.2% 29px;
+      }
+
+      .intro-label {
+        margin: 4px 0 0;
+        color: #3a785c;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+      }
+
+      .intro h2 {
+        max-width: 750px;
+        margin-bottom: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(25px, 3vw, 35px);
+        font-weight: 400;
+        letter-spacing: -.04em;
+        line-height: 1.16;
+      }
+
+      .intro h2 em { color: #3a785c; }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 13px;
+        padding: 0 6.2% 31px;
+      }
+
+      .feature {
+        min-height: 174px;
+        padding: 17px 18px 15px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgb(255 254 250 / 73%);
+      }
+
+      .feature-index {
+        display: inline-grid;
+        width: 25px;
+        height: 25px;
+        margin-bottom: 10px;
+        place-items: center;
+        border-radius: 8px;
+        background: #e5efe5;
+        color: #31654d;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .feature h3 {
+        margin: 0 0 6px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 19px;
+        letter-spacing: -.03em;
+      }
+
+      .feature p {
+        max-width: 350px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.48;
+      }
+
+      .status {
+        display: grid;
+        grid-template-columns: .8fr 1.2fr 1.2fr;
+        gap: 24px;
+        align-items: center;
+        margin: 0 6.2% 20px;
+        padding: 20px 22px;
+        border-radius: 13px;
+        background: var(--navy-soft);
+        color: var(--white);
+      }
+
+      .status-label {
+        margin: 0 0 5px;
+        color: var(--mint);
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+
+      .status h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 21px;
+        font-weight: 400;
+        letter-spacing: -.03em;
+      }
+
+      .status p {
+        margin: 0;
+        color: #d0dbe0;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .status-next {
+        padding-left: 22px;
+        border-left: 1px solid rgb(255 255 255 / 20%);
+      }
+
+      .status-next strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--lime);
+        font-size: 10px;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 0 6.2% 18px;
+        color: #68757a;
+        font-size: 10px;
+      }
+
+      .footer strong { color: var(--ink); }
+
+      @media (max-width: 760px) {
+        .sheet { min-height: 0; margin: 0; }
+        .masthead { padding: 23px 6% 14px; }
+        .hero { grid-template-columns: 1fr; gap: 30px; padding: 33px 6% 35px; }
+        .loop { justify-self: center; }
+        .intro { grid-template-columns: 1fr; gap: 12px; padding: 29px 6% 23px; }
+        .features { grid-template-columns: 1fr; padding: 0 6% 24px; }
+        .feature { min-height: 0; }
+        .status { grid-template-columns: 1fr; gap: 13px; margin-right: 6%; margin-left: 6%; }
+        .status-next { padding: 11px 0 0; border-top: 1px solid rgb(255 255 255 / 20%); border-left: 0; }
+        .footer { flex-direction: column; gap: 6px; padding: 0 6% 20px; }
+      }
+
+      @page { size: letter landscape; margin: 0; }
+
+      @media print {
+        html, body { width: 11in; height: 8.5in; background: white; }
+        body { font-size: 10pt; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .sheet {
+          width: 11in;
+          min-height: 0;
+          height: 8.5in;
+          margin: 0;
+          box-shadow: none;
+        }
+        .masthead { height: .68in; padding: .22in .62in .08in; }
+        .hero { min-height: 3.35in; height: 3.35in; padding: .24in .62in; gap: .3in; }
+        h1 { font-size: 36pt; }
+        .hero-copy { margin-bottom: .16in; font-size: 10pt; }
+        .loop { padding: .17in; }
+        .flow-card { min-height: .8in; padding: .09in; }
+        .flow-num { margin-bottom: .1in; }
+        .flow-title { font-size: 15pt; }
+        .intro { height: .88in; padding: .19in .62in .1in; gap: .35in; }
+        .intro h2 { font-size: 18pt; }
+        .features { height: 1.72in; gap: .1in; padding: 0 .62in .16in; }
+        .feature { min-height: 1.48in; padding: .09in .1in; }
+        .feature-index { width: 20px; height: 20px; margin-bottom: .035in; }
+        .feature h3 { font-size: 10.5pt; }
+        .feature p { font-size: 7pt; }
+        .status { height: 1.05in; margin: 0 .62in .1in; padding: .12in .16in; gap: .16in; }
+        .status h2 { font-size: 13pt; }
+        .status p { font-size: 7pt; }
+        .status-next { padding-left: .14in; }
+        .footer { padding: 0 .62in; font-size: 7pt; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <header class="masthead">
+        <a class="brand" href="#top" aria-label="Quezo">
+          <span class="brand-mark" aria-hidden="true">q</span>
+          <span>quezo</span>
+        </a>
+        <span class="edition">A focused assessment workspace</span>
+      </header>
+
+      <section class="hero" id="top" aria-labelledby="headline">
+        <div>
+          <p class="eyebrow">The complete assessment loop</p>
+          <h1 id="headline">From first draft to <span>clear results.</span></h1>
+          <p class="hero-copy">
+            Quezo is a focused workspace for the whole low-stakes assessment
+            journey: build reusable questions, deliver quizzes with care, and
+            give learners and authors meaningful, policy-aware results.
+          </p>
+          <div class="pill-row" aria-label="Prototype focus">
+            <span class="pill">Single organization</span>
+            <span class="pill">Low-stakes assessment</span>
+            <span class="pill">End-to-end P0 workflow</span>
+          </div>
+        </div>
+
+        <div class="loop" aria-label="The Quezo assessment loop">
+          <div class="loop-head"><span>One connected workflow</span><span>Author to outcome</span></div>
+          <div class="flow">
+            <div class="flow-card">
+              <span class="flow-num">01 / AUTHOR</span>
+              <span class="flow-title">Build</span>
+              <span class="flow-note">Create &amp; reuse questions</span>
+            </div>
+            <span class="arrow" aria-hidden="true">→</span>
+            <div class="flow-card">
+              <span class="flow-num">02 / DELIVER</span>
+              <span class="flow-title">Complete</span>
+              <span class="flow-note">Assign, save &amp; resume</span>
+            </div>
+            <span class="arrow" aria-hidden="true">→</span>
+            <div class="flow-card">
+              <span class="flow-num">03 / REVIEW</span>
+              <span class="flow-title">Learn</span>
+              <span class="flow-note">Score &amp; see what matters</span>
+            </div>
+          </div>
+          <div class="loop-foot"><span>Built around authors, learners &amp; admins</span><span>Designed for confidence ↗</span></div>
+        </div>
+      </section>
+
+      <section class="intro" aria-labelledby="idea-title">
+        <p class="intro-label">Made for the full journey</p>
+        <h2 id="idea-title">
+          Everything a small team needs to run a considered assessment:
+          <em>simple to use, careful by design.</em>
+        </h2>
+      </section>
+
+      <section class="features" aria-label="What makes Quezo different">
+        <article class="feature">
+          <span class="feature-index">01</span>
+          <h3>Build a living question bank</h3>
+          <p>Organize, search, preview, and reuse single-answer multiple-choice and true/false questions. Keep revisions distinct and traceable.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-index">02</span>
+          <h3>Set the rules. Publish with care.</h3>
+          <p>Compose from fixed question versions; configure points, attempts, timing, availability, ordering, and result release. Preview before publishing.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-index">03</span>
+          <h3>Protect every learner attempt</h3>
+          <p>Assign to named learners. Support answer changes, visible save status, recovery, server-enforced deadlines, and retry-safe finalization.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-index">04</span>
+          <h3>Turn completion into insight</h3>
+          <p>Auto-score objective responses, apply result-release rules, and review learner history, submissions, completion, and scores—with role-based access.</p>
+        </article>
+      </section>
+
+      <section class="status" aria-labelledby="status-title">
+        <div>
+          <p class="status-label">Prototype intent</p>
+          <h2 id="status-title">The whole loop.<br>Deliberately focused.</h2>
+        </div>
+        <p>
+          Intended for one organization and low-stakes use: administrators,
+          authors, and learners; assigned quizzes; objective questions;
+          dependable attempts; automatic scoring; and permitted results.
+        </p>
+        <div class="status-next">
+          <strong>Out of scope</strong>
+          <p>Full LMS features, multiple organizations, guest attempts, written/manual grading, proctoring, and formal-exam or production-readiness claims.</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span><strong>Quezo</strong> · A focused assessment workspace</span>
+        <span>Intended prototype scope—not a claim that every capability is implemented or release-ready · Synthetic data only</span>
+      </footer>
+    </main>
+  </body>
+</html>
