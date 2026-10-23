@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Quezo mark</title>
+  <desc id="desc">A lime lowercase italic q on a rounded deep navy square.</desc>
+  <rect width="128" height="128" rx="32" fill="#101d2b"/>
+  <text x="64" y="82" text-anchor="middle" fill="#d9f279" font-family="Georgia, 'Times New Roman', serif" font-size="98" font-style="italic">q</text>
+</svg>
