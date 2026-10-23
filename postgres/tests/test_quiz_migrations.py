@@ -23,7 +23,7 @@ def test_actual_question_head_upgrade_preserves_content(empty_database: Isolated
     run_migrations(empty_database.migration_url)
     run_migrations(empty_database.migration_url)
     with psycopg.connect(empty_database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0008_responses",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0009_finalization",)
         assert connection.execute("SELECT row_to_json(v) FROM quezo.question_versions v").fetchone() == before
         assert connection.execute("SELECT id FROM quezo.questions").fetchone() == (question,)
         assert connection.execute("SELECT id FROM quezo.question_versions").fetchone() == (version,)

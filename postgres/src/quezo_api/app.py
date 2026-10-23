@@ -14,6 +14,7 @@ from quezo_api.modules.questions.router import router as questions_router
 from quezo_api.modules.quizzes.router import router as quizzes_router
 from quezo_api.modules.distribution.router import router as distribution_router
 from quezo_api.modules.attempts.router import router as attempts_router
+from quezo_api.modules.attempts.expiration import expiration_lifespan
 from quezo_api.modules.identity.tokens import IdentitySettings, TokenVerifier
 
 
@@ -26,7 +27,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     ) as identity_client:
         app.state.database = database
         app.state.token_verifier = TokenVerifier(settings, identity_client)
-        yield
+        async with expiration_lifespan(database):
+            yield
 
 
 class LivenessResponse(BaseModel):

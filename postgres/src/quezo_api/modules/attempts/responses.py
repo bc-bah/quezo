@@ -7,10 +7,9 @@ from psycopg.rows import dict_row
 
 from quezo_api.errors import ApiError, AttemptAdmissionDetails, ErrorCode, ResponseConflictDetails
 from quezo_api.modules.attempts.schemas import SaveCommand, SaveResult
-from quezo_api.modules.identity.access import require_owner, require_role, resolve_actor
+from quezo_api.modules.attempts.finalization import database_time, finalize_locked, lock_attempt
 from quezo_api.modules.identity.tokens import VerifiedIdentity
 from quezo_api.modules.questions.service import Connection
-from quezo_api.schemas import Role
 
 
 def admit_save(state: str, deadline: datetime | None, now: datetime) -> None:
@@ -26,19 +25,9 @@ def admit_save(state: str, deadline: datetime | None, now: datetime) -> None:
 async def save(
     connection: Connection, identity: VerifiedIdentity, attempt_id: UUID,
     question_id: UUID, body: SaveCommand,
-) -> SaveResult:
-    actor = await resolve_actor(connection, identity)
-    require_role(actor, Role.LEARNER)
+) -> SaveResult | ApiError:
+    attempt = await lock_attempt(connection, attempt_id, identity)
     async with connection.cursor(row_factory=dict_row) as cursor:
-        await cursor.execute(
-            "SELECT learner_id, state, deadline FROM quezo.attempts "
-            "WHERE id = %s AND learner_id = %s FOR UPDATE", (attempt_id, actor.user_id),
-        )
-        attempt = await cursor.fetchone()
-        if attempt is None:
-            raise ApiError(ErrorCode.NOT_FOUND)
-        actor = await resolve_actor(connection, identity)
-        require_owner(actor, attempt["learner_id"], Role.LEARNER)
         await cursor.execute(
             "SELECT q.options, r.selected_option_id, r.revision, r.saved_at "
             "FROM quezo.attempt_questions q JOIN quezo.attempt_responses r ON r.question_id = q.id "
@@ -48,24 +37,31 @@ async def save(
         if current is None:
             raise ApiError(ErrorCode.NOT_FOUND)
         fingerprint = hashlib.sha256(json.dumps({
-            "actor": str(actor.user_id), "target": str(attempt_id), "operation": "save",
+            "actor": str(attempt["learner_id"]), "target": str(attempt_id), "operation": "save",
             "question": str(question_id), "payload": body.model_dump(mode="json"),
         }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         await cursor.execute(
             "SELECT fingerprint, response_revision, saved_at FROM quezo.response_commands "
             "WHERE actor_id = %s AND attempt_id = %s AND operation = 'save' AND request_id = %s",
-            (actor.user_id, attempt_id, body.request_id),
+            (attempt["learner_id"], attempt_id, body.request_id),
         )
         previous = await cursor.fetchone()
-        await cursor.execute("SELECT clock_timestamp() AS now")
-        clock = await cursor.fetchone()
-        assert clock is not None
-        now = clock["now"]
+        now = await database_time(connection)
+        was_active = attempt["state"] == "in_progress"
+        await finalize_locked(connection, attempt, now)
         if previous is not None:
             if previous["fingerprint"] != fingerprint:
-                raise ApiError(ErrorCode.IDEMPOTENCY_CONFLICT)
+                return ApiError(ErrorCode.IDEMPOTENCY_CONFLICT)
             revision, saved_at = previous["response_revision"], previous["saved_at"]
         else:
+            if attempt["state"] == "finalized":
+                # Return the error only after the caller commits expiry.
+                return ApiError(
+                    ErrorCode.DEADLINE_PASSED if was_active else ErrorCode.ATTEMPT_FINALIZED,
+                    details=AttemptAdmissionDetails.model_validate({
+                        "attemptState": attempt["state"], "deadline": attempt["deadline"], "serverTime": now,
+                    }),
+                )
             admit_save(attempt["state"], attempt["deadline"], now)
             if body.selected_option_id is not None and str(body.selected_option_id) not in {
                 option["id"] for option in current["options"]
@@ -87,7 +83,7 @@ async def save(
                 "INSERT INTO quezo.response_commands (actor_id, attempt_id, operation, request_id, "
                 "question_id, fingerprint, response_revision, selected_option_id, saved_at) "
                 "VALUES (%s,%s,'save',%s,%s,%s,%s,%s,%s)",
-                (actor.user_id, attempt_id, body.request_id, question_id, fingerprint,
+                (attempt["learner_id"], attempt_id, body.request_id, question_id, fingerprint,
                  revision, body.selected_option_id, saved_at),
             )
     return SaveResult.model_validate({

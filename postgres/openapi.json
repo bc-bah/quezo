@@ -193,6 +193,16 @@
             "title": "Attemptnumber",
             "type": "integer"
           },
+          "completion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Completion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "deadline": {
             "anyOf": [
               {
@@ -241,8 +251,7 @@
           "state": {
             "enum": [
               "in_progress",
-              "finalized",
-              "expired"
+              "finalized"
             ],
             "title": "State",
             "type": "string"
@@ -265,6 +274,7 @@
           "versionId",
           "attemptNumber",
           "state",
+          "completion",
           "title",
           "instructions",
           "policy",
@@ -282,8 +292,7 @@
           "attemptState": {
             "enum": [
               "in_progress",
-              "finalized",
-              "expired"
+              "finalized"
             ],
             "title": "Attemptstate",
             "type": "string"
@@ -419,6 +428,42 @@
           "name"
         ],
         "title": "BankWrite",
+        "type": "object"
+      },
+      "Completion": {
+        "additionalProperties": false,
+        "properties": {
+          "attemptId": {
+            "format": "uuid",
+            "title": "Attemptid",
+            "type": "string"
+          },
+          "completionReason": {
+            "enum": [
+              "submitted",
+              "expired"
+            ],
+            "title": "Completionreason",
+            "type": "string"
+          },
+          "finalizedAt": {
+            "format": "date-time",
+            "title": "Finalizedat",
+            "type": "string"
+          },
+          "state": {
+            "const": "finalized",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attemptId",
+          "state",
+          "completionReason",
+          "finalizedAt"
+        ],
+        "title": "Completion",
         "type": "object"
       },
       "DraftCommand": {
@@ -1683,8 +1728,7 @@
           "attemptState": {
             "enum": [
               "in_progress",
-              "finalized",
-              "expired"
+              "finalized"
             ],
             "title": "Attemptstate",
             "type": "string"
@@ -1783,6 +1827,12 @@
         "additionalProperties": false,
         "properties": {},
         "title": "StartCommand",
+        "type": "object"
+      },
+      "SubmissionCommand": {
+        "additionalProperties": false,
+        "properties": {},
+        "title": "SubmissionCommand",
         "type": "object"
       },
       "ValidationDetails": {
@@ -2993,6 +3043,196 @@
           }
         ],
         "summary": "Save Response",
+        "tags": [
+          "attempts"
+        ]
+      }
+    },
+    "/api/v1/attempts/{attempt_id}/submission": {
+      "post": {
+        "operationId": "submit_api_v1_attempts__attempt_id__submission_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Attempt Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Completion"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Sanitized error",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Submit",
         "tags": [
           "attempts"
         ]

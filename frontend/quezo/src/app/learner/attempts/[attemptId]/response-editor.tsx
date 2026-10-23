@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { components } from "../../../../lib/api/schema";
-import { readAttempt, saveResponse } from "../../actions";
+import { readAttempt, saveResponse, submitAttempt } from "../../actions";
 
 type S = components["schemas"];
 type Pending = { command: S["SaveCommand"]; edit: number };
@@ -28,6 +28,9 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
   ));
   const current = useRef(items);
   const [state, setState] = useState(attempt.state);
+  const [completion, setCompletion] = useState(attempt.completion);
+  const [submission, setSubmission] = useState<"idle" | "busy" | "unknown">("idle");
+  const submitting = useRef(false);
   const [blocked, setBlocked] = useState(false);
   const [notice, setNotice] = useState("");
   const [reconciling, setReconciling] = useState(false);
@@ -46,7 +49,7 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
   }
 
   const reconcile = useCallback(async () => {
-    if (reconciliation.current || Object.values(current.current).some((item) => item.busy)) return;
+    if (submitting.current || reconciliation.current || Object.values(current.current).some((item) => item.busy)) return;
     reconciliation.current = true;
     setReconciling(true);
     setNotice("Checking persisted answers before retrying.");
@@ -58,6 +61,8 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
         return;
       }
       setState(result.value.state);
+      setCompletion(result.value.completion);
+      if (result.value.completion) setSubmission("idle");
       for (const question of result.value.questions) {
         const id = question.attemptQuestionId;
         const item = current.current[id]!;
@@ -125,7 +130,7 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
 
   async function save(id: string) {
     const item = current.current[id]!;
-    if (item.busy || item.conflict || offline || reconciliation.current
+    if (item.busy || item.conflict || offline || reconciliation.current || submitting.current || submission !== "idle"
       || ((blocked || state !== "in_progress") && !item.pending)) return;
     if (item.needsReconcile) { await reconcile(); return; }
     const pending = item.pending ?? {
@@ -168,13 +173,50 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
     }
   }
 
+  const savesBusy = Object.values(items).some((item) => item.busy);
+  const unresolved = dirty || Object.values(items).some((item) => item.conflict || item.needsReconcile);
+
+  async function submit() {
+    if (submitting.current || offline || reconciliation.current || state !== "in_progress" || blocked) return;
+    if (Object.values(current.current).some((item) =>
+      item.busy || item.pending || item.conflict || item.needsReconcile || item.edit !== item.acknowledgedEdit)) return;
+    const unanswered = Object.values(current.current).filter((item) => item.response.selectedOptionId === null).length;
+    if (submission !== "unknown" && !window.confirm(
+      `Submit this attempt? ${unanswered} unanswered question${unanswered === 1 ? "" : "s"} will receive no points. You cannot change answers after submission.`,
+    )) return;
+    submitting.current = true;
+    setSubmission("busy");
+    setNotice("Submitting saved answers. Please wait.");
+    try {
+      const result = await submitAttempt(attempt.id);
+      if (!result.ok) {
+        setSubmission("unknown");
+        setNotice(result.error.message + " Submission outcome is not confirmed. Retry submission safely; do not change answers.");
+        return;
+      }
+      setCompletion(result.value);
+      setState(result.value.state);
+      setSubmission("idle");
+      setNotice("Completion confirmed.");
+    } catch {
+      setSubmission("unknown");
+      setNotice("Connection failed. Submission outcome is unknown. Retry submission safely; do not change answers.");
+    } finally {
+      submitting.current = false;
+    }
+  }
+
   return <>
     <p>Attempt state: {state.replaceAll("_", " ")}</p>
-    <p>Choose an answer, then save it. Submission is not available yet.</p>
+    {completion ? <section aria-label="Completion">
+      <h2>{completion.completionReason === "expired" ? "Attempt expired" : "Submission confirmed"}</h2>
+      <p>Finalized at <time dateTime={completion.finalizedAt}>{completion.finalizedAt}</time>.</p>
+      <p>Only saved answers were included. Answers can no longer be changed.</p>
+    </section> : <p>Choose an answer, then save it. Submit only after every save is confirmed.</p>}
     <p role="status" aria-live="polite">{offline ? "Offline. " : ""}{notice}</p>
     {state !== "in_progress" || blocked ? <p role="alert">This attempt no longer accepts new answers. Unsaved local edits cannot be submitted.</p> : null}
     {dirty && <p>Unsaved local edits will be lost if you leave or close this page.</p>}
-    <button type="button" onClick={() => void reconcile()} disabled={reconciling || offline || Object.values(items).some((i) => i.busy)}>
+    <button type="button" onClick={() => void reconcile()} disabled={reconciling || offline || savesBusy || submission === "busy"}>
       {reconciling ? "Reconciling" : "Reconcile saved answers"}
     </button>
     <nav aria-label="Questions">{attempt.questions.map((q, index) =>
@@ -183,7 +225,7 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
       const id = question.attemptQuestionId;
       const item = items[id]!;
       return <li key={id} data-question-id={id} id={`question-${id}`} tabIndex={-1}>
-        <fieldset disabled={state !== "in_progress" || blocked}>
+        <fieldset disabled={state !== "in_progress" || blocked || submission !== "idle"}>
           <legend className="plain-text">Question {index + 1}: {question.prompt}</legend>
           <p>{question.effectivePoints} points</p>
           {question.options.map((option) => <label key={option.id} data-option-id={option.id} className="plain-text">
@@ -194,7 +236,7 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
             Clear answer
           </button>
         </fieldset>
-        <button type="button" disabled={item.busy || item.conflict || offline || reconciling
+        <button type="button" disabled={item.busy || item.conflict || offline || reconciling || submission !== "idle"
           || ((state !== "in_progress" || blocked) && !item.pending) || (item.edit === item.acknowledgedEdit && !item.pending)}
           onClick={() => void save(id)}>{item.busy ? "Saving" : item.pending ? "Retry save" : "Save answer"}</button>
         <p role="status" aria-live="polite">{item.status}</p>
@@ -208,5 +250,13 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
         </div>}
       </li>;
     })}</ol>
+    {state === "in_progress" && !blocked && <section aria-label="Submission">
+      {savesBusy ? <p role="status">Waiting for pending saves before submission.</p>
+        : unresolved ? <p role="status">Save or reconcile all edits and resolve conflicts before submitting.</p> : null}
+      <button type="button" onClick={() => void submit()}
+        disabled={offline || reconciling || unresolved || submission === "busy"}>
+        {submission === "busy" ? "Submitting" : submission === "unknown" ? "Retry submission" : "Submit attempt"}
+      </button>
+    </section>}
   </>;
 }

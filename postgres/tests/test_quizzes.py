@@ -54,7 +54,7 @@ def test_reuse_preview_publication_and_immutable_revisions(author: TestClient, d
         for table in ["assignments", "attempts"]:
             assert connection.execute(f"SELECT count(*) FROM quezo.{table}").fetchone() == (0,)
         for table in ["grades"]:
-            assert connection.execute("SELECT to_regclass(%s)", ("quezo." + table,)).fetchone() == (None,)
+            assert connection.execute(f"SELECT count(*) FROM quezo.{table}").fetchone() == (0,)
     key = str(uuid4())
     acknowledgement = publish(author, quiz, key)
     assert acknowledgement.status_code == 201

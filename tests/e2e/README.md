@@ -86,7 +86,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0008_responses`, and calls I01's allowlisted
+Next, migrates a fresh database to `0009_finalization`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -179,7 +179,7 @@ values or protocol events are written to artifacts.
 
 This is the working-foundations, C01 and C02 demonstration, not A01 account management,
 full quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. D01 additionally
-demonstrates assignment/start/resume; D02 adds saving, not submission. Keyboard
+demonstrates assignment/start/resume; D02 adds saving and D03 adds submission. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
 producer gates, not introduce a second runner.
@@ -205,8 +205,29 @@ and explicit retry. Learner JSON/HTML/RSC are inspected in memory for scoring/ke
 nondisclosure. No request interception, mocked save endpoint, screenshots or
 payload logs are added.
 
-D03 still owns submission and its pending-save guard, finalization and expiration.
-The D02 UI exposes no submission control and makes no grade/result claim.
+## D03 AT-09/10/11 initial cases
+
+Run `npm run test:e2e -- --grep D03` for the two focused journeys; review still
+requires `npm run test:e2e -- --checks`. The D02 response journey now also
+asserts submission is disabled during pending saves, newer unsaved input,
+offline state, uncertain saves and cross-tab conflicts. It clears an answer,
+checks/cancels the unanswered confirmation, then voluntarily submits through
+the real browser/server-only facade. Holding the real parent lock and severing
+the backend transport drops the completion response after dispatch; the case
+observes the committed Grade, checks unknown-outcome UI and frozen editing,
+retries the same attempt, reloads and proves exactly one Grade.
+
+`finalization.spec.ts` uses an actual authenticated author API for a timed
+publication solely as a **controlled backend expiry fixture**. With the API
+stopped, it inserts an internally consistent already-overdue attempt using the
+frozen publication and normal response-initialization constraints. It never
+rewrites a protected deadline. API restart catches it before readiness; the
+real learner browser shows the expired projection with disabled answers, no
+timer, no submission control and no disclosed score, key or feedback.
+
+These cases do not claim timed accessibility acceptance, a countdown,
+result-release implementation, history/reporting or pilot readiness. The live
+voluntary-submit demonstration remains untimed while DEC-09 is held.
 
 ## C01 AT-03/04 initial cases
 

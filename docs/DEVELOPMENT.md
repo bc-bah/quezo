@@ -18,8 +18,10 @@ independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
 
 D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
-Submission, background expiration, grading, real readiness checks, application containers,
-and deployment are intentionally absent. A configured local Keycloak can be
+D03 adds metadata-only submission, immutable grading through S01, request-triggered
+expiry and a lifespan-managed bounded expiry worker. Result release/history,
+real readiness checks, application containers and deployment remain absent.
+A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
 I02, not established by F03 protocol tests. Database configuration is required
 for both server lifecycles.
@@ -139,10 +141,166 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## D03 finalization and expiration
+
+**Work item / owner:** D03, B.C.; assigned 21 October 2026, execution directed
+22 October following explicit D02/S01 acceptance. **State: ready for review**;
+local implementation and final checks complete, no acceptance or integration claim.
+
+**Integration gate:** D02 merge `c7d6f7e0d9785e220530536078241725b3588547`
+(implementation `fbe93da`, follow-up `a82bc36`) and S01 merge
+`c9448f78cd6aee397763d37e8d33f8004a441862` (implementation `00195df`)
+are ancestors of this checkout. So are D01 `b5751a9`, C02 `03797bc`,
+C01 `e66f459`, I02 `553a2c8b77a770667f4cef6825f57c3b55f477ed` and
+Phase 2 approval `49eb37b133e737f61f30a97329940bd6281b2c5a`.
+B.C. confirmed both producers and directed the backlog reconciliation; this
+is the serialized D03 lifespan/fixtures/generated-contract/migration window.
+
+**Changes / requirements:** ATT-03/04, SCORE-01, IAM-02, QUAL-01/04/08 and
+section 7 submission/errors; FR-034/035/036/040/041/042.
+`attempts/finalization.py` owns the shared parent
+lock, post-lock live authorization, database wall clock and atomic S01 adapter.
+No new scoring rules: only private frozen question snapshots and persisted
+accepted response selections enter `ScoringInput`. An adapter/scoring/write/
+commit failure rolls back the entire completion. No request contains answers.
+
+| Contract | Shape / behavior |
+| --- | --- |
+| `POST /api/v1/attempts/{attempt_id}/submission` | Strict empty JSON object `{}`; no answer, key, score or timestamp fields. HTTP 200 after commit, including repeats. Identity/ownership checked before replay and after the lock wait. |
+| `Completion` | `{attemptId, state: "finalized", completionReason: "submitted" or "expired", finalizedAt}`. Stable completion metadata only; no Grade ID, earned score, outcomes, key or feedback, regardless of release preset. |
+| `Attempt.completion` | Null while in progress; the same `Completion` after finalization. Only terminal state is `finalized`; `expired` is a reason, not another state. OpenAPI/TypeScript regenerated. |
+| Late fresh save | Reconciles expiry in the transaction, commits it, then returns 409 with authoritative state/deadline/time. Never adds the late answer. Accepted save replay retains its original acknowledgement with fresh finalized state. |
+| Internal Grade | `quezo.grades`: UUID `id`, unique `attempt_id`, exact `earned_points` and `possible_points`. `grade_items`: frozen `question_id`, `attempt_id`, outcome and integer item points. Private storage, never an ordinary learner DTO. |
+| Minimal integrity event | `attempt_completion_events`: unique `attempt_id`, reason and finalization instant; committed with Grade, every item and attempt transition. |
+
+**Locks / time:** start retains assignment -> existing attempt, or assignment ->
+quiz share for a new snapshot. Read/save/submit lock only the owned attempt;
+they never acquire assignment or quiz locks afterward. Live authority is read
+inside the transaction and again after the wait. Only then is
+`clock_timestamp()` sampled. At equality or later the reason is expired;
+strictly earlier voluntary submission is submitted. Before-deadline admitted
+saves remain valid even if commit crosses the deadline. Finalization never
+re-reads the mutable bank or accepts pending browser answers.
+
+**Worker lifecycle:** startup executes one bounded catch-up batch before serving.
+Every five seconds, one transaction selects at most 20 overdue parents ordered
+by deadline/ID with `FOR UPDATE SKIP LOCKED`, then uses the same finalizer with
+a fresh database clock for each locked parent. Multiple processes cannot grade
+the same attempt twice. The existing bounded pool is reused; no new pool,
+external queue, HTTP background task or automatic transaction retry is added.
+Dependency failures during scheduled sweeps produce a sanitized
+`DEPENDENCY_UNAVAILABLE` log; the next ordinary scheduled sweep can recover.
+Startup/schema errors fail startup, unexpected task errors propagate through the
+lifespan TaskGroup, and shutdown cancels/awaits the worker before closing the
+pool. Cancellation rolls back an unfinished batch. More than one startup batch
+is caught by subsequent bounded ticks.
+
+**UI:** submission stays in the D02 editor and is disabled while a save is busy
+or an edit, conflict, failed/uncertain save or reconciliation remains unresolved.
+All unanswered items are counted in a native confirmation. During submission
+or an unknown outcome, answers are frozen; retry is explicit and addressed only
+by attempt identity. Reconcile/reload can recover committed completion.
+Submitted/expired confirmation never displays a fabricated zero or bypasses
+release policy. No countdown or timing-adjustment controls; DEC-09 stays held.
+
+**Data / R01 inputs:** migration `0009_finalization` follows `0008_responses`;
+see the [migration runbook](../postgres/migrations/README.md#d03-finalization-storage).
+R01 can read the immutable Grade/items, completion reason/time and D01 frozen
+policy only after this package is accepted/integrated. It must apply independent
+release fields on each result read, never expose the private scorer DTO or add
+another Grade writer. No history, regrade, admin override or successor dispatch.
+
+**Initial acceptance evidence:**
+
+| Acceptance | Executable coverage |
+| --- | --- |
+| AT-09 initial | Real post-lock deadline rejection, deterministic equality using a controlled database-sampled deadline, valid before-deadline saves/submissions committing afterward, request-triggered expiry, bounded `SKIP LOCKED`, startup catch-up, cancellation, scheduled dependency-error reporting and recovery |
+| AT-10 initial | Repeated save/submit races, duplicate/replayed submission, concurrent independent worker processes with HTTP save/submit, scoring/write/deferred-commit rollback, immutable/complete Grade constraints, and real browser transport loss after dispatch/commit followed by safe retry |
+| AT-11 initial | S01 unchanged pure scoring suite plus D03 persisted-response adapter: MCQ/true-false, point override, correct/incorrect/unanswered, correct zero-point item, all-unanswered expiry; S01/publication retain zero-total rejection |
+| AT-08 submission guard | Actual browser pending-save/newer-edit/offline/conflict/failed-save blocking, unanswered confirmation and unknown-outcome retry |
+
+The focused real-PostgreSQL command, using the existing `run_browser` disposable
+Compose lifecycle and guarded `db_helpers` databases, passed **97 cases in
+435.12 seconds**:
+
+```text
+uv run --directory postgres --locked pytest --tb=short -x tests/test_finalization.py tests/test_finalization_migrations.py tests/test_responses.py tests/test_attempts.py tests/test_attempt_migrations.py tests/test_response_migrations.py tests/test_app.py tests/test_migrations.py
+```
+
+That run preceded the additional release-mode, repeated-process-race,
+wrong/zero-point and delayed-submit cases; those are included in the final common
+checks. `npm run test:e2e -- --grep D03` passed both real-browser journeys
+(10.357s controlled expiry, 24.225s durable-save/submission journey), before the
+additional focus-during-submit regression assertion. `npm run test:contracts`
+passed 88 Python and 2 tooling/client tests; `npm run typecheck` passed web/API/
+browser types. `npm run api:generate` regenerated, not manually edited, contracts.
+
+Environment: Windows, Node 24.20.0, npm 11.19.0, uv 0.12.17, Python 3.12.10,
+PostgreSQL 17.11, Keycloak 26.4.7, Playwright 1.64.1 and Chromium 156.0.8078.4.
+Docker Desktop was initially stopped and was started for isolated validation.
+Missing npm dependencies were restored with `npm ci --no-audit --no-fund`.
+Initial iterations corrected test-only module search paths, duplicate synthetic
+identity seeding and implemented-route/table allowlists; the targeted run above
+then passed. One standalone mypy process exited abnormally; the subsequent full
+typecheck passed without changing application code for that interruption.
+No hosted CI, timed-accessibility, human screen-reader, load threshold, release
+filtering or backup/recovery acceptance is claimed.
+
+**Final common checks:** `npm run test:e2e -- --checks` completed successfully
+in one invocation, using owned project `quezo-i02-c4b14d512362`:
+
+| Command / stage | Result |
+| --- | --- |
+| `npm run typecheck` | Web, API (80 source files) and browser types passed |
+| `npm test` | 12 web tests and **611 Python tests passed**, 859.72s for Python |
+| `npm run build` | Production build passed, including the final submit/focus guard |
+| `npm run api:check` | Exported OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | **88 Python + 2 tooling/client tests passed** |
+| `npm run test:db` | **246 passed**, 827.97s; clean and actual prior-head migrations, concurrency, worker processes and cancellation |
+| `npm run test:identity` | **108 passed**, 93.65s |
+| `npm run test:identity:integration` | Actual Keycloak case passed, 9.13s |
+| `npm run test:web:production` | Built-web HTTP/database/OIDC boundary passed |
+| Full real-browser suite | **27 passed**, including the unchanged 300-second identity expiry, D03 controlled expiry (6.420s) and D02/D03 save/submit/response-loss journey (23.785s) |
+
+The final browser run includes the focus-during-submit regression assertion and
+all secret-safe teardown checks. `npm run typecheck:web` and
+`npm run typecheck:e2e` also passed after the final guard/assertion changes.
+The launcher removed its owned containers/network and fixture databases; no
+development volumes were touched. `git diff --check` passed.
+
+**Acceptance / known gaps:** AT-09/10/11 **initial D03 scope passed**, as did
+AT-08's submission guard. The final suites cover every D03 criterion above;
+no known failing D03 check remains. Equality is exercised with a controlled
+database-sampled clock value, while actual lock waits and late commits use
+real wall-clock deadlines. This is not full schedule/DST, timed-accessibility,
+release-policy or P0 acceptance. B.C. still owns review and integration.
+The backlog retains D03 as active with this review-ready handoff. No commit,
+PR, regrade/admin override or R01/T01 dispatch was made.
+
+## S01 pure objective scoring
+
+B.C. confirmed acceptance and integration on 22 October 2026, at merge
+`c9448f78cd6aee397763d37e8d33f8004a441862`, implementation `00195df`
+([PR #12](https://github.com/bc-bah/quezo/pull/12)).
+`modules/scoring.py` accepts immutable validated `ScoringInput` values:
+ordered `QuestionSnapshot` tuples (attempt-question ID, type, delivered option
+IDs, private key and effective integer points) and `SavedResponse` tuples.
+`score()` returns immutable `Score`/`ItemScore` values with exact integer totals
+and distinct correct/incorrect/unanswered outcomes; zero-point items retain their
+outcome. Invalid membership, duplicates and zero possible total are rejected.
+`tests/test_scoring.py` is the pure executable evidence. No database, HTTP,
+Grade persistence or disclosure is owned by S01. D03 must adapt only frozen
+questions and persisted accepted responses under the parent lock; it must not
+duplicate scoring rules or replace invalid input with a zero grade.
+
 ## D02 durable response save and resume
 
 **Work item:** D02. **Owner/integrator/reviewer:** B.C.; assigned 21 October 2026.
-**State:** ready for review, 22 October 2026; not accepted or committed.
+**State:** accepted and integrated by B.C. on 22 October 2026 at merge
+`c7d6f7e0d9785e220530536078241725b3588547`, implementation `fbe93da`
+and browser follow-up `a82bc36`
+([PR #11](https://github.com/bc-bah/quezo/pull/11)).
+The original local evidence and its execution limits below are retained.
 B.C. confirmed D01 review/acceptance and directed its tracking reconciliation
 before D02 implementation. This checkout includes D01 merge
 `b5751a94ce2ab36be8add8070bbbd99573175d0a` / implementation `cbb74f5`
@@ -2049,11 +2207,11 @@ restart demonstration works, but no question, quiz or attempt route is supplied.
 C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
 at `03797bc` (PR #9), verified in D01's checkout on 22 October 2026.
 D01 is accepted and integrated at `b5751a9` (PR #10), as confirmed by B.C.
-on 22 October 2026. The other five Phase 2 packages remain active assignments
-under B.C., not simultaneously executable packages. B.C. directed D02 execution
-after this acceptance reconciliation. S01 remains independently
-executable on the accepted `553a2c8` foundation plus Phase 2
-approval. Each later consumer must first verify its own integrated producer
+on 22 October 2026. B.C. also confirmed D02 at `c7d6f7e` (PR #11) and
+S01 at `c9448f7` (PR #12) complete, accepted and integrated, and directed D03
+execution after updating the tracking records. D03, R01 and T01 remain active
+assignments, not simultaneously executable packages. Each later consumer must
+first verify its own integrated producer
 evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).
 Preserve `Database.transaction`, live actor checks, generated client/error
 conventions, the I02 fixtures and secret-safe browser reporting.

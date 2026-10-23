@@ -20,6 +20,7 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0006_quizzes` | `0005_questions` | Revisioned quiz drafts, immutable publications/ordered question snapshots, retained command acknowledgements and publication events |
 | `0007_attempt_start` | `0006_quizzes` | Unique pinned assignments, numbered attempts, frozen private/presentation snapshots and retained start command mappings |
 | `0008_responses` | `0007_attempt_start` | Revision-zero responses, response CAS constraints and retained save acknowledgement ledger |
+| `0009_finalization` | `0008_responses` | Atomic completion reason/time, one immutable Grade and item results, minimal completion event |
 
 Only `public.alembic_version` records migration state. C01 adds question tables;
 C02 adds quiz publication, acknowledgement and publication-event tables, but no
@@ -39,6 +40,45 @@ Applied F01 revisions are unchanged.
 I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
+
+### D03 finalization storage
+
+`0009_finalization` follows the accepted D02 head `0008_responses`. It preserves
+all live attempts, frozen policy/questions, accepted responses and command
+acknowledgements. No applied migration changes. The only terminal state is now
+`finalized`; `completion_reason` distinguishes `submitted` from `expired`.
+`finalized_at` is the database wall-clock admission instant after the parent
+lock, not a commit timestamp. A before-deadline command may commit afterward.
+
+`grades` has a UUID identity, unique attempt ID and exact earned/possible integer
+totals. `grade_items` has one row per frozen attempt question and distinct
+correct/incorrect/unanswered outcomes. `attempt_completion_events` contains only
+attempt ID, reason and finalization time. Deferred constraints require a complete
+Grade, matching totals, every item and matching event for a finalized attempt;
+a Grade cannot commit against an in-progress attempt. Grade/item insertion
+locks the parent and requires it to be unfinalized. Runtime UPDATE/DELETE is
+revoked and owner-level immutable triggers also protect all three new tables.
+Finalized attempt metadata and accepted responses cannot be changed or reopened.
+The web role has no access to these tables.
+
+The prior runtime never finalized attempts. If an old database contains
+ungraded terminal **test fixtures**, upgrade explicitly refuses and rolls back
+instead of inventing historical grades, rewriting answers or reopening attempts.
+Use a fresh disposable fixture database, or obtain reviewed recovery instructions;
+there is no automatic destructive cleanup or regrade.
+
+`test_finalization_migrations.py` exercises actual `0008_responses -> head`
+with accepted saves/ledger, repeat head, failed-DDL rollback, rejection of
+ungraded terminal fixtures, completeness, uniqueness, immutability and role
+isolation. Existing foundation cases retain clean `base -> head` coverage.
+Prior-head D01/D02 upgrade tests suspend only D03's worker in their test lifespan:
+those tests deliberately run producer APIs against a historical schema.
+Normal application startup never skips expiry/schema errors.
+
+Recovery must preserve attempts/questions/responses/command ledgers and all three
+completion tables together. An unapplied failure rolls back DDL and the migration
+version. Applied corrections require a reviewed forward migration; this is not
+backup/recovery acceptance.
 
 ### D02 durable response storage
 
@@ -63,8 +103,8 @@ after application use a reviewed forward migration.
 `test_response_migrations.py` covers the actual `0007_attempt_start -> head`
 upgrade with existing frozen attempts, repeat-head execution, failed-upgrade
 rollback, constraints and privileges. Foundation tests retain clean `base -> head`.
-Finalization/expiration reconciliation belongs to D03; it must lock the same parent
-and grade these persisted responses, never pending browser input.
+Finalization/expiration reconciliation is implemented by D03; it locks the same
+parent and grades these persisted responses, never pending browser input.
 
 ### D01 assignment and attempt storage
 

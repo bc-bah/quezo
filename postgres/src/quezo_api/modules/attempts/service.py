@@ -9,12 +9,13 @@ from psycopg.types.json import Jsonb
 
 from quezo_api.errors import ApiError, ErrorCode
 from quezo_api.modules.attempts.schemas import Attempt, StartCommand
+from quezo_api.modules.attempts.finalization import database_time, finalize_locked, lock_attempt
 from quezo_api.modules.identity.access import require_owner, require_role, resolve_actor
 from quezo_api.modules.identity.tokens import VerifiedIdentity
 from quezo_api.modules.questions.service import Connection
 from quezo_api.modules.questions.schemas import QuestionVersion
 from quezo_api.modules.quizzes.policies import QuizPolicy
-from quezo_api.schemas import Actor, Role
+from quezo_api.schemas import Role
 
 
 def admit(policy: QuizPolicy, now: datetime) -> datetime | None:
@@ -28,18 +29,20 @@ def admit(policy: QuizPolicy, now: datetime) -> datetime | None:
     return min(bounds) if bounds else None
 
 
-async def get_attempt(connection: Connection, actor: Actor, attempt_id: UUID) -> Attempt:
-    require_role(actor, Role.LEARNER)
+async def get_attempt(connection: Connection, identity: VerifiedIdentity, attempt_id: UUID) -> Attempt:
+    locked = await lock_attempt(connection, attempt_id, identity)
+    completion = await finalize_locked(connection, locked, await database_time(connection))
     async with connection.cursor(row_factory=dict_row) as cursor:
         await cursor.execute(
             'SELECT id, assignment_id AS "assignmentId", version_id AS "versionId", '
             'attempt_number AS "attemptNumber", state, title, instructions, policy, '
             'started_at AS "startedAt", deadline, possible_points AS "possiblePoints" '
-            "FROM quezo.attempts WHERE id = %s AND learner_id = %s", (attempt_id, actor.user_id),
+            "FROM quezo.attempts WHERE id = %s", (attempt_id,),
         )
         row = await cursor.fetchone()
         if row is None:
             raise ApiError(ErrorCode.NOT_FOUND)
+        row["completion"] = completion
         # Never serialize the private question snapshot, even for finalized attempts.
         await cursor.execute(
             'SELECT q.id AS "attemptQuestionId", q.question_id AS "questionId", '
@@ -84,7 +87,7 @@ async def start(
         if previous is not None:
             if previous["fingerprint"] != fingerprint:
                 raise ApiError(ErrorCode.IDEMPOTENCY_CONFLICT)
-            return await get_attempt(connection, actor, previous["attempt_id"]), False
+            return await get_attempt(connection, identity, previous["attempt_id"]), False
         await cursor.execute(
             "SELECT id FROM quezo.attempts WHERE assignment_id = %s AND state = 'in_progress' FOR UPDATE",
             (assignment_id,),
@@ -152,4 +155,4 @@ async def start(
         "(actor_id, assignment_id, operation, request_id, fingerprint, attempt_id) VALUES (%s,%s,'start',%s,%s,%s)",
         (actor.user_id, assignment_id, request_id, fingerprint, attempt_id),
     )
-    return await get_attempt(connection, actor, attempt_id), created
+    return await get_attempt(connection, identity, attempt_id), created

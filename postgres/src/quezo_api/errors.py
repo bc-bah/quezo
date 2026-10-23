@@ -87,7 +87,7 @@ class ResponseConflictDetails(ApiModel):
 
 
 class AttemptAdmissionDetails(ApiModel):
-    attempt_state: Literal["in_progress", "finalized", "expired"]
+    attempt_state: Literal["in_progress", "finalized"]
     deadline: UtcTimestamp | None
     server_time: UtcTimestamp
 
