@@ -1,8 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, login, accounts, apiOrigin } from "./fixtures";
+import { test, expect, login, privatePage, privateIdentity, accounts, apiOrigin } from "./fixtures";
 import { createApiClient } from "../../frontend/quezo/src/lib/api/client";
 
-test("D03 AT-09/11 controlled overdue backend fixture catches up on restart and renders expired without timed UX", async ({ page, apps }) => {
+for (const preset of ["after_finalization", "never"] as const) {
+test(preset === "never"
+  ? "T01 AT-09/11/12 controlled overdue backend fixture renders fully withheld expired result"
+  : "D03 AT-09/11 controlled overdue backend fixture catches up on restart and renders expired without timed UX", async ({ page, apps, browser }) => {
   await login(page, "author");
   const token = (await apps.session(page)).access_token;
   const client = createApiClient(apiOrigin, async (input, init) => {
@@ -23,7 +26,7 @@ test("D03 AT-09/11 controlled overdue backend fixture catches up on restart and 
   const quiz = await client.POST("/api/v1/quizzes", { body: {
     title: "D03 expired fixture", questions: [{
       questionId: question.data!.questionId, versionId: question.data!.versionId,
-    }], policy: { durationSeconds: 60 },
+    }], policy: { durationSeconds: 60, scoreRelease: preset },
   } });
   expect(quiz.response.status).toBe(201);
   const publication = await client.POST("/api/v1/quizzes/{quiz_id}/publish", {
@@ -63,25 +66,37 @@ test("D03 AT-09/11 controlled overdue backend fixture catches up on restart and 
   await apps.startApi();
   expect((await apps.apiDb.query("SELECT earned_points, possible_points FROM quezo.grades WHERE attempt_id=$1", [id])).rows)
     .toEqual([{ earned_points: 0, possible_points: 3 }]);
-  await page.goto("/");
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
-  await page.context().clearCookies();
-  await login(page, "learner");
-  await page.goto("/learner/attempts/" + id);
-  await expect(page.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
-  await expect(page.getByRole("radio").first()).toBeDisabled();
-  expect(await page.getByRole("button", { name: "Submit attempt", exact: true }).count()).toBe(0);
-  const html = await page.content();
-  expect([feedback, "earnedPoints", "correctOptionId", '"outcome"'].some((field) => html.includes(field)),
-    "Expired HTML/RSC does not disclose grade/key/feedback").toBe(false);
-  expect(await page.getByRole("timer").count()).toBe(0);
-  await page.reload();
-  await expect(page.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "View result", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Score", exact: true })).toContainText("0 / 3 points (0.0%)");
-  await expect(page.getByRole("region", { name: "Answer key", exact: true })).toContainText("withheld");
-  const resultHtml = await page.content();
-  expect([feedback, "correctOption", '"outcome"'].some((field) => resultHtml.includes(field)),
-    "Expired result releases only its permitted aggregate").toBe(false);
+  const context = await privateIdentity(browser, apps);
+  const learner = context.page;
+  try {
+    await login(learner, "learner");
+    await learner.goto("/learner/attempts/" + id);
+    await expect(learner.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
+    await expect(learner.getByRole("radio").first()).toBeDisabled();
+    expect(await learner.getByRole("button", { name: "Submit attempt", exact: true }).count()).toBe(0);
+    const html = await learner.content();
+    expect([feedback, "earnedPoints", "correctOptionId", '"outcome"'].some((field) => html.includes(field)),
+      "Expired HTML/RSC does not disclose grade/key/feedback").toBe(false);
+    expect(await learner.getByRole("timer").count()).toBe(0);
+    await learner.reload();
+    await expect(learner.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
+    await learner.getByRole("link", { name: "View result", exact: true }).click();
+    await expect(learner.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
+    await expect(learner.getByRole("region", { name: "Score", exact: true })).toContainText(
+      preset === "never" ? "Score withheld." : "0 / 3 points (0.0%)",
+    );
+    await expect(learner.getByRole("region", { name: "Answer key", exact: true })).toContainText("withheld");
+    await expect(learner.getByRole("region", { name: "Explanations", exact: true })).toContainText("withheld");
+    const resultToken = (await apps.session(learner)).access_token;
+    const result = await fetch(`${apiOrigin}/api/v1/attempts/${id}/result`, {
+      headers: { Authorization: `Bearer ${resultToken}` },
+    });
+    expect(result.status).toBe(200);
+    expect(result.headers.get("cache-control")).toBe("private, no-store");
+    const serialized = await result.text() + await learner.content();
+    expect([feedback, "correctOption", '"outcome"', ...(preset === "never" ? ["earnedPoints", "possiblePoints"] : [])]
+      .some((field) => serialized.includes(field)), "Expired result releases only permitted fields").toBe(false);
+    await privatePage(learner, apps);
+  } finally { await context.close(); }
 });
+}

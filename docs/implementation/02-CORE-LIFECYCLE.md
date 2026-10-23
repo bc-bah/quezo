@@ -6,8 +6,8 @@ Each package delivers a small working slice, including its migrations, contract,
 minimal UI and relevant tests unless explicitly pure calculation.
 
 **Assignment, 21 October 2026; acceptance updated 23 October:** C01, C02, D01,
-D02, S01 and D03 are accepted and `done`; the other two
-packages below remain `active` under B.C., with explicit producer execution
+D02, S01, D03 and R01 are accepted and `done`; T01
+remains `active` under B.C., with explicit producer execution
 gates. C02's accepted delivery is integrated by PR #9 at `03797bc`, verified
 in D01's checkout on 22 October 2026 alongside its producer ancestors and wave
 approval. B.C. confirmed D01 review/acceptance at PR #10 merge `b5751a9`
@@ -17,6 +17,11 @@ accepted/integrated and directed D03 execution; both are in its checkout.
 B.C. confirmed D03 review/integration at PR #13 merge `0cfbff7` on 23 October
 and directed R01 execution. Its accepted Grade/state contract and all prerequisite
 commits are present in R01's checkout.
+B.C. directed R01 acceptance reconciliation and T01 execution on 23 October.
+R01 PR #14 merge `8976371` (implementation `bb19468`) is on live main and
+in T01's checkout alongside all required producer commits and approval `49eb37b`.
+I02 remains accepted/done. T01's execution gate is satisfied; its milestone
+acceptance still requires B.C.'s review.
 Each later consumer must first include
 its accepted producer commits. Use the
 [copy-ready package prompts](PHASE-2-HANDOFFS.md) and

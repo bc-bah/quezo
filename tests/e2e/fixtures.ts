@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Browser, type Page } from "@playwright/test";
 import { spawn, execFileSync, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
 import { createHash } from "node:crypto";
@@ -207,67 +207,52 @@ export async function privatePage(page: Page, apps: Applications) {
   expect(await page.evaluate(() => [localStorage.length, sessionStorage.length])).toEqual([0, 0]);
 }
 
-export const test = base.extend<{ privacy: void }, { apps: Applications }>({
-  apps: [async ({}, use) => {
-    const apps = new Applications();
-    try {
-      await apps.ready(issuer + "/.well-known/openid-configuration");
-      await apps.webTransport.open();
-      await apps.apiTransport.open();
-      await apps.backendTransport.open();
-      await apps.startApi();
-      await apps.startWeb();
-      await use(apps);
-    } finally { await apps.close(); }
-  }, { scope: "worker" }],
-  privacy: [async ({ page, apps }, use, testInfo) => {
-    const checks: Promise<void>[] = [];
-    const violations: string[] = [];
-    const pending = new Set<string>();
-    const diagnose = testInfo.title === "AT-01 callback state, browser binding and replay fail closed"
-      || testInfo.title.startsWith("D02 ");
-    const inspectHeaders = (headers: Record<string, string>) => {
-      for (const [name, value] of Object.entries(headers)) {
-        if (name.toLowerCase() === "authorization") violations.push("Browser exposed authorization");
-        if (name.toLowerCase() === "referer" && (value.includes("/auth/callback") || value.includes("code="))) {
-          violations.push("Callback referrer leaked");
-        }
+async function observePrivacy(page: Page, apps: Applications, diagnose = false) {
+  const checks: Promise<void>[] = [];
+  const violations: string[] = [];
+  const pending = new Set<string>();
+  const inspectHeaders = (headers: Record<string, string>) => {
+    for (const [name, value] of Object.entries(headers)) {
+      if (name.toLowerCase() === "authorization") violations.push("Browser exposed authorization");
+      if (name.toLowerCase() === "referer" && (value.includes("/auth/callback") || value.includes("code="))) {
+        violations.push("Callback referrer leaked");
       }
-    };
-    // Raw-header promises can hang for interrupted Chromium prefetches. Inspect
-    // intended headers immediately and actual wire headers even for failed requests.
-    const network = await page.context().newCDPSession(page);
-    network.on("Network.requestWillBeSentExtraInfo", (event: { headers: Record<string, string> }) => {
-      inspectHeaders(event.headers);
-    });
-    await network.send("Network.enable");
-    page.on("response", (response) => {
-      if (!response.url().startsWith(webOrigin + "/auth/")) return;
-      const stage = `response headers ${checks.length}`;
-      pending.add(stage);
-      checks.push((async () => {
-        for (const header of await response.headersArray()) {
-          if (header.name.toLowerCase() === "set-cookie") {
-            const value = header.value.match(/^(?:__Host-)?quezo_(?:session|login)=([^;]+)/)?.[1];
-            if (value) apps.secrets.add(value);
-          }
-        }
-        if (response.headers()["referrer-policy"] !== "no-referrer") violations.push("Auth route referrer policy");
-        pending.delete(stage);
-      })());
-    });
-    page.on("request", (request) => {
-      const url = new URL(request.url());
-      if (url.origin === webOrigin && url.pathname === "/auth/callback") {
-        for (const key of ["code", "state"]) {
-          const value = url.searchParams.get(key);
+    }
+  };
+  // Raw-header promises can hang for interrupted Chromium prefetches. Inspect
+  // intended headers immediately and actual wire headers even for failed requests.
+  const network = await page.context().newCDPSession(page);
+  network.on("Network.requestWillBeSentExtraInfo", (event: { headers: Record<string, string> }) => {
+    inspectHeaders(event.headers);
+  });
+  await network.send("Network.enable");
+  page.on("response", (response) => {
+    if (!response.url().startsWith(webOrigin + "/auth/")) return;
+    const stage = `response headers ${checks.length}`;
+    pending.add(stage);
+    checks.push((async () => {
+      for (const header of await response.headersArray()) {
+        if (header.name.toLowerCase() === "set-cookie") {
+          const value = header.value.match(/^(?:__Host-)?quezo_(?:session|login)=([^;]+)/)?.[1];
           if (value) apps.secrets.add(value);
         }
       }
-      if (url.origin === apiOrigin) violations.push("Browser called backend directly");
-      inspectHeaders(request.headers());
-    });
-    await use();
+      if (response.headers()["referrer-policy"] !== "no-referrer") violations.push("Auth route referrer policy");
+      pending.delete(stage);
+    })());
+  });
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.origin === webOrigin && url.pathname === "/auth/callback") {
+      for (const key of ["code", "state"]) {
+        const value = url.searchParams.get(key);
+        if (value) apps.secrets.add(value);
+      }
+    }
+    if (url.origin === apiOrigin) violations.push("Browser called backend directly");
+    inspectHeaders(request.headers());
+  });
+  return async () => {
     const timer = diagnose ? setTimeout(() => {
       console.log(`Privacy teardown: pending ${[...pending].join(", ")}`);
     }, 5_000) : undefined;
@@ -282,6 +267,44 @@ export const test = base.extend<{ privacy: void }, { apps: Applications }>({
     }
     expect(violations).toEqual([]);
     if (diagnose) console.log("Privacy teardown: complete");
+  };
+}
+
+export async function privateIdentity(browser: Browser, apps: Applications) {
+  const context = await browser.newContext({ baseURL: webOrigin, serviceWorkers: "block" });
+  try {
+    const page = await context.newPage();
+    const checkPrivacy = await observePrivacy(page, apps);
+    return {
+      page,
+      async close() {
+        try { await checkPrivacy(); } finally { await context.close(); }
+      },
+    };
+  } catch (error) {
+    await context.close();
+    throw error;
+  }
+}
+
+export const test = base.extend<{ privacy: void }, { apps: Applications }>({
+  apps: [async ({}, use) => {
+    const apps = new Applications();
+    try {
+      await apps.ready(issuer + "/.well-known/openid-configuration");
+      await apps.webTransport.open();
+      await apps.apiTransport.open();
+      await apps.backendTransport.open();
+      await apps.startApi();
+      await apps.startWeb();
+      await use(apps);
+    } finally { await apps.close(); }
+  }, { scope: "worker" }],
+  privacy: [async ({ page, apps }, use, testInfo) => {
+    const checkPrivacy = await observePrivacy(page, apps,
+      testInfo.title === "AT-01 callback state, browser binding and replay fail closed"
+      || testInfo.title.startsWith("D02 "));
+    try { await use(); } finally { await checkPrivacy(); }
   }, { auto: true }],
 });
 export { expect };

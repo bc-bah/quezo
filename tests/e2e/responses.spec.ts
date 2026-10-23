@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { components } from "../../frontend/quezo/src/lib/api/schema";
-import { test, expect, login, accounts, apiOrigin } from "./fixtures";
+import { test, expect, login, privatePage, privateIdentity, accounts, apiOrigin } from "./fixtures";
 
 type S = components["schemas"];
 
-test("D02 AT-07/08 durable answers and D03 pending-save submission and lost completion response", async ({ page, apps }) => {
+test("D02 AT-07/08 durable answers and D03 pending-save submission and lost completion response", async ({ page: authorPage, apps, browser }) => {
+  let page = authorPage;
   test.setTimeout(240_000);
   page.setDefaultTimeout(15_000);
   console.log("D02 Chromium version: " + page.context().browser()!.version());
@@ -51,8 +52,10 @@ test("D02 AT-07/08 durable answers and D03 pending-save submission and lost comp
   await expect(page.getByRole("status")).toContainText("Assignment confirmed");
   await page.goto("/");
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
-  // Local logout deliberately retains provider SSO; start a fresh browser identity for the learner.
-  await page.context().clearCookies();
+  // Local logout deliberately retains provider SSO.
+  const learnerContext = await privateIdentity(browser, apps);
+  page = learnerContext.page;
+  try {
   await login(page, "learner");
   console.log("D02 checkpoint: learner signed in");
   await page.getByRole("link", { name: "My assignments", exact: true }).click();
@@ -243,4 +246,21 @@ test("D02 AT-07/08 durable answers and D03 pending-save submission and lost comp
   expect((await apps.apiDb.query(
     "SELECT count(*)::int AS n FROM quezo.grades WHERE attempt_id=$1", [attemptId],
   )).rows[0].n).toBe(1);
+  expect(completed.questions.map(({ response, ...question }) => question))
+    .toEqual(initial.questions.map(({ response, ...question }) => question));
+  const finalResponses = completed.questions.map((question) => question.response);
+  await apps.stopApi(); await apps.startApi(); await apps.restartWeb();
+  await page.reload();
+  expect((await snapshot()).questions.map((question) => question.response)).toEqual(finalResponses);
+  await page.getByRole("link", { name: "View result", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Score", exact: true })).toContainText("1 / 2 points (50.0%)");
+  await expect(page.getByRole("region", { name: "Answer key", exact: true })).toContainText("withheld");
+  const resultHtml = await page.content();
+  expect([feedback, "correctOption", '"outcome"'].some((field) => resultHtml.includes(field)),
+    "Recovered submission follows the policy-filtered result path").toBe(false);
+  expect((await apps.apiDb.query(
+    "SELECT count(*)::int AS n FROM quezo.grades WHERE attempt_id=$1", [attemptId],
+  )).rows[0].n).toBe(1);
+  await privatePage(page, apps);
+  } finally { await learnerContext.close(); }
 });
