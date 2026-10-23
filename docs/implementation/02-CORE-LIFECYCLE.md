@@ -6,9 +6,8 @@ Each package delivers a small working slice, including its migrations, contract,
 minimal UI and relevant tests unless explicitly pure calculation.
 
 **Assignment, 21 October 2026; acceptance updated 23 October:** C01, C02, D01,
-D02, S01, D03 and R01 are accepted and `done`; T01
-remains `active` under B.C., with explicit producer execution
-gates. C02's accepted delivery is integrated by PR #9 at `03797bc`, verified
+D02, S01, D03, R01 and T01 are accepted and `done` under B.C.
+The Phase 2 exit gate is accepted. C02's accepted delivery is integrated by PR #9 at `03797bc`, verified
 in D01's checkout on 22 October 2026 alongside its producer ancestors and wave
 approval. B.C. confirmed D01 review/acceptance at PR #10 merge `b5751a9`
 and directed D02 execution using its accepted snapshot/locking handoff.
@@ -20,11 +19,12 @@ commits are present in R01's checkout.
 B.C. directed R01 acceptance reconciliation and T01 execution on 23 October.
 R01 PR #14 merge `8976371` (implementation `bb19468`) is on live main and
 in T01's checkout alongside all required producer commits and approval `49eb37b`.
-I02 remains accepted/done. T01's execution gate is satisfied; its milestone
-acceptance still requires B.C.'s review.
+I02 remains accepted/done. T01 PR #15 merge `df06ccc` is accepted on 23 October
+after reconciliation of its lifecycle evidence and passing hosted checks.
+See the [milestone record](BACKLOG.md#t01-milestone-acceptance-23-october-2026).
 Each later consumer must first include
 its accepted producer commits. Use the
-[copy-ready package prompts](PHASE-2-HANDOFFS.md) and
+[historical package prompts](PHASE-2-HANDOFFS.md) and
 [approved demo defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
 The first UI is untimed, unscheduled, one-attempt and nonrandomized, with score-only
 or fully withheld release presets. Backend boundary fixtures still cover the

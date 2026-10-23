@@ -1,8 +1,9 @@
 # Phase 2 coding-agent handoffs
 
 **Approved and assigned:** B.C., 21 October 2026.
-C01, C02, D01, D02, S01, D03 and R01 are accepted and `done`; T01 remains an
-`active` assignment with milestone acceptance reserved to B.C.
+C01, C02, D01, D02, S01, D03, R01 and T01 are accepted and `done`.
+B.C.'s 23 October acceptance reconciliation closes Phase 2 at T01 merge
+`df06ccc`; see the [milestone record](BACKLOG.md#t01-milestone-acceptance-23-october-2026).
 I02 is done, EX-I02-01 is closed, and the integrated foundation is
 `553a2c8b77a770667f4cef6825f57c3b55f477ed` ([PR #7](https://github.com/bc-bah/quezo/pull/7)).
 Every checkout also needs this approval/tracker update. Later consumers need
@@ -33,7 +34,7 @@ B.C. directed R01 acceptance reconciliation and T01 execution on 23 October:
 Live main and T01 ancestry include every accepted producer and approval `49eb37b`.
 I02 was already done; its accepted record is unchanged.
 The copy-ready prompts below retain their original assignments and gate checks;
-they do not redispatch completed C01/C02/D01/D02/S01/D03/R01.
+they are historical and do not redispatch any completed Phase 2 package.
 
 | Package | Prompt | Required producer acceptance/integration |
 | --- | --- | --- |
@@ -45,10 +46,10 @@ they do not redispatch completed C01/C02/D01/D02/S01/D03/R01.
 | S01 | [Pure objective scoring](#s01-dispatch-prompt) | Done; accepted merge `c9448f7` |
 | D03 | [Finalization and expiration](#d03-dispatch-prompt) | Done; accepted merge `0cfbff7` |
 | R01 | [Policy-filtered result](#r01-dispatch-prompt) | Done; accepted merge `8976371` |
-| T01 | [First lifecycle acceptance](#t01-dispatch-prompt) | R01/I02 accepted/integrated; execution directed by B.C. |
+| T01 | [First lifecycle acceptance](#t01-dispatch-prompt) | Done; accepted merge `df06ccc` |
 
-T01's producer gate is satisfied; shared test discovery/documentation changes
-use B.C.'s serialized post-R01 window. No Phase 3 successor is dispatched. The persistence/UI chain is
+T01's implementation window is complete. No Phase 3 successor is dispatched.
+The completed persistence/UI chain is
 C01 -> C02 -> D01 -> D02 -> D03 -> R01 -> T01, with S01 joining at D03.
 The [backlog](BACKLOG.md), not this diagram, is authoritative for current status.
 

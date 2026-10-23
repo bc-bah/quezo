@@ -671,28 +671,23 @@ Report ready for review or blocked with an exact unresolved criterion, not done;
 B.C. owns acceptance, exception closure, integration and tracker updates.
 ```
 
-## 7. Active Phase 2 assignments
+## 7. Completed Phase 2 assignments
 
-B.C. assigned all eight lifecycle packages on 21 October 2026, with explicit
-producer execution gates and approved untimed demo defaults. Use one copy-ready
-prompt per session from [PHASE-2-HANDOFFS.md](PHASE-2-HANDOFFS.md).
-`active` means assigned; it is not evidence that a predecessor has finished.
-The current integrated foundation is I02 merge `553a2c8`, plus this planning
-update. C01 is now accepted and `done` at merge `e66f459`, migration
-`0005_questions`; see its [accepted handoff](../DEVELOPMENT.md#c01-versioned-objective-questions).
-Consumers must also include their later accepted producer commits and the
-current backlog acceptance record. C02's verified local delivery is also accepted
-and tracked as `done`; PR #9 integrated it at `03797bc`, verified in D01's
-checkout on 22 October 2026. The original C01/C02 prompts
-are historical, not new assignments.
+B.C. assigned all eight lifecycle packages on 21 October 2026. All are now
+accepted and `done`, through T01 PR #15 merge `df06ccc` on 23 October.
+The [Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve original execution contracts;
+they are historical, not new assignments. Current acceptance evidence and
+Phase 3 readiness/approval gates live in the [backlog](BACKLOG.md).
+Future assigned consumers must include T01 and the current acceptance record;
+migration head remains `0009_finalization`. No Phase 3 dispatch is implied.
 
 | Package | Copy-ready prompt | Implementation gate |
 | --- | --- | --- |
 | C01 | [Versioned objective questions](PHASE-2-HANDOFFS.md#c01-dispatch-prompt) | Done; accepted merge `e66f459` |
 | C02 | [Immutable quiz publication](PHASE-2-HANDOFFS.md#c02-dispatch-prompt) | Done; accepted merge `03797bc` |
-| D01 | [Assignment and attempt start](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) | C02 accepted; merge `03797bc` verified in checkout |
-| D02 | [Durable response save and resume](PHASE-2-HANDOFFS.md#d02-dispatch-prompt) | D01 accepted and integrated |
-| S01 | [Pure objective scoring](PHASE-2-HANDOFFS.md#s01-dispatch-prompt) | F02 done; executable now |
-| D03 | [Finalization and expiration](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) | D02 and S01 accepted and integrated |
-| R01 | [Policy-filtered result](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) | D03 accepted and integrated |
-| T01 | [First lifecycle acceptance](PHASE-2-HANDOFFS.md#t01-dispatch-prompt) | R01 and I02 accepted and integrated |
+| D01 | [Assignment and attempt start](PHASE-2-HANDOFFS.md#d01-dispatch-prompt) | Done; accepted merge `b5751a9` |
+| D02 | [Durable response save and resume](PHASE-2-HANDOFFS.md#d02-dispatch-prompt) | Done; accepted merge `c7d6f7e` |
+| S01 | [Pure objective scoring](PHASE-2-HANDOFFS.md#s01-dispatch-prompt) | Done; accepted merge `c9448f7` |
+| D03 | [Finalization and expiration](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) | Done; accepted merge `0cfbff7` |
+| R01 | [Policy-filtered result](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) | Done; accepted merge `8976371` |
+| T01 | [First lifecycle acceptance](PHASE-2-HANDOFFS.md#t01-dispatch-prompt) | Done; accepted merge `df06ccc` |

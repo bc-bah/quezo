@@ -5,6 +5,19 @@ the [plan](README.md#4-integration-and-ownership-rules). Each is a vertical slic
 Dependencies/status live in [BACKLOG.md](BACKLOG.md); exact requirements live in
 the [software specification](../SOFTWARE-SPECIFICATION.md).
 
+**Readiness checkpoint, 23 October 2026:** T01 is accepted at merge `df06ccc`
+([milestone evidence](BACKLOG.md#t01-milestone-acceptance-23-october-2026));
+the common predecessor is no longer a blocker. C03/R02 are `ready`, not assigned.
+A01 is `blocked` pending approval of its narrowly privileged Keycloak
+administration identity/integration: the existing DEC-06 approval permits only
+explicit local provisioning, not runtime admin credentials. D04 is `blocked`
+on DEC-09 for timed UX; a separately assigned untimed subset would not complete
+D04. No Phase 3 package is active. Before dispatch, B.C. must explicitly assign
+scope/review/merge ownership and serialize shared surfaces, including the C03/D04
+editor seam and migration chain. Start from accepted T01 plus this tracking
+update; migration head remains `0009_finalization`. No pilot or deployment
+approval is implied.
+
 ## C03: Complete author workspace
 
 **Rules:** AUTH-01/02/03; AT-03/04/05.

@@ -1,7 +1,7 @@
 # Prototype scope
 
 **Date:** 20 October 2026  
-**Status:** Working foundations through I02 done; all Phase 2 packages assigned with execution gates.
+**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 not dispatched.
 Later decisions remain held in the specification. This is not a production-readiness claim.
 
 ## 1. Source and decision precedence
@@ -121,14 +121,15 @@ creation of these documents.
 | Audience, organization scope, priority coverage | Single-organization, low-stakes, all P0; confirmed by user | Product; confirmed 20 October 2026 |
 | Technology stack | Next.js/React, Python/FastAPI, PostgreSQL, Keycloak and Docker; two-language stack explicitly accepted | Confirmed 20 October 2026 |
 | Exact versions, packages, module layout | Foundations through I02 integrated and locked, including Playwright browser evidence; Phase 2 reuses these tools | B.C.; Phase 2 assignment 21 October 2026; production suitability still requires review |
-| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01 through DEC-05 approved as written in the specification; domain packages not yet dispatched | B.C.; approved 20 October 2026 |
+| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01 through DEC-05 approved; initial lifecycle implemented and accepted through T01; advanced author/configuration/reporting surfaces remain Phase 3 | B.C.; baseline approved 20 October, T01 accepted 23 October 2026 |
 | Keycloak realm/provider, login claims, administration privileges | DEC-06 implemented for local synthetic realm, confidential web client and API audience; live application roles/status; explicit provisioning without runtime admin credentials | B.C.; I02 combined browser gate accepted; production and A01 administration integration not approved here |
 | First customer, pilot data policy, retention/deletion obligations | DEC-10 held; synthetic data only meanwhile | B.C. to obtain product/privacy review before pilot |
 | Hosting, workload, recovery objectives, availability commitment | DEC-08/10 held; local Docker is not hosting approval | B.C. to obtain engineering/operations review before applicable operational gates |
 | Delivery date, budget, release approver | DEC-11 later commitments held; B.C. owns foundation and Phase 2 integration/review/merge | B.C. before scheduling/release commitment |
 
-**Current gate:** I02 is accepted and EX-I02-01 closed. B.C.'s
-[Phase 2 assignment/defaults](SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-activates eight packages while retaining producer execution gates. Use the
-[Phase 2 prompts](implementation/PHASE-2-HANDOFFS.md); C01/S01 can start first.
-The demo stays untimed under DEC-09. No Phase 3, deployment or pilot is authorized.
+**Current gate:** T01 is accepted at merge `df06ccc`, completing Phase 2;
+I02 and EX-I02-01 closure remain accepted. See the
+[Phase 3 readiness record](SOFTWARE-SPECIFICATION.md#t01-acceptance-and-phase-3-readiness):
+C03/R02 are ready for assignment, A01 needs scoped administration approval,
+and D04 retains DEC-09. The demo stays untimed. No Phase 3 dispatch, deployment
+or pilot is authorized by milestone acceptance.

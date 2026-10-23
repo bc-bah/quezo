@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Working foundations through I02 accepted; Phase 2 assigned with producer execution gates.
+**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 awaiting assignment and scoped approvals.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -26,8 +26,10 @@ obtain a decision rather than silently choosing a different behavior.
 **Existing software:** F01 PostgreSQL infrastructure, F02 schemas/errors/generated
 contracts, F03 server sessions/navigation/facade, and I01 token validation,
 current-actor `/me` and controlled local provisioning. I02's combined real-browser
-identity gate is accepted and EX-I02-01 closed. No assessment workflow is
-implemented yet; foundation completion is not full P0 or pilot approval.
+identity gate is accepted and EX-I02-01 closed. Phase 2 adds versioned questions,
+immutable publication, assignment/start, durable saves, scoring/finalization and
+policy-filtered results. T01 accepts the integrated initial lifecycle; this is
+not full P0 or pilot approval.
 
 **Excluded:** multiple tenants, cohorts, anonymous access, written/manual grading,
 regrading, CSV/import/export, pool selection, external API support, LMS integration,
@@ -227,6 +229,9 @@ authorization, full accessibility, operational readiness or pilot deployment.
 
 ### Phase 2 assignment and demo defaults
 
+Historical assignment record; all eight packages are now accepted. The demo
+defaults and later holds below remain in force.
+
 On 21 October 2026, B.C. explicitly assigned **C01, C02, D01, D02, S01, D03,
 R01 and T01** as `active`, retaining ownership, integration and review/merge.
 B.C. explicitly approved that these are **assignments with execution gates**:
@@ -274,6 +279,26 @@ ordering at a time. C01 has the initial shared-file window; S01 is independently
 restricted to pure scoring and its tests. B.C. serializes later windows along
 the lifecycle chain. Phase 3, real-data/shared pilot, external provisioning,
 deployment, delivery dates and budget remain outside this assignment.
+
+### T01 acceptance and Phase 3 readiness
+
+On 23 October 2026, B.C. requested acceptance/tracking reconciliation before
+moving to Phase 3. T01 is accepted at [PR #15](https://github.com/bc-bah/quezo/pull/15)
+merge `df06ccc19af947cda05757c79938394763d6edb6`, implementation `300bbc4`,
+following review of its recorded lifecycle evidence and successful hosted
+browser/Node/Python jobs. All Phase 2 packages are `done`; the migration head
+remains `0009_finalization`. See the
+[acceptance record](implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026)
+and [scoped AT matrix](../tests/e2e/README.md#lifecycle-acceptance-matrix).
+
+The T01 predecessor gate is satisfied for all four Phase 3 packages. C03/R02
+are ready for explicit assignment, not active. A01 requires a scoped extension
+of DEC-06 for its narrowly privileged Keycloak administration identity/integration;
+the existing no-runtime-admin-credentials approval is not silently overridden.
+D04 retains the DEC-09 timed-accessibility gate. Phase 3 scope, review/merge
+ownership and shared-file windows still require assignment. No new implementation,
+credential provisioning, deployment, full P0 or pilot approval is granted here.
+DEC-08/09/10 and later DEC-11 commitments remain held.
 
 ## 3. Actors and authorization
 

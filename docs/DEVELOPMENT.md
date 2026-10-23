@@ -148,8 +148,13 @@ owned isolated dependencies and `npm run test:e2e`.
 **Work item:** T01, First lifecycle acceptance.
 **Owner/integrator/reviewer:** B.C.; assigned active 21 October 2026, execution
 directed 23 October after R01 acceptance reconciliation.
-**State:** ready for review; all assigned T01 checks passed locally.
-T01 is not marked done; B.C. accepts the milestone after review.
+**State:** accepted and `done`, 23 October 2026, following B.C.'s request to
+reconcile milestone acceptance before Phase 3. [PR #15](https://github.com/bc-bah/quezo/pull/15)
+merged at `df06ccc19af947cda05757c79938394763d6edb6` (implementation `300bbc4`).
+[Hosted browser and Node/Python matrix checks](https://github.com/bc-bah/quezo/actions/runs/39949405839)
+passed. The local execution record below is retained unchanged; this tracking
+update does not claim a new application run or code review. See the
+[acceptance boundary](implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026).
 
 **Changes:** `tests/e2e/lifecycle.spec.ts` adds complete real-native-form
 author-to-result journeys for score-only and fully withheld presets.
@@ -268,8 +273,9 @@ then normal startup catch-up, never a mutated frozen deadline or user-facing tim
 Recovery must still preserve snapshots, responses/command ledgers, Grade/items
 and completion events together; no backup/restore/RPO/RTO acceptance is claimed.
 
-**Integration:** uncommitted T01 changes on verified main baseline
-`8976371bdf00bb337a0db0df1818cf739df7b546`; no T01 commit or PR created.
+**Integration:** T01 implementation `300bbc4` is integrated by PR #15 merge
+`df06ccc` on verified producer baseline
+`8976371bdf00bb337a0db0df1818cf739df7b546`.
 `gh api repos/bc-bah/quezo/branches/main`, merged PR records and
 `git merge-base --is-ancestor <commit> HEAD` verified the following chain.
 B.C.'s user-directed post-R01 serialized window covers common test fixtures,
@@ -288,8 +294,8 @@ application wiring or runtime implementation changes were needed.
 | [D03](#d03-finalization-and-expiration), [PR #13](https://github.com/bc-bah/quezo/pull/13) | `0cfbff7bb65c9bbad2be049df729459c516516b0` | `9ff05f87aae1cf8789e9b565508f75a5ef6fd275` |
 | [R01](#r01-policy-filtered-result), [PR #14](https://github.com/bc-bah/quezo/pull/14) | `8976371bdf00bb337a0db0df1818cf739df7b546` | `bb194681762e5e5e3563645f67303f9ca51f38cd` |
 
-**Known gaps:** no known failing or unverified assigned T01 criterion remains;
-human milestone acceptance is pending B.C.'s review. Scope exclusions are
+**Known gaps:** no known failing or unverified assigned T01 criterion remains
+in the delivery record; milestone acceptance is now recorded. Scope exclusions are
 not failed criteria disguised as passes: C03 owns complete search/category/tag,
 move/archive/close and author management; A01 owns in-app account administration;
 D04 owns configurable delivery, schedule/DST/randomization and DEC-09-dependent
@@ -299,7 +305,7 @@ operational/load evidence under their decision gates. This local Chromium run
 is not hosted CI, another browser/OS matrix, a human screen-reader audit, full
 AT-02/13-17, full P0, deployment or pilot readiness.
 
-**Successor handoff:** after B.C. reviews and accepts T01, future assigned
+**Successor handoff:** T01 is accepted; future explicitly assigned
 packages can reuse the integrated producer contracts, both preset journeys,
 privacy-safe fresh-context helper and existing backend integrity fixtures.
 Preserve fixed snapshots, live actor checks, no-store policy projections,
@@ -2523,7 +2529,7 @@ and the generated schema; backend writes must resolve live actor/roles inside
 their transaction before operation/ownership checks. The repeatable navigation/
 restart demonstration works, but no question, quiz or attempt route is supplied.
 
-## Phase 2 assignments and remaining review gates
+## Phase 2 completion and remaining review gates
 
 C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
 at `03797bc` (PR #9), verified in D01's checkout on 22 October 2026.
@@ -2533,10 +2539,13 @@ S01 at `c9448f7` (PR #12) complete, accepted and integrated, and directed D03
 execution after updating the tracking records. On 23 October, B.C. confirmed
 D03 reviewed/integrated at `0cfbff7` (PR #13) and directed R01 execution after
 recording D03 acceptance. R01 is now accepted/integrated at `8976371` (PR #14);
-B.C. directed T01 execution after reconciliation on 23 October. T01 remains active,
-with milestone acceptance pending B.C.'s review. Each later consumer must
+B.C. directed T01 execution after reconciliation on 23 October, then requested
+milestone acceptance/tracking. T01 is accepted at `df06ccc` (PR #15), closing
+Phase 2. C03/R02 are ready for assignment; A01 needs scoped administration
+approval and D04 retains DEC-09. Each later consumer must
 first verify its own integrated producer
-evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).
+evidence in the backlog. The [Phase 2 prompts](implementation/PHASE-2-HANDOFFS.md)
+are now historical; [Phase 3 packages](implementation/03-COMPLETE-P0.md) remain undispatched.
 Preserve `Database.transaction`, live actor checks, generated client/error
 conventions, the I02 fixtures and secret-safe browser reporting.
 
