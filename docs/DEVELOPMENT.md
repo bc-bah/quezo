@@ -289,6 +289,15 @@ for either interruption. The final full run above passed on the running engine.
 No remaining D02 check failure is known. Hosted CI and broader acceptance
 limits remain unverified as listed above.
 
+PR browser CI on `fbe93da` subsequently reported an ambiguous page-wide alert
+locator in D01 AT-06 (`attempts.spec.ts:109`). The assertion now scopes to the
+main landmark and verifies the exact not-found message, rather than allowing
+unrelated alerts such as the framework route announcer to match. The original
+ambiguity did not reproduce locally, including after waiting for the announcer
+to mount. With the scoped assertion, `npm run typecheck:e2e` and
+`npm run test:e2e -- --grep "D01 AT-06"` passed (13.566 seconds for the browser
+case). Hosted confirmation of this follow-up is pending.
+
 ## D01 assignment and attempt start
 
 **Work item:** D01. **Owner/integrator/reviewer:** B.C.; assigned 21 October 2026.
