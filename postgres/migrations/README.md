@@ -19,6 +19,7 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0005_questions` | `0004_identity` | Owned banks/questions, immutable objective revisions, content checks and restricted version privileges |
 | `0006_quizzes` | `0005_questions` | Revisioned quiz drafts, immutable publications/ordered question snapshots, retained command acknowledgements and publication events |
 | `0007_attempt_start` | `0006_quizzes` | Unique pinned assignments, numbered attempts, frozen private/presentation snapshots and retained start command mappings |
+| `0008_responses` | `0007_attempt_start` | Revision-zero responses, response CAS constraints and retained save acknowledgement ledger |
 
 Only `public.alembic_version` records migration state. C01 adds question tables;
 C02 adds quiz publication, acknowledgement and publication-event tables, but no
@@ -39,9 +40,35 @@ I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
+### D02 durable response storage
+
+`0008_responses` follows the accepted D01 head `0007_attempt_start`; no applied
+revision is edited. It backfills one unanswered revision-zero `attempt_responses`
+row per existing frozen question (including terminal attempts) and initializes
+future questions with a trigger. Backfill never changes snapshots or adds answers.
+`response_commands` scopes keys to actor/attempt/`save`/request UUID; fingerprints
+also bind the frozen question, expected revision and normalized option/null.
+The acknowledgement stores request ID, response revision and admission timestamp.
+No command retention cleanup or automatic database retries are introduced.
+
+Save takes the parent attempt lock before reading/CAS. Database constraints
+require frozen-option membership, monotonic revision, a predeadline timestamp,
+an editable parent and matching response/ledger records at commit. A write admitted
+before deadline may commit afterward. No assignment or quiz lock is taken after
+the attempt lock. Ledger updates/deletes and response deletes are forbidden;
+`quezo_web` has no table access. Responses and request history must be recovered
+together. Failed upgrades roll back DDL/backfill/version atomically; corrections
+after application use a reviewed forward migration.
+
+`test_response_migrations.py` covers the actual `0007_attempt_start -> head`
+upgrade with existing frozen attempts, repeat-head execution, failed-upgrade
+rollback, constraints and privileges. Foundation tests retain clean `base -> head`.
+Finalization/expiration reconciliation belongs to D03; it must lock the same parent
+and grade these persisted responses, never pending browser input.
+
 ### D01 assignment and attempt storage
 
-`0007_attempt_start` is the single head, following actual integrated C02
+`0007_attempt_start` follows actual integrated C02
 `0006_quizzes`. No applied revision changes. `assignments` uniquely pins
 `(learner_id, version_id)` and has an immutable quiz/version relationship.
 No allowance counter is resettable: successful committed attempt rows consume

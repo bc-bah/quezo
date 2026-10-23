@@ -42,10 +42,13 @@ async def get_attempt(connection: Connection, actor: Actor, attempt_id: UUID) ->
             raise ApiError(ErrorCode.NOT_FOUND)
         # Never serialize the private question snapshot, even for finalized attempts.
         await cursor.execute(
-            'SELECT id AS "attemptQuestionId", question_id AS "questionId", '
+            'SELECT q.id AS "attemptQuestionId", q.question_id AS "questionId", '
             'question_version_id AS "versionId", position, question->>\'questionType\' AS "questionType", '
-            'question->>\'prompt\' AS prompt, options, effective_points AS "effectivePoints" '
-            "FROM quezo.attempt_questions WHERE attempt_id = %s ORDER BY position", (attempt_id,),
+            'question->>\'prompt\' AS prompt, options, effective_points AS "effectivePoints", '
+            "jsonb_build_object('selectedOptionId', r.selected_option_id, 'revision', r.revision, "
+            "'savedAt', r.saved_at) AS response "
+            "FROM quezo.attempt_questions q JOIN quezo.attempt_responses r ON r.question_id = q.id "
+            "WHERE q.attempt_id = %s ORDER BY position", (attempt_id,),
         )
         row["questions"] = await cursor.fetchall()
     return Attempt.model_validate(row)

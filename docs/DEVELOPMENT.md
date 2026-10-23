@@ -17,7 +17,8 @@ F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
 independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
 
-Response saving, submission, background expiration, grading, real readiness checks, application containers,
+D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
+Submission, background expiration, grading, real readiness checks, application containers,
 and deployment are intentionally absent. A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
 I02, not established by F03 protocol tests. Database configuration is required
@@ -61,10 +62,10 @@ points to an older version.
 The web shell listens on `127.0.0.1:3000`; the backend on `127.0.0.1:4000`.
 Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
-no `/health/ready` or assignment/attempt routes. FastAPI exposes local interactive docs at
+no `/health/ready`, submission or grade routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
 `http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me`, C01 question
-authoring and C02 quiz publication are implemented.
+authoring, C02 quiz publication, D01 assignment/start and D02 response saving are implemented.
 Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
@@ -138,11 +139,173 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## D02 durable response save and resume
+
+**Work item:** D02. **Owner/integrator/reviewer:** B.C.; assigned 21 October 2026.
+**State:** ready for review, 22 October 2026; not accepted or committed.
+B.C. confirmed D01 review/acceptance and directed its tracking reconciliation
+before D02 implementation. This checkout includes D01 merge
+`b5751a94ce2ab36be8add8070bbbd99573175d0a` / implementation `cbb74f5`
+([PR #10](https://github.com/bc-bah/quezo/pull/10)), C02 `03797bc`,
+C01 `e66f459`, I02 `553a2c8` and current Phase 2 approval `49eb37b`.
+The accepted frozen snapshot and assignment -> attempt lock order are unchanged.
+B.C.'s post-D01 shared-file window covers generated errors/client, test discovery,
+migration-head expectations, learner navigation and these directly related docs.
+
+**Changes / requirements:** `modules/attempts/responses.py` owns ATT-02 save
+CAS/replay and ATT-03 admission. `0008_responses` owns response/ledger persistence.
+The learner response editor provides explicit per-question Save/Clear, native
+question links, saved/unsaved/saving/offline/conflict announcements and deliberate
+conflict resolution. It preserves newer input while an earlier edit is saving.
+Server-only learner actions reuse the live facade/Host/Origin/error contracts.
+IAM-02 checks precede replay and are repeated after the parent lock wait.
+QUAL-01/04 coverage uses real PostgreSQL and authenticated Chromium.
+
+**Saved-response and command contracts:**
+
+| Surface | Shape / behavior |
+| --- | --- |
+| `Attempt.questions[].response` | `{selectedOptionId: UUID or null, revision: integer, savedAt: UTC timestamp or null}`. Initial state is exactly null/0/null; explicit clears have a positive revision and timestamp. Frozen IDs/order/content are unchanged. |
+| `PUT /api/v1/attempts/{attempt_id}/responses/{question_id}` | `question_id` is D01's **attemptQuestionId**, not original question/version ID. Strict body `{requestId, expectedRevision, selectedOptionId}`; all fields required, including explicit null. UUID/revision/extra-field and frozen-option validation reject malformed writes. |
+| Success, HTTP 200 after commit | `{acknowledgement: {requestId, responseRevision, savedAt}, attemptState, serverTime}`. The acknowledgement is retained and stable; surrounding state/time are fresh. No grades, keys, feedback, fingerprint or private snapshot is returned. |
+| Stale CAS, HTTP 409 | `RESPONSE_REVISION_CONFLICT` with `{currentRevision, selectedOptionId, savedAt}` in the authorized error details; null is preserved. |
+| Changed key payload, HTTP 409 | `IDEMPOTENCY_CONFLICT`; fingerprints bind actor/attempt/operation/request, frozen question and normalized payload. Reusing a key on another question in that attempt conflicts too. |
+| Fresh terminal/late write, HTTP 409 | `ATTEMPT_FINALIZED` / `DEADLINE_PASSED`, details `{attemptState, deadline, serverTime}`; no answer mutation. |
+
+**Atomicity / admission:** lock only the owned parent attempt, re-resolve live
+authority, read the frozen question and scoped ledger, then read PostgreSQL
+`clock_timestamp()`. Authorized exact replay precedes fresh state/deadline/CAS
+admission, so accepted commands remain replayable after expiry/finalization.
+New writes require `in_progress` and database admission time strictly before the
+deadline, if present. A predeadline admission can commit afterward. Response,
+revision, admission timestamp and retained acknowledgement commit together;
+commit-time failure cannot produce success. No database retry loop or ledger
+cleanup is introduced. Do not acquire assignment/quiz locks after the parent.
+
+**Browser / D03 input:** saves are explicit and single-flight per question, not
+an autosave loop. An acknowledgement marks only its captured local edit saved;
+newer input remains unsaved. Uncertain outcomes retain the exact command/key.
+Reconnect, focus/resume and the Reconcile button fetch authorized persisted state
+before retry; retry is explicit and reuses the uncertain command. A stale write
+retains local input and requires **Use persisted answer** or **Keep my local
+answer**, followed by an explicit save. No cross-tab winner is silently chosen.
+Offline/transport/rejected saves never show Saved. Terminal admission errors
+disable fresh edits but retained commands can resolve an already accepted save.
+Unsaved edits are in memory only, with link and native unload warnings. Attempt
+entry uses document navigation so browser Back also crosses the unload guard.
+
+D03 must place submission alongside this editor's state: wait for all `busy`
+saves, require no pending/dirty/conflicted/failed or unreconciled edits, and
+confirm unanswered questions. Submit must never transmit an answer payload.
+Read `attempt_responses` under the same parent lock and grade only persisted
+selections against private frozen questions. D03 owns finalization, expiration
+reconciliation/worker, final timestamps and grades. Until then a past-deadline
+attempt can still report `in_progress`; `DEADLINE_PASSED` prevents writes without
+pretending a grade or finalization exists. No submission/result control, timer
+or fabricated grade is added here.
+
+**Data:** single head `0008_responses` follows `0007_attempt_start`. Existing
+frozen questions receive unanswered revision-zero rows; future snapshots initialize
+them transactionally. Composite FKs, revision/option/state checks and deferred
+acknowledgement completeness protect storage. Ledger rows cannot be changed or
+deleted; response deletion is forbidden. Preserve responses and ledgers together
+in recovery. See the [migration runbook](../postgres/migrations/README.md#d02-durable-response-storage).
+
+**Acceptance / checks:** all common check stages and the final full browser
+suite passed as recorded below. Focused `test_responses.py`, `test_response_migrations.py`,
+`test_app.py` and `test_attempts.py` passed **56 cases** using a disposable real
+PostgreSQL service. `npm run test:contracts` passed **88 Python + 2 tooling/client**
+cases. AT-07 covers refresh/restart, clear, duplicate/key reuse and stale/cross-tab
+writes. D02's AT-08 scope covers offline/newer input, lost acknowledgement,
+reconciliation/retry and visible safe errors. The actual submission pending-save
+guard remains D03, not a D02 acceptance claim.
+
+The focused command
+`uv run --directory postgres --locked pytest -x --tb=short tests/test_responses.py tests/test_response_migrations.py tests/test_app.py tests/test_attempts.py`
+ran inside a unique disposable PostgreSQL Compose project using the existing
+`run_browser` environment/lifecycle helpers and guarded `db_helpers` databases:
+**56 passed in 226.59 seconds**. `npm run test:e2e -- --grep D02` then passed
+the complete D02 browser journey, including privacy teardown, in **28.333 seconds**
+of browser-test execution (service setup/build are additional).
+
+The `npm run test:e2e -- --checks` run completed every non-browser stage:
+
+| Command | Result |
+| --- | --- |
+| `npm run typecheck` | Web, API (72 source files) and browser types passed |
+| `npm test` | 12 web tests; 500 Python tests passed in 769.03 seconds |
+| `npm run build` | Production build passed |
+| `npm run api:check` | OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | 88 Python and 2 tooling/client tests passed |
+| `npm run test:db` | 217 passed in 842.37 seconds, including clean migration and actual prior-head response upgrade/backfill |
+| `npm run test:identity` | 108 passed |
+| `npm run test:identity:integration` | Real Keycloak integration passed |
+| `npm run test:web:production` | Built-web HTTP/database/OIDC boundary passed |
+
+That combined invocation exited nonzero on the browser privacy-fixture timeout
+described below; it is not claimed as an uninterrupted green run.
+After the final local-edit counter change, `npm run typecheck:web` and
+`npm run build` passed again. After the privacy-observer correction,
+`npm run typecheck:e2e` passed. The final `npm run test:e2e` rebuilt the current
+web application and passed **all 26 browser cases**, including the unchanged
+300-second identity expiry case and D02 in **23.905 seconds**. The launcher
+removed its owned services/network; no development volumes were touched.
+
+Environment: Windows, Node **24.20.0**, npm **11.19.0**, uv **0.12.17**,
+Python **3.12.10**, PostgreSQL **17.11**, Keycloak **26.4.7**,
+Playwright **1.64.1**, Chromium **156.0.8078.4**. All identities/data/services
+are synthetic and local. No hosted CI, manual screen-reader audit, database
+backup/recovery acceptance or timed-UX result is claimed.
+
+| D02 criterion / acceptance | Executable evidence |
+| --- | --- |
+| Initial null/0/null, frozen-option membership, explicit clear, malformed rejection | `test_save_clear_replay_stale_and_lost_ack`, `test_strict_save_input`, `test_missing_clear_foreign_option_and_question` |
+| Concurrent CAS, exact replay, changed key payload, retained original acknowledgement | `test_concurrent_response_cas`, `test_save_clear_replay_stale_and_lost_ack`; unique/immutable ledger constraints |
+| Rollback and commit-before-success | `test_rollback_including_deferred_commit_failure` rejects both mid-command and deferred commit failures with no persisted response/ack |
+| Post-lock authority/deadline, strict boundary, predeadline admission committing late | `test_queued_save_rechecks_authority_and_state`, `test_post_lock_deadline_and_ack_after_expiry`, `test_predeadline_admission_can_commit_after_deadline`, exact microsecond admission helper test |
+| Authorized replay after expiry/finalization without mutation | `test_terminal_replay_is_ack_only_and_live_authorized`, post-lock deadline/replay test; terminal states are controlled fixtures, not D03 implementation |
+| AT-07 acknowledged refresh/restart, clear and cross-tab handling | `responses.spec.ts`: both question types, web/API restart, deliberate stale conflict and explicit local replacement; database replay/key-reuse cases |
+| AT-08 D02 scope | Same real browser journey: offline announcement/discard warning, reconnect reconciliation, newer edit during save, actual transport-lost acknowledgement and same-key retry, safe API-outage recovery |
+| Learner nondisclosure and migration integrity | JSON/HTML/RSC checks in `responses.spec.ts`; response/migration constraint tests, web-role denial, actual prior-head backfill/repeat upgrade and clean-head suite |
+
+Initial iterations exposed stale implemented-path/table allowlists and test
+fixture issues (provider SSO between identities, a single observer connection
+while holding a lock, and an unreliable in-flight browser-offline fault).
+These were corrected without weakening checks. The lost-ack scenario now severs
+real web-to-API sockets through a byte-forwarding fixture; it verifies the database
+commit before reconciliation/replay. Intermediate runs timed out during privacy
+teardown on unresolved Chromium raw-request-header promises for interrupted
+requests. The fixture now inspects provisional headers synchronously and actual
+wire headers through read-only Chromium network events; auth response/cookie,
+DOM/storage and application-log checks remain enforced. The final full suite
+completed every privacy check.
+
+A later run had one existing C01 stale-edit locator timeout; that unchanged
+case passed in isolation (8.418 seconds) and in the final full run. Another
+run lost its PostgreSQL connection during identity expiry and subsequent
+fixtures failed setup; Docker's reported engine version changed from 29.7.2
+to 29.9.2 during that run. No application fix or timeout relaxation was made
+for either interruption. The final full run above passed on the running engine.
+No remaining D02 check failure is known. Hosted CI and broader acceptance
+limits remain unverified as listed above.
+
+PR browser CI on `fbe93da` subsequently reported an ambiguous page-wide alert
+locator in D01 AT-06 (`attempts.spec.ts:109`). The assertion now scopes to the
+main landmark and verifies the exact not-found message, rather than allowing
+unrelated alerts such as the framework route announcer to match. The original
+ambiguity did not reproduce locally, including after waiting for the announcer
+to mount. With the scoped assertion, `npm run typecheck:e2e` and
+`npm run test:e2e -- --grep "D01 AT-06"` passed (13.566 seconds for the browser
+case). Hosted confirmation of this follow-up is pending.
+
 ## D01 assignment and attempt start
 
 **Work item:** D01. **Owner/integrator/reviewer:** B.C.; assigned 21 October 2026.
-**State:** ready for review, 22 October 2026. Implementation remains local and
-uncommitted; no PR, acceptance/status change or successor dispatch.
+**State:** accepted and integrated, confirmed by B.C. on 22 October 2026.
+[PR #10](https://github.com/bc-bah/quezo/pull/10) merged at
+`b5751a94ce2ab36be8add8070bbbd99573175d0a`, including implementation `cbb74f5`.
+B.C. accepted the snapshot/locking contract below and directed D02 execution
+after this tracking reconciliation; no later successor dispatch is implied.
 The complete common gate passed, including all 25 real-browser cases.
 
 **Integration:** the live C02 acceptance was already recorded. On 22 October
@@ -1885,9 +2048,10 @@ restart demonstration works, but no question, quiz or attempt route is supplied.
 
 C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
 at `03797bc` (PR #9), verified in D01's checkout on 22 October 2026.
-The other six Phase 2 packages remain active assignments under B.C., not
-simultaneously executable packages. D01's producer checkout gate is satisfied;
-D01 itself still needs B.C.'s review/acceptance/integration. S01 remains independently
+D01 is accepted and integrated at `b5751a9` (PR #10), as confirmed by B.C.
+on 22 October 2026. The other five Phase 2 packages remain active assignments
+under B.C., not simultaneously executable packages. B.C. directed D02 execution
+after this acceptance reconciliation. S01 remains independently
 executable on the accepted `553a2c8` foundation plus Phase 2
 approval. Each later consumer must first verify its own integrated producer
 evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).

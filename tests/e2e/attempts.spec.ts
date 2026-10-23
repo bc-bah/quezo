@@ -106,7 +106,9 @@ test("D01 AT-06 author assigns and learner lists starts reloads without private 
         expect((await fetch(apiOrigin + path, { headers: { Authorization: `Bearer ${otherToken}` } })).status).toBe(404);
       }
       await other.goto(attemptPath);
-      await expect(other.getByRole("alert")).toBeVisible();
+      const attemptError = other.getByRole("main").getByRole("alert");
+      await expect(attemptError).toBeVisible();
+      await expect(attemptError).toHaveText("The resource was not found.");
       expect((await other.content()).includes(prompt), "Foreign attempt HTML/RSC conceals content").toBe(false);
       await other.goto(publicationPath);
       await expect(other.locator("main").getByRole("alert")).toBeVisible();

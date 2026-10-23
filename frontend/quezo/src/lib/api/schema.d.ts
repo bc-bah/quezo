@@ -69,6 +69,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/attempts/{attempt_id}/responses/{question_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Response */
+        put: operations["save_response_api_v1_attempts__attempt_id__responses__question_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/eligible-learners": {
         parameters: {
             query?: never;
@@ -451,6 +468,21 @@ export interface components {
              */
             versionId: string;
         };
+        /** AttemptAdmissionDetails */
+        AttemptAdmissionDetails: {
+            /**
+             * Attemptstate
+             * @enum {string}
+             */
+            attemptState: "in_progress" | "finalized" | "expired";
+            /** Deadline */
+            deadline: string | null;
+            /**
+             * Servertime
+             * Format: date-time
+             */
+            serverTime: string;
+        };
         /** AttemptQuestion */
         AttemptQuestion: {
             /**
@@ -476,6 +508,7 @@ export interface components {
              * @enum {string}
              */
             questionType: "mcq" | "true_false";
+            response: components["schemas"]["SavedResponse"];
             /**
              * Versionid
              * Format: uuid
@@ -533,7 +566,8 @@ export interface components {
         /** ErrorEnvelope */
         ErrorEnvelope: {
             code: components["schemas"]["ErrorCode"];
-            details?: components["schemas"]["ValidationDetails"] | null;
+            /** Details */
+            details?: components["schemas"]["ValidationDetails"] | components["schemas"]["ResponseConflictDetails"] | components["schemas"]["AttemptAdmissionDetails"] | null;
             /** Message */
             message: string;
             /**
@@ -936,11 +970,70 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** ResponseConflictDetails */
+        ResponseConflictDetails: {
+            /** Currentrevision */
+            currentRevision: number;
+            /** Savedat */
+            savedAt: string | null;
+            /** Selectedoptionid */
+            selectedOptionId: string | null;
+        };
         /**
          * Role
          * @enum {string}
          */
         Role: "administrator" | "author" | "learner";
+        /** SaveAcknowledgement */
+        SaveAcknowledgement: {
+            /**
+             * Requestid
+             * Format: uuid
+             */
+            requestId: string;
+            /** Responserevision */
+            responseRevision: number;
+            /**
+             * Savedat
+             * Format: date-time
+             */
+            savedAt: string;
+        };
+        /** SaveCommand */
+        SaveCommand: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /**
+             * Requestid
+             * Format: uuid
+             */
+            requestId: string;
+            /** Selectedoptionid */
+            selectedOptionId: string | null;
+        };
+        /** SaveResult */
+        SaveResult: {
+            acknowledgement: components["schemas"]["SaveAcknowledgement"];
+            /**
+             * Attemptstate
+             * @enum {string}
+             */
+            attemptState: "in_progress" | "finalized" | "expired";
+            /**
+             * Servertime
+             * Format: date-time
+             */
+            serverTime: string;
+        };
+        /** SavedResponse */
+        SavedResponse: {
+            /** Revision */
+            revision: number;
+            /** Savedat */
+            savedAt: string | null;
+            /** Selectedoptionid */
+            selectedOptionId: string | null;
+        };
         /** Selection */
         Selection: {
             /** Pointoverride */
@@ -1432,6 +1525,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Attempt"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    save_response_api_v1_attempts__attempt_id__responses__question_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaveResult"];
                 };
             };
             /** @description Unauthorized */

@@ -15,7 +15,7 @@ export function QuizError({ error }: { error: S["ErrorEnvelope"] | string | null
   return <div role="alert"><p>{error.code === "DRAFT_REVISION_CONFLICT"
     ? "This draft changed in another tab. Your edits are not saved. Reload the saved draft before editing again."
     : error.message}</p>
-    {error.details?.fields.map((field, index) => <p key={index}>
+    {error.details && "fields" in error.details && error.details.fields.map((field, index) => <p key={index}>
       {field.path.join(".")}: {field.reason.replaceAll("_", " ")}
     </p>)}
     <p>Reference: {error.requestId}</p>

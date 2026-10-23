@@ -16,7 +16,7 @@ function FormError({ error }: { error: ErrorEnvelope | string | null }) {
     <p>{error.code === "DRAFT_REVISION_CONFLICT"
       ? "This question changed in another tab. Your edits have not been saved. Reload the current revision before editing again."
       : error.message}</p>
-    {error.details?.fields.map((field, index) => <p key={index}>
+    {error.details && "fields" in error.details && error.details.fields.map((field, index) => <p key={index}>
       {field.path.join(".")}: {field.reason.replaceAll("_", " ")}
     </p>)}
     <p>Reference: {error.requestId}</p>

@@ -1,4 +1,4 @@
-# Real-browser identity, authoring and attempt-start gates
+# Real-browser identity, authoring and durable-attempt gates
 
 This suite uses npm-locked Playwright Test 1.64.1 and its Chromium browser.
 Every successful journey uses native Quezo forms, the actual Keycloak login UI,
@@ -86,7 +86,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0007_attempt_start`, and calls I01's allowlisted
+Next, migrates a fresh database to `0008_responses`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -170,14 +170,43 @@ SameSite=Lax, host-scoped, path `/`, and unreadable through `document.cookie`.
 The shared `Secure`/`__Host-` policy remains covered by configuration/cookie unit
 tests; this loopback HTTP suite does not claim shared TLS deployment proof.
 The suite also checks no direct browser API/token calls, no callback referrer
-disclosure and empty localStorage/sessionStorage.
+disclosure and empty localStorage/sessionStorage. Request inspection checks
+provisional headers immediately and actual Chromium wire headers through the
+read-only `Network.requestWillBeSentExtraInfo` event, including failed requests.
+It does not await raw-request-header promises that can remain unresolved for
+interrupted prefetches. Auth response/cookie checks remain awaited; no header
+values or protocol events are written to artifacts.
 
 This is the working-foundations, C01 and C02 demonstration, not A01 account management,
 full quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. D01 additionally
-demonstrates assignment/start/resume, not saving or submission. Keyboard
+demonstrates assignment/start/resume; D02 adds saving, not submission. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
 producer gates, not introduce a second runner.
+
+## D02 AT-07/08 response cases
+
+`responses.spec.ts` extends the actual author-publish-assign/learner-start path
+with both question types and explicit per-question saves. Run focused iteration
+with `npm run test:e2e -- --grep D02`; the review gate remains the full
+`npm run test:e2e -- --checks`.
+
+The journey checks unanswered revision zero, acknowledged refresh and web/API
+process restart, explicit clear, question navigation, cross-tab conflicts with
+retained local input and explicit resolution, offline announcements and discard
+warnings, reconnect reconciliation, newer input during an outstanding save,
+and lost acknowledgement without duplicate revision. The lost-ack case holds a
+real PostgreSQL parent lock, waits for the real API save to queue, severs the
+web-to-API byte-forwarding transport, releases the lock and verifies commit
+before reconnect/replay. This drops an actual acknowledgement rather than
+assuming Chromium's offline flag cancels an already-open HTTP request.
+Actual API outage produces a visible unsaved error, followed by reconciliation
+and explicit retry. Learner JSON/HTML/RSC are inspected in memory for scoring/key
+nondisclosure. No request interception, mocked save endpoint, screenshots or
+payload logs are added.
+
+D03 still owns submission and its pending-save guard, finalization and expiration.
+The D02 UI exposes no submission control and makes no grade/result claim.
 
 ## C01 AT-03/04 initial cases
 

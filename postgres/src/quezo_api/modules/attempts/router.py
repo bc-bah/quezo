@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Header, Request, Response
 
 from quezo_api.database import get_database
 from quezo_api.errors import ErrorEnvelope
-from quezo_api.modules.attempts import service
-from quezo_api.modules.attempts.schemas import Attempt, StartCommand
+from quezo_api.modules.attempts import responses, service
+from quezo_api.modules.attempts.schemas import Attempt, SaveCommand, SaveResult, StartCommand
 from quezo_api.modules.distribution.router import Transaction
 from quezo_api.modules.identity.access import get_identity
 from quezo_api.modules.identity.tokens import VerifiedIdentity
@@ -33,3 +33,14 @@ async def start(
 @router.get("/attempts/{attempt_id}")
 async def attempt(tx: Transaction, attempt_id: UUID) -> Attempt:
     return await service.get_attempt(*tx, attempt_id)
+
+
+@router.put("/attempts/{attempt_id}/responses/{question_id}")
+async def save_response(
+    request: Request, response: Response, attempt_id: UUID, question_id: UUID, body: SaveCommand,
+    identity: Annotated[VerifiedIdentity, Depends(get_identity)],
+) -> SaveResult:
+    response.headers["Cache-Control"] = "private, no-store"
+    async with get_database(request).transaction() as connection:
+        result = await responses.save(connection, identity, attempt_id, question_id, body)
+    return result

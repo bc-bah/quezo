@@ -5,11 +5,14 @@ Use [BACKLOG.md](BACKLOG.md) for dependencies and the
 Each package delivers a small working slice, including its migrations, contract,
 minimal UI and relevant tests unless explicitly pure calculation.
 
-**Assignment, 21 October 2026:** C01 and C02 are accepted and `done`; the other six
+**Assignment, 21 October 2026; acceptance updated 22 October:** C01, C02 and D01
+are accepted and `done`; the other five
 packages below remain `active` under B.C., with explicit producer execution
 gates. C02's accepted delivery is integrated by PR #9 at `03797bc`, verified
 in D01's checkout on 22 October 2026 alongside its producer ancestors and wave
-approval. S01 remains independently executable. Each later consumer must first include
+approval. B.C. confirmed D01 review/acceptance at PR #10 merge `b5751a9`
+and directed D02 execution using its accepted snapshot/locking handoff.
+S01 remains independently executable. Each later consumer must first include
 its accepted producer commits. Use the
 [copy-ready package prompts](PHASE-2-HANDOFFS.md) and
 [approved demo defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).

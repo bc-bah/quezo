@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { startAttempt } from "./actions";
 import { QuizError } from "../author/quizzes/composition";
 import type { components } from "../../lib/api/schema";
 
 export function StartAttempt({ assignment }: { assignment: components["schemas"]["Assignment"] }) {
-  const router = useRouter();
   const [key] = useState(() => crypto.randomUUID());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<components["schemas"]["ErrorEnvelope"] | string | null>(null);
@@ -16,7 +14,8 @@ export function StartAttempt({ assignment }: { assignment: components["schemas"]
     try {
       const result = await startAttempt(assignment.id, key);
       if (!result.ok) { setError(result.error); return; }
-      router.push(`/learner/attempts/${result.value.id}`);
+      // A document boundary lets native back/refresh navigation warn about unsaved answers.
+      window.location.assign(`/learner/attempts/${result.value.id}`);
     } catch { setError("Start could not be confirmed. Retry here with the same command or reload your assignments."); }
     finally { setPending(false); }
   }
