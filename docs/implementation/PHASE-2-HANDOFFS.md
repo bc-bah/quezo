@@ -1,7 +1,7 @@
 # Phase 2 coding-agent handoffs
 
 **Approved and assigned:** B.C., 21 October 2026.
-C01, C02, D01, D02 and S01 are accepted and `done`; the remaining three packages are `active`
+C01, C02, D01, D02, S01 and D03 are accepted and `done`; the remaining two packages are `active`
 assignments, **not simultaneously executable**.
 I02 is done, EX-I02-01 is closed, and the integrated foundation is
 `553a2c8b77a770667f4cef6825f57c3b55f477ed` ([PR #7](https://github.com/bc-bah/quezo/pull/7)).
@@ -23,8 +23,12 @@ D02 [PR #11](https://github.com/bc-bah/quezo/pull/11), merge `c7d6f7e`,
 and S01 [PR #12](https://github.com/bc-bah/quezo/pull/12), merge `c9448f7`.
 Both producer contracts and ancestor commits are in D03's checkout; B.C.
 directed D03 execution after this acceptance reconciliation.
+B.C. confirmed D03 review and integration on 23 October 2026:
+[PR #13](https://github.com/bc-bah/quezo/pull/13), merge `0cfbff7`,
+implementation `9ff05f8`, migration `0009_finalization`. Its Grade/state handoff
+is accepted; R01 execution is directed with all producers and approval verified.
 The copy-ready prompts below retain their original assignments and gate checks;
-they do not redispatch completed C01/C02/D01/D02/S01.
+they do not redispatch completed C01/C02/D01/D02/S01/D03.
 
 | Package | Prompt | Required producer acceptance/integration |
 | --- | --- | --- |
@@ -34,11 +38,11 @@ they do not redispatch completed C01/C02/D01/D02/S01.
 | D01 | [Assignment and attempt start](#d01-dispatch-prompt) | Done; accepted merge `b5751a9` |
 | D02 | [Durable response save and resume](#d02-dispatch-prompt) | Done; accepted merge `c7d6f7e` |
 | S01 | [Pure objective scoring](#s01-dispatch-prompt) | Done; accepted merge `c9448f7` |
-| D03 | [Finalization and expiration](#d03-dispatch-prompt) | D02 and S01 accepted/integrated; execution directed by B.C. |
-| R01 | [Policy-filtered result](#r01-dispatch-prompt) | D03 |
+| D03 | [Finalization and expiration](#d03-dispatch-prompt) | Done; accepted merge `0cfbff7` |
+| R01 | [Policy-filtered result](#r01-dispatch-prompt) | D03 accepted/integrated; execution directed by B.C. |
 | T01 | [First lifecycle acceptance](#t01-dispatch-prompt) | R01 and I02 |
 
-D03's producer gate is satisfied;
+R01's producer gate is satisfied;
 no later successor is dispatched by this record. The persistence/UI chain is
 C01 -> C02 -> D01 -> D02 -> D03 -> R01 -> T01, with S01 joining at D03.
 The [backlog](BACKLOG.md), not this diagram, is authoritative for current status.

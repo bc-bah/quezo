@@ -6,7 +6,7 @@ if (!/^quezo-i02-[a-f0-9]{12}$/.test(process.env.I02_OWNED_PROJECT ?? "")) {
 
 export default defineConfig({
   testDir: ".",
-  testMatch: ["access.spec.ts", "questions.spec.ts", "quizzes.spec.ts", "attempts.spec.ts", "responses.spec.ts", "finalization.spec.ts"],
+  testMatch: ["access.spec.ts", "questions.spec.ts", "quizzes.spec.ts", "attempts.spec.ts", "responses.spec.ts", "finalization.spec.ts", "results.spec.ts"],
   fullyParallel: false,
   workers: 1,
   retries: 0,

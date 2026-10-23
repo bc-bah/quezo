@@ -283,8 +283,8 @@ def test_fingerprint_and_strict_command(author: TestClient, database: IsolatedDa
     # An inconsistent fingerprint must never be accepted, even for an owned retained command.
     monkeypatch.setattr("quezo_api.modules.attempts.service.StartCommand.model_dump", lambda *a, **kw: {"different": True})
     assert start(author, assignment, peer, key).json()["code"] == "IDEMPOTENCY_CONFLICT"
-    for suffix in ["/submission", "/result"]:
-        assert author.post("/api/v1/attempts/" + str(uuid4()) + suffix, json={}, headers=headers(peer)).status_code == 404
+    assert author.post("/api/v1/attempts/" + str(uuid4()) + "/submission", json={}, headers=headers(peer)).status_code == 404
+    assert author.post("/api/v1/attempts/" + str(uuid4()) + "/result", json={}, headers=headers(peer)).status_code == 405
     assert author.post("/api/v1/attempts/" + str(uuid4()) + "/responses/" + str(uuid4()),
                        json={}, headers=headers(peer)).status_code == 405
 

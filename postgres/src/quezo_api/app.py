@@ -14,6 +14,7 @@ from quezo_api.modules.questions.router import router as questions_router
 from quezo_api.modules.quizzes.router import router as quizzes_router
 from quezo_api.modules.distribution.router import router as distribution_router
 from quezo_api.modules.attempts.router import router as attempts_router
+from quezo_api.modules.results.router import router as results_router
 from quezo_api.modules.attempts.expiration import expiration_lifespan
 from quezo_api.modules.identity.tokens import IdentitySettings, TokenVerifier
 
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(quizzes_router)
     app.include_router(distribution_router)
     app.include_router(attempts_router)
+    app.include_router(results_router)
 
     @app.get("/health/live", response_model=LivenessResponse)
     async def liveness() -> LivenessResponse:

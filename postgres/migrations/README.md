@@ -43,6 +43,11 @@ rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
 ### D03 finalization storage
 
+R01 reads this accepted storage through policy-filtered projections; it adds no
+migration, result database or Grade writer. Head remains `0009_finalization`.
+Its overdue-result read reuses D03's atomic finalizer and existing recovery rules.
+The web role still has no assessment-table access.
+
 `0009_finalization` follows the accepted D02 head `0008_responses`. It preserves
 all live attempts, frozen policy/questions, accepted responses and command
 acknowledgements. No applied migration changes. The only terminal state is now

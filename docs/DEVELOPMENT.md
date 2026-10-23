@@ -19,7 +19,8 @@ Explicit local synthetic provisioning is required; sign-in never grants access.
 
 D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
 D03 adds metadata-only submission, immutable grading through S01, request-triggered
-expiry and a lifespan-managed bounded expiry worker. Result release/history,
+expiry and a lifespan-managed bounded expiry worker. R01 adds independent
+policy-filtered learner results and a minimal result page. History/reporting,
 real readiness checks, application containers and deployment remain absent.
 A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
@@ -64,10 +65,11 @@ points to an older version.
 The web shell listens on `127.0.0.1:3000`; the backend on `127.0.0.1:4000`.
 Visit `http://localhost:3000` and `http://localhost:4000/health/live`.
 The backend returns `{"status":"ok","scope":"process-only"}`. It deliberately has
-no `/health/ready`, submission or grade routes. FastAPI exposes local interactive docs at
+no `/health/ready` or raw grade routes. FastAPI exposes local interactive docs at
 `http://localhost:4000/docs` and the generated contract at
 `http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me`, C01 question
-authoring, C02 quiz publication, D01 assignment/start and D02 response saving are implemented.
+authoring, C02 quiz publication, D01 assignment/start, D02 response saving,
+D03 submission and R01 filtered results are implemented.
 Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
@@ -141,7 +143,153 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## R01 policy-filtered result
+
+**Work item / owner:** R01, B.C.; assigned 21 October 2026, execution directed
+23 October after D03 acceptance. **State: ready for review**; the full local
+common gate passed. R01 acceptance and integration remain B.C.'s decision.
+
+**Integration:** remote main and this checkout contain D03 merge
+`0cfbff7bb65c9bbad2be049df729459c516516b0` (implementation `9ff05f8`,
+[PR #13](https://github.com/bc-bah/quezo/pull/13)). B.C. confirmed review and
+integration and directed the acceptance/tracking update. Ancestry also includes
+D02 `c7d6f7e` (`fbe93da`, `a82bc36`), S01 `c9448f7` (`00195df`), D01 `b5751a9`,
+C02 `03797bc`, C01 `e66f459`, I02 `553a2c8` and Phase 2 approval `49eb37b`.
+R01 uses the serialized post-D03 shared-file window only for app routing,
+generated contracts, discovery scripts, the completion link and documentation.
+No commit, PR or successor dispatch is made.
+
+**Changes / requirements:** RESULT-01, IAM-02, ATT-04's confirmation boundary,
+SCORE-01 display precision, sections 6-8 and QUAL-02/04; FR-026/043 and the
+learner-result portion of FR-050/051/052/056. `modules/results/service.py`
+uses D03's ownership-scoped parent lock, post-wait live actor checks and
+`clock_timestamp()`. A still-editable attempt returns 409 `INVALID_STATE`;
+an overdue attempt first uses the existing atomic finalizer. Foreign/missing
+attempts have the same 404 envelope; lacking the learner role is 403.
+Administrator or author roles alone grant no result access.
+
+**Contracts:** `GET /api/v1/attempts/{attempt_id}/result` returns the generated
+`LearnerResult`, never the internal Grade/scorer object. Completion is D03's
+unchanged metadata; `title`, `versionId`, `attemptNumber` and `serverTime`
+identify the frozen attempt and time of release evaluation.
+
+| Field | Withheld shape | Released shape |
+| --- | --- | --- |
+| `score` | Only `status: "withheld"` | `status: "released"`, integer `earnedPoints` / `possiblePoints` |
+| `answerKey` | Only `status: "withheld"` | `status: "released"`, ordered items with frozen attempt-question ID, position, prompt, correct option, outcome and item earned/possible points |
+| `explanations` | Only `status: "withheld"` | `status: "released"`, ordered items with frozen attempt-question ID, position, prompt and feedback |
+
+These are discriminated unions, not nullable protected fields. Withheld
+variants reject extra fields; no score zero, null placeholder, empty item list,
+key, outcome, awarded points or feedback is serialized as a substitute.
+Each field independently evaluates the frozen `QuizPolicy` on every read:
+after finalization, at/after finite availability end, or never. A quiz's
+current closed state is irrelevant to release. Missing required end times fail
+validation rather than becoming automatic release. Explanation-only release
+does not add key/outcome fields, although authored explanations can themselves
+reveal answers; likewise key-released item totals can imply an aggregate.
+
+**Web:** `/learner/attempts/{attemptId}/result` uses the existing server-only
+facade and generated schema. The completion confirmation links to it but still
+contains no score or key. Results are dynamic/private/no-store; the facade
+does not cache backend responses. Only permitted projections reach HTML/RSC;
+there is no full Grade in client state, browser storage or learner fixtures.
+The page distinguishes submitted/expired and withheld/released-zero, displays
+exact earned/possible integers and a display-only one-decimal percentage,
+renders plain text and surfaces errors instead of cached/fabricated success.
+Reload performs fresh authorization/time checks. No countdown or timed controls.
+
+**AT-12 executable coverage:** `postgres/tests/test_results.py` exercises all
+27 independent policy combinations immediately before, exactly at and immediately
+after the finite end (microsecond offsets around a database-read frozen bound).
+It uses actual PostgreSQL/Grades/HTTP and controls only that boundary clock sample.
+Separate real wall-clock/lock-wait cases prove reread release and request-triggered
+expiry. Other cases cover ownership/role denial, pre-finalization, post-lock
+revocation, exact payload omissions, metadata-only submit/resume/start replay,
+closed quiz, changed question/draft/publication, frozen grades and safe logs.
+`tests/e2e/results.spec.ts` uses real native author/learner paths for score-only,
+released zero and fully withheld presets, checking JSON, HTML/RSC, DOM, caches,
+outages and foreign access. The existing D03 controlled expiry browser fixture
+also opens its policy-filtered result; finite-end combinations remain backend
+fixtures, not timed learner UX.
+
+**Focused checks:** all **37 R01 backend cases passed in 136.41 seconds**.
+An in-memory launcher wrapper, run with
+`uv run --directory postgres --locked python -`, reused `run_browser.main`
+and its disposable Compose/database lifecycle. Before its ordinary build it ran
+`python -m pytest --tb=short -x postgres/tests/test_results.py` from the repository
+root, with the existing application/test import paths. It then ran the ordinary
+browser launcher with `--grep "R01|D03 AT-09/11"`: **4 passed** (controlled
+expiry 10.102s, score-only 16.603s, released zero 16.907s, withheld 16.916s).
+Owned project `quezo-i02-3e7ddd4d4620` and its network were removed normally.
+`npm run api:generate`, `npm run typecheck` and `npm run test:contracts`
+(88 Python / 2 tooling cases) also passed.
+
+Initial setup restored missing npm dependencies using
+`npm ci --no-audit --no-fund` and started the stopped local Docker Desktop.
+Iteration corrected two typed projection-construction calls to use the existing
+`model_validate` convention, and a scratch launcher's working-directory import.
+The first `npm run test:e2e -- --checks` passed 647 Python cases but found one
+old D01 test expecting 404 for POST to the formerly absent result path.
+That assertion now expects 405 for the implemented GET-only route; submission
+still expects 404 for a missing attempt. Its owned dependencies were cleaned up.
+The subsequent complete common gate passed, including that corrected assertion.
+
+Environment: Windows, Node 24.20.0, npm 11.19.0, uv 0.12.17, Python 3.12.10,
+PostgreSQL 17.11, Keycloak 26.4.7, npm-locked Playwright 1.64.1,
+Chromium 156.0.8078.4. These are local
+automated observations, not hosted CI, a Node/Python matrix or manual accessibility
+review. Secret-safe browser output is retained only as aggregate evidence here.
+
+**Final common gate, 23 October 2026:** `npm run test:e2e -- --checks` passed
+with owned project `quezo-i02-4244d02219da`. All commands below were actually
+executed by that launcher; counts overlap and must not be summed as unique tests.
+
+| Command / scope | Result |
+| --- | --- |
+| `npm run typecheck` | Passed web/browser TypeScript and strict mypy (85 sources) |
+| `npm test` | 12 web checks and **648 Python cases passed** (934.20s Python) |
+| `npm run build` | Passed built Next; result route is dynamic |
+| `npm run api:check` | OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | 88 Python and 2 tooling/client cases passed |
+| `npm run test:db` | **283 passed** (926.07s), including clean/prior-head migrations |
+| `npm run test:identity` | 108 passed |
+| `npm run test:identity:integration` | Actual Keycloak HTTP case passed |
+| `npm run test:web:production` | Built web/database/OIDC boundary case passed |
+| Full browser suite | **30 passed**; R01 score-only 16.448s, released zero 15.983s, withheld 15.639s; D03 controlled expired result 7.208s |
+
+**Acceptance:** AT-12's assigned R01 scope passed, including all 27 policy
+combinations/boundaries, live authorization, frozen-source behavior, omissions
+and real-browser presets. The retained actual 300-second identity-expiry and
+D02/D03 save/submit/lost-response regressions passed too. No skipped cases or
+known failing R01 checks remain. The launcher removed its owned databases,
+application processes, two containers and network; no development volumes were
+touched. No acceptance/integration or successor execution is implied.
+
+**Data:** no migration, schema, new storage, Grade writer or privilege changes.
+Head remains `0009_finalization`; clean/prior-head upgrade and recovery rules
+are unchanged. The result reader may invoke D03 finalization for an overdue
+attempt and returns only after that transaction commits.
+
+**Known scope limits / successor handoff:** T01 must first wait for B.C.'s R01
+acceptance/integration, then use the completion link and generated
+`LearnerResult` for both presets and the controlled expired fixture. Do not treat
+a submission acknowledgement as a result read. R02 owns history and author
+reporting: reuse this learner authorization/projection service in a bounded
+transaction, re-evaluate time each read, preserve the status unions and stable
+attempt/version/question IDs, and never reuse private Grade objects as learner
+DTOs. Author reporting needs its separately authorized owner relationship;
+this endpoint does not grant it. No A01, Phase 3, pilot, full WCAG or timed-UX
+acceptance is implied.
+
 ## D03 finalization and expiration
+
+**Acceptance/integration, 23 October 2026:** B.C. confirmed review and remote-main
+integration and directed R01. Accepted [PR #13](https://github.com/bc-bah/quezo/pull/13)
+merge `0cfbff7bb65c9bbad2be049df729459c516516b0` includes implementation `9ff05f8`.
+R01 verified this commit and the full ancestor/approval chain below. The
+Grade/state contract and recorded evidence are accepted. The following is the
+historical review handoff, not a current integration-pending claim.
 
 **Work item / owner:** D03, B.C.; assigned 21 October 2026, execution directed
 22 October following explicit D02/S01 acceptance. **State: ready for review**;
@@ -2209,7 +2357,9 @@ at `03797bc` (PR #9), verified in D01's checkout on 22 October 2026.
 D01 is accepted and integrated at `b5751a9` (PR #10), as confirmed by B.C.
 on 22 October 2026. B.C. also confirmed D02 at `c7d6f7e` (PR #11) and
 S01 at `c9448f7` (PR #12) complete, accepted and integrated, and directed D03
-execution after updating the tracking records. D03, R01 and T01 remain active
+execution after updating the tracking records. On 23 October, B.C. confirmed
+D03 reviewed/integrated at `0cfbff7` (PR #13) and directed R01 execution after
+recording D03 acceptance. R01 and T01 remain active
 assignments, not simultaneously executable packages. Each later consumer must
 first verify its own integrated producer
 evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).

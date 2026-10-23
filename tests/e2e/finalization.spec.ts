@@ -77,4 +77,11 @@ test("D03 AT-09/11 controlled overdue backend fixture catches up on restart and 
   expect(await page.getByRole("timer").count()).toBe(0);
   await page.reload();
   await expect(page.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "View result", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Attempt expired", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Score", exact: true })).toContainText("0 / 3 points (0.0%)");
+  await expect(page.getByRole("region", { name: "Answer key", exact: true })).toContainText("withheld");
+  const resultHtml = await page.content();
+  expect([feedback, "correctOption", '"outcome"'].some((field) => resultHtml.includes(field)),
+    "Expired result releases only its permitted aggregate").toBe(false);
 });

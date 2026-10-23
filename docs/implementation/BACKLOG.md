@@ -13,7 +13,7 @@ work is available but not yet accepted.
 owner, PR/commit and evidence links as work progresses. A blocked item records the
 specific decision or predecessor, not a generic "waiting."
 
-**Current state (22 October 2026):** I02 is `done`; EX-I02-01 is closed after
+**Current state (23 October 2026):** I02 is `done`; EX-I02-01 is closed after
 B.C.'s completion confirmation and review of merged browser/CI evidence.
 C01 is `done` following B.C.'s explicit acceptance/integration confirmation.
 C02 is also `done` at B.C.'s explicit direction, accepting the verified local
@@ -33,7 +33,14 @@ D02 merge `c7d6f7e0d9785e220530536078241725b3588547` includes implementation
 `c9448f78cd6aee397763d37e8d33f8004a441862` includes implementation `00195df`.
 Both merges, D01/C02/C01 ancestors, I02 `553a2c8` and Phase 2 approval
 `49eb37b` are present in D03's checkout. Its execution gate is satisfied.
-D03, R01 and T01 remain `active`; R01/T01 still wait for their producers.
+D03 is `done`: B.C. confirmed review and remote-main integration on 23 October
+2026 and directed acceptance reconciliation and R01 execution.
+[PR #13](https://github.com/bc-bah/quezo/pull/13) merged at
+`0cfbff7bb65c9bbad2be049df729459c516516b0`, including implementation `9ff05f8`.
+R01's checkout includes this merge, all producers above, I02 `553a2c8` and
+Phase 2 approval `49eb37b`. The immutable Grade/finalized-state handoff is accepted
+and R01's execution gate is satisfied. R01 and T01 remain `active`; T01 still
+waits for accepted/integrated R01.
 No successor dispatch is implied. B.C. owns integration,
 review/merge and shared-file coordination for this wave; later release holds remain.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
@@ -65,8 +72,8 @@ and migrations remain serialized along the lifecycle chain by B.C.
 | D01 | 2 | [Assignment and attempt start](02-CORE-LIFECYCLE.md#d01-assignment-and-attempt-start) | C02 | done | B.C. | Review/acceptance/integration confirmed by B.C. 22 October 2026; [PR #10](https://github.com/bc-bah/quezo/pull/10), merge `b5751a9`, implementation `cbb74f5`; [accepted snapshot/locking handoff and evidence](../DEVELOPMENT.md#d01-assignment-and-attempt-start): 475 Python, 192 database-suite and 25 browser cases passed; migration `0007_attempt_start` |
 | D02 | 2 | [Durable response save and resume](02-CORE-LIFECYCLE.md#d02-durable-response-save-and-resume) | D01 | done | B.C. | Acceptance/integration confirmed 22 October 2026; [PR #11](https://github.com/bc-bah/quezo/pull/11), merge `c7d6f7e`, implementation `fbe93da`, browser follow-up `a82bc36`; [accepted save/admission/CAS/UI handoff and evidence](../DEVELOPMENT.md#d02-durable-response-save-and-resume): 500 Python, 217 database-suite and final 26 browser cases passed; migration `0008_responses` |
 | S01 | 2 | [Pure objective scoring](02-CORE-LIFECYCLE.md#s01-pure-objective-scoring) | F02 | done | B.C. | Acceptance/integration confirmed 22 October 2026; [PR #12](https://github.com/bc-bah/quezo/pull/12), merge `c9448f7`, implementation `00195df`; [accepted pure scoring contract](../DEVELOPMENT.md#s01-pure-objective-scoring); executable evidence in `postgres/tests/test_scoring.py`; no migration |
-| D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | active | B.C. | Assigned 21 October 2026; B.C. directed execution 22 October after confirming both producers accepted/integrated; exact merges and ancestors verified; [review-ready local handoff/evidence](../DEVELOPMENT.md#d03-finalization-and-expiration): full common checks passed, 611 Python / 246 database-suite / 27 browser cases; migration `0009_finalization`; uncommitted, acceptance/integration pending; untimed learner UI while DEC-09 held; [prompt](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) |
-| R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | active | B.C. | Assigned 21 October 2026; execution waits for D03 accepted/integrated immutable grade contract; [prompt](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) |
+| D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | done | B.C. | Review/acceptance/integration confirmed 23 October 2026; [PR #13](https://github.com/bc-bah/quezo/pull/13), merge `0cfbff7`, implementation `9ff05f8`; [accepted Grade/state handoff and evidence](../DEVELOPMENT.md#d03-finalization-and-expiration): 611 Python / 246 database-suite / 27 browser cases; migration `0009_finalization`; untimed learner UI while DEC-09 held |
+| R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | active | B.C. | Assigned 21 October; execution directed 23 October after D03 acceptance; merge `0cfbff7`, all ancestors, I02 `553a2c8` and approval `49eb37b` verified. [Review-ready local handoff/evidence](../DEVELOPMENT.md#r01-policy-filtered-result): full common gate passed, 648 Python / 283 database-suite / 30 browser cases; all 27 independent policy combinations and boundary omissions covered. No migration (head `0009_finalization`); uncommitted, acceptance/integration pending; [prompt](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) |
 | T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | active | B.C. | Assigned 21 October 2026; I02 done; execution waits for R01 and transitive lifecycle producers accepted/integrated; [prompt](PHASE-2-HANDOFFS.md#t01-dispatch-prompt); no Phase 3/pilot authorization |
 | C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | planned | B.C. | - |
 | A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | planned | B.C. | - |
