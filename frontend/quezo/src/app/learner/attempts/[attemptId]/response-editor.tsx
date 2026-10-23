@@ -212,6 +212,7 @@ export function ResponseEditor({ attempt }: { attempt: S["Attempt"] }) {
       <h2>{completion.completionReason === "expired" ? "Attempt expired" : "Submission confirmed"}</h2>
       <p>Finalized at <time dateTime={completion.finalizedAt}>{completion.finalizedAt}</time>.</p>
       <p>Only saved answers were included. Answers can no longer be changed.</p>
+      <a href={`/learner/attempts/${attempt.id}/result`}>View result</a>
     </section> : <p>Choose an answer, then save it. Submit only after every save is confirmed.</p>}
     <p role="status" aria-live="polite">{offline ? "Offline. " : ""}{notice}</p>
     {state !== "in_progress" || blocked ? <p role="alert">This attempt no longer accepts new answers. Unsaved local edits cannot be submitted.</p> : null}

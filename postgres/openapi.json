@@ -36,6 +36,63 @@
         "title": "Actor",
         "type": "object"
       },
+      "AnswerKeyItem": {
+        "additionalProperties": false,
+        "properties": {
+          "attemptQuestionId": {
+            "format": "uuid",
+            "title": "Attemptquestionid",
+            "type": "string"
+          },
+          "correctOption": {
+            "$ref": "#/components/schemas/Option"
+          },
+          "earnedPoints": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Earnedpoints",
+            "type": "integer"
+          },
+          "outcome": {
+            "enum": [
+              "correct",
+              "incorrect",
+              "unanswered"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "position": {
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Position",
+            "type": "integer"
+          },
+          "possiblePoints": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Possiblepoints",
+            "type": "integer"
+          },
+          "prompt": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attemptQuestionId",
+          "position",
+          "prompt",
+          "correctOption",
+          "outcome",
+          "earnedPoints",
+          "possiblePoints"
+        ],
+        "title": "AnswerKeyItem",
+        "type": "object"
+      },
       "Assignment": {
         "additionalProperties": false,
         "properties": {
@@ -603,6 +660,41 @@
         "title": "ErrorEnvelope",
         "type": "object"
       },
+      "ExplanationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "attemptQuestionId": {
+            "format": "uuid",
+            "title": "Attemptquestionid",
+            "type": "string"
+          },
+          "feedback": {
+            "maxLength": 4000,
+            "title": "Feedback",
+            "type": "string"
+          },
+          "position": {
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Position",
+            "type": "integer"
+          },
+          "prompt": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Prompt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attemptQuestionId",
+          "position",
+          "prompt",
+          "feedback"
+        ],
+        "title": "ExplanationItem",
+        "type": "object"
+      },
       "FieldError": {
         "additionalProperties": false,
         "properties": {
@@ -629,6 +721,101 @@
           "reason"
         ],
         "title": "FieldError",
+        "type": "object"
+      },
+      "LearnerResult": {
+        "additionalProperties": false,
+        "properties": {
+          "answerKey": {
+            "discriminator": {
+              "mapping": {
+                "released": "#/components/schemas/ReleasedAnswerKey",
+                "withheld": "#/components/schemas/WithheldResult"
+              },
+              "propertyName": "status"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ReleasedAnswerKey"
+              },
+              {
+                "$ref": "#/components/schemas/WithheldResult"
+              }
+            ],
+            "title": "Answerkey"
+          },
+          "attemptNumber": {
+            "minimum": 1.0,
+            "title": "Attemptnumber",
+            "type": "integer"
+          },
+          "completion": {
+            "$ref": "#/components/schemas/Completion"
+          },
+          "explanations": {
+            "discriminator": {
+              "mapping": {
+                "released": "#/components/schemas/ReleasedExplanations",
+                "withheld": "#/components/schemas/WithheldResult"
+              },
+              "propertyName": "status"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ReleasedExplanations"
+              },
+              {
+                "$ref": "#/components/schemas/WithheldResult"
+              }
+            ],
+            "title": "Explanations"
+          },
+          "score": {
+            "discriminator": {
+              "mapping": {
+                "released": "#/components/schemas/ReleasedScore",
+                "withheld": "#/components/schemas/WithheldResult"
+              },
+              "propertyName": "status"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ReleasedScore"
+              },
+              {
+                "$ref": "#/components/schemas/WithheldResult"
+              }
+            ],
+            "title": "Score"
+          },
+          "serverTime": {
+            "format": "date-time",
+            "title": "Servertime",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "versionId": {
+            "format": "uuid",
+            "title": "Versionid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "completion",
+          "title",
+          "versionId",
+          "attemptNumber",
+          "serverTime",
+          "score",
+          "answerKey",
+          "explanations"
+        ],
+        "title": "LearnerResult",
         "type": "object"
       },
       "LivenessResponse": {
@@ -1606,6 +1793,85 @@
         "title": "QuizSummary",
         "type": "object"
       },
+      "ReleasedAnswerKey": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerKeyItem"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "status": {
+            "const": "released",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "items"
+        ],
+        "title": "ReleasedAnswerKey",
+        "type": "object"
+      },
+      "ReleasedExplanations": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExplanationItem"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "status": {
+            "const": "released",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "items"
+        ],
+        "title": "ReleasedExplanations",
+        "type": "object"
+      },
+      "ReleasedScore": {
+        "additionalProperties": false,
+        "properties": {
+          "earnedPoints": {
+            "maximum": 2000000.0,
+            "minimum": 0.0,
+            "title": "Earnedpoints",
+            "type": "integer"
+          },
+          "possiblePoints": {
+            "maximum": 2000000.0,
+            "minimum": 1.0,
+            "title": "Possiblepoints",
+            "type": "integer"
+          },
+          "status": {
+            "const": "released",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "earnedPoints",
+          "possiblePoints"
+        ],
+        "title": "ReleasedScore",
+        "type": "object"
+      },
       "ResponseConflictDetails": {
         "additionalProperties": false,
         "properties": {
@@ -1860,6 +2126,21 @@
         ],
         "title": "ValidationReason",
         "type": "string"
+      },
+      "WithheldResult": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "const": "withheld",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "WithheldResult",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -3045,6 +3326,186 @@
         "summary": "Save Response",
         "tags": [
           "attempts"
+        ]
+      }
+    },
+    "/api/v1/attempts/{attempt_id}/result": {
+      "get": {
+        "operationId": "result_api_v1_attempts__attempt_id__result_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attempt_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Attempt Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearnerResult"
+                }
+              }
+            },
+            "description": "Successful Response",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unprocessable Entity",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Sanitized error",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated HTTP correlation UUID; not an idempotency key.",
+                "schema": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Result",
+        "tags": [
+          "results"
         ]
       }
     },

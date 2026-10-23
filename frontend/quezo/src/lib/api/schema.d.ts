@@ -86,6 +86,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/attempts/{attempt_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Result */
+        get: operations["result_api_v1_attempts__attempt_id__result_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/attempts/{attempt_id}/submission": {
         parameters: {
             query?: never;
@@ -384,6 +401,28 @@ export interface components {
              */
             userId: string;
         };
+        /** AnswerKeyItem */
+        AnswerKeyItem: {
+            /**
+             * Attemptquestionid
+             * Format: uuid
+             */
+            attemptQuestionId: string;
+            correctOption: components["schemas"]["Option"];
+            /** Earnedpoints */
+            earnedPoints: number;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "correct" | "incorrect" | "unanswered";
+            /** Position */
+            position: number;
+            /** Possiblepoints */
+            possiblePoints: number;
+            /** Prompt */
+            prompt: string;
+        };
         /** Assignment */
         Assignment: {
             /** Activeattemptid */
@@ -617,11 +656,49 @@ export interface components {
              */
             requestId: string;
         };
+        /** ExplanationItem */
+        ExplanationItem: {
+            /**
+             * Attemptquestionid
+             * Format: uuid
+             */
+            attemptQuestionId: string;
+            /** Feedback */
+            feedback: string;
+            /** Position */
+            position: number;
+            /** Prompt */
+            prompt: string;
+        };
         /** FieldError */
         FieldError: {
             /** Path */
             path: (string | number)[];
             reason: components["schemas"]["ValidationReason"];
+        };
+        /** LearnerResult */
+        LearnerResult: {
+            /** Answerkey */
+            answerKey: components["schemas"]["ReleasedAnswerKey"] | components["schemas"]["WithheldResult"];
+            /** Attemptnumber */
+            attemptNumber: number;
+            completion: components["schemas"]["Completion"];
+            /** Explanations */
+            explanations: components["schemas"]["ReleasedExplanations"] | components["schemas"]["WithheldResult"];
+            /** Score */
+            score: components["schemas"]["ReleasedScore"] | components["schemas"]["WithheldResult"];
+            /**
+             * Servertime
+             * Format: date-time
+             */
+            serverTime: string;
+            /** Title */
+            title: string;
+            /**
+             * Versionid
+             * Format: uuid
+             */
+            versionId: string;
         };
         /** LivenessResponse */
         LivenessResponse: {
@@ -1011,6 +1088,38 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** ReleasedAnswerKey */
+        ReleasedAnswerKey: {
+            /** Items */
+            items: components["schemas"]["AnswerKeyItem"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "released";
+        };
+        /** ReleasedExplanations */
+        ReleasedExplanations: {
+            /** Items */
+            items: components["schemas"]["ExplanationItem"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "released";
+        };
+        /** ReleasedScore */
+        ReleasedScore: {
+            /** Earnedpoints */
+            earnedPoints: number;
+            /** Possiblepoints */
+            possiblePoints: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "released";
+        };
         /** ResponseConflictDetails */
         ResponseConflictDetails: {
             /** Currentrevision */
@@ -1104,6 +1213,14 @@ export interface components {
          * @enum {string}
          */
         ValidationReason: "required" | "unknown_field" | "invalid_value";
+        /** WithheldResult */
+        WithheldResult: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "withheld";
+        };
     };
     responses: never;
     parameters: never;
@@ -1674,6 +1791,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    result_api_v1_attempts__attempt_id__result_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearnerResult"];
                 };
             };
             /** @description Unauthorized */

@@ -229,6 +229,37 @@ These cases do not claim timed accessibility acceptance, a countdown,
 result-release implementation, history/reporting or pilot readiness. The live
 voluntary-submit demonstration remains untimed while DEC-09 is held.
 
+## R01 AT-12 policy-filtered results
+
+Run `npm run test:e2e -- --grep "R01|D03 AT-09/11"` for the three result journeys
+and the controlled-expiry result extension. Review requires the full
+`npm run test:e2e -- --checks`.
+
+`results.spec.ts` creates both question types, selects an approved release preset,
+publishes/assigns, saves and submits using actual native author/learner forms.
+It distinguishes score-only (1/3, displayed as 33.3%), a released zero (0/3,
+0.0%) and fully withheld (no fabricated zero). In-memory API, HTML/RSC and DOM
+inspection verifies key/outcome/awarded-item-point/feedback omissions. Submission
+acknowledgements stay metadata-only. Pre-finalization/foreign result routes deny
+content, private/no-store headers prevent response caching, reload rechecks
+access and an actual API outage cannot display a cached result. Existing privacy
+fixtures still check empty web storage and secret/content-free logs; no traces,
+screenshots, HAR or result payload artifacts are retained.
+
+The D03 restart fixture now follows the completion link and verifies an expired
+result with its permitted zero aggregate, without releasing key or feedback.
+This remains a controlled backend expiry fixture, not approved timed learner UX.
+All 27 policy combinations and finite-end before/equality/after cases are real
+PostgreSQL/HTTP backend fixtures in `test_results.py`; the browser only selects
+the two approved untimed/unscheduled presets. R02 history and author reporting
+remain out of scope. Execution evidence is recorded in the
+[R01 handoff](../../docs/DEVELOPMENT.md#r01-policy-filtered-result).
+
+The 23 October 2026 complete local gate passed all **30 browser cases** on
+Chromium 156.0.8078.4, alongside 648 Python cases and all common checks.
+Owned resources were removed normally. This is review evidence, not R01
+acceptance/integration, hosted CI or authorization to start T01.
+
 ## C01 AT-03/04 initial cases
 
 `questions.spec.ts` adds five real signed-in journeys to the existing discovery
