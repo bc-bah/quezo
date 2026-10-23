@@ -1,8 +1,10 @@
 # Phased implementation plan
 
-**Date:** 20 October 2026  
+**Date:** 23 October 2026
+
 **Status:** Working foundations including I02 accepted; EX-I02-01 closed.
-All eight Phase 2 packages are active assignments with explicit execution gates.
+C01/C02/D01/D02/S01/D03/R01 accepted and integrated; T01 active with its
+producer gate satisfied. Milestone acceptance remains B.C.'s review decision.
 
 ## 1. Start here
 
@@ -11,11 +13,13 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint, 21 October 2026:** B.C. confirmed I02 completion; merged
+**Current checkpoint, 23 October 2026:** B.C. confirmed I02 completion; merged
 PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
 B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
-retaining their dependency execution gates. Only C01/S01 can implement now;
-other packages wait for accepted, integrated producers. Use the
+retaining their dependency execution gates. Those seven T01 producers are now
+accepted and integrated, through R01 PR #14 merge `8976371`; B.C. directed
+T01 execution after acceptance reconciliation. Exact commits and evidence live
+in the [backlog](BACKLOG.md). No Phase 3 dispatch is authorized. Use the
 [eight copy-ready prompts](PHASE-2-HANDOFFS.md) and
 [Phase 2 approval/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
 B.C. owns every package's integration/review/merge. No agents were launched.

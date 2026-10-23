@@ -1,4 +1,4 @@
-# Real-browser identity, authoring and durable-attempt gates
+# Real-browser foundation and lifecycle gates
 
 This suite uses npm-locked Playwright Test 1.64.1 and its Chromium browser.
 Every successful journey uses native Quezo forms, the actual Keycloak login UI,
@@ -34,7 +34,7 @@ npx playwright install --with-deps chromium
 
 No `.env` or manually supplied credentials are needed. Do not point this command
 at an existing realm, development volume, external database or shared server.
-Remote Docker contexts are refused. Allow roughly 7 minutes for the browser
+Remote Docker contexts are refused. Allow roughly 10 minutes for the browser
 command: the expiry scenario actually waits the unchanged 300-second token
 lifetime. It does not edit clocks/session rows or configure refresh tokens.
 
@@ -184,6 +184,142 @@ observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
 producer gates, not introduce a second runner.
 
+## T01 foundation-to-lifecycle demonstration
+
+B.C. directed R01 acceptance/tracking to `done` and T01 execution on 23 October
+2026. I02 was already accepted/done. R01 merge `8976371` and all transitive
+producer merges were verified on live GitHub and as local ancestors; see the
+[authoritative backlog](../../docs/implementation/BACKLOG.md).
+T01 milestone acceptance remains B.C.'s review decision.
+
+From a fresh checkout containing those producers and the T01 changes, perform
+the install steps above, then run the complete acceptance command:
+
+```powershell
+npm run test:e2e -- --checks
+```
+
+For a shorter, repeatable foundation-to-lifecycle demo with real owned services:
+
+```powershell
+npm run test:e2e -- --grep "native login|T01|D02|D03 AT-09/11"
+```
+
+That selector runs **six** cases: native login/logout, two complete T01 author
+journeys, two controlled-expiry journeys and the D02/D03 interruption journey.
+It is not the full acceptance command. Both commands build the current web
+application, provision synthetic identities, migrate owned PostgreSQL, use actual
+Keycloak login and remove only their owned resources. No credential export,
+external service, hand-edited state or manual fixture setup is needed.
+The full run includes the unchanged 300-second token-expiry wait and duplicated
+producer checks; allow substantially longer than the focused demo.
+
+`lifecycle.spec.ts` runs the **same native-form workflow for both presets**:
+create both question types; compose with a point override; preview and compare
+assignment/attempt/Grade/start/publication/completion counts; publish; reuse the
+exact question version in a second publication; assign; start as a real learner;
+navigate and save both answers; hold a real parent lock to observe pending-save
+submission blocking; edit both bank questions; refresh/resume unchanged
+content/order and persisted answers; submit and replay; edit again after grading;
+verify both publications, attempt and the one Grade remain unchanged; read the
+permitted result. It checks raw HTTP, HTML, RSC, DOM, empty browser CacheStorage
+and web storage, foreign author/learner denial, and revoked learner-role denial
+with the previously valid token and browser session.
+
+`responses.spec.ts` retains actual interrupted/offline save, cross-tab conflict,
+lost save acknowledgement and lost submit acknowledgement tests. Its T01 extension
+restarts both application processes after completion, checks durable responses
+and stable presentation, then opens the policy-filtered result and confirms one
+Grade. Faults sever real byte-forwarding sockets after a real API command queues
+on PostgreSQL; neither requests nor success responses are mocked.
+`finalization.spec.ts` reuses D03's explicitly controlled historical backend
+admission and restart fixture for **both** score-only and withheld expired results.
+Those two cases are not native author-to-start journeys or timed UX acceptance:
+only their login/result-display portions are browser evidence.
+
+Fresh identities use `privateIdentity` in the changed scenarios. It creates a
+new context and reuses the unchanged I02 privacy observer (wire headers, callback
+referrers, auth cookies, DOM/storage and secrets). Local logout still preserves
+Keycloak SSO; the tests do not redefine it. Fixture-only committed role revocation
+is restored in `finally`, never by runtime provisioning.
+The safe reporter prints discovered count, exact static titles and outcome counts,
+including skipped/interrupted cases. It recognizes new lifecycle failure locations
+without printing payloads or raw call logs. No trace, HAR, screenshot, video or
+browser state is retained.
+
+### Lifecycle acceptance matrix
+
+These are **initial lifecycle scopes**, not completion of every catalogue row.
+The 23 October 2026 unfiltered gate passed all 33 browser cases, with zero
+skips/failures, and every required producer check. Exact execution results are in the
+[T01 section 3 handoff](../../docs/DEVELOPMENT.md#t01-first-lifecycle-acceptance).
+Backend tests use real PostgreSQL, but most authenticate via the accepted
+controlled signing/JWKS peer, not Keycloak. They supplement the real-Keycloak
+browser paths; no browser happy path is claimed to prove concurrent integrity.
+
+| AT | Actual browser evidence | Separate producer evidence | Explicit remaining scope |
+| --- | --- | --- | --- |
+| AT-01 | [access.spec.ts](access.spec.ts), all 16 I02 cases retained: native login/logout, actual expiry, roles, callback/CSRF and dependency outages. T01 adds old-token result/submission denial after committed role revocation. | [Identity tests](../../postgres/tests/test_identity_access.py), actual-provider HTTP integration and web session checks | A01 in-app administration is AT-02, not accepted here; Q01/Q02 broader access/workflow acceptance remains. |
+| AT-03 initial | [questions.spec.ts](questions.spec.ts), [lifecycle.spec.ts](lifecycle.spec.ts): both types, immutable edits, literal input, owner-only lists/direct IDs, visible failures. | [test_questions.py](../../postgres/tests/test_questions.py), question schemas/migrations: bounds, transaction rollback, concurrent edits and privileges | C03 search/category/tags, move/archive and full author workspace. |
+| AT-04 initial | C02 two-quiz reuse; T01 edits both types after saves and again after grading; old revisions, both publications, delivered order/answers and Grade stay fixed. | [test_quizzes.py](../../postgres/tests/test_quizzes.py) snapshot tests; [test_attempts.py](../../postgres/tests/test_attempts.py) frozen/randomized order; [test_results.py](../../postgres/tests/test_results.py) frozen Grade/policy | C03 complete revision/archive management; R02 historical/report views. |
+| AT-05 initial | [quizzes.spec.ts](quizzes.spec.ts) draft/preview/publish/revision, stale tabs and publication outage/replay; T01 checks preview causes no assignment/attempt/Grade/allowance-ledger/event writes. | `test_concurrent_publish_one_snapshot_and_ledger`, `test_draft_cas_and_edit_publish_race`, validation/rollback/closed-state fixtures in `test_quizzes.py` | C03 close/archive UI and full management transitions; no browser close/archive acceptance. |
+| AT-06 initial | [attempts.spec.ts](attempts.spec.ts) named assignment, duplicate acknowledgement, foreign link denial, start/reload/resume; T01 pinned publication and stable content/order. | `test_parallel_start_duplicate_and_finalized_replay`, frozen/randomization, schedule/allowance/post-lock checks in `test_attempts.py` | D04 configurable limits, schedules and both randomization controls; Q01 broader adversarial suite. |
+| AT-07 initial | [responses.spec.ts](responses.spec.ts): refresh/web+API restart, clear, cross-tab conflict, explicit reconciliation; T01 persists both answers and resumes exact snapshot. | [test_responses.py](../../postgres/tests/test_responses.py): CAS races, same-key retry, changed-payload rejection, rollback/deferred commit and stale writes | Q01 expanded integrity/failure suite; unsaved browser-memory edits are not durable promises. |
+| AT-08 initial | D02/D03 actual disconnect, unsaved warning, newer edit, lost save acknowledgement, retry, pending/conflicted/failed-save submission guard; T01 checks guard in both presets. | Response acknowledgement ledger/commit-before-success and terminal replay tests | Q02 screen-reader/responsive/workflow acceptance; no full accessibility claim from status locators. |
+| AT-09 initial | [finalization.spec.ts](finalization.spec.ts) controlled historical overdue backend fixture, real restart catch-up and browser expired views for both presets; no timer. | [test_finalization.py](../../postgres/tests/test_finalization.py): exact database-sampled equality, real delayed locks/late commits, bounded worker/cancellation/restart and independent processes; `test_attempts.py` schedule admission | D04 schedule/DST/configurable delivery and DEC-09 timed UX; Q01/Q02 full timing/accessibility suite. Controlled clock samples are not browser timing evidence. |
+| AT-10 initial | D02/D03 drops actual submit acknowledgement after dispatch, observes committed Grade, freezes edits, retries, restarts and reads result; T01 repeated submission preserves one Grade/metadata. | `test_save_submit_race_and_duplicate_submit`, `test_multiple_process_workers_submit_save_and_restart`, scoring/write/deferred-commit rollback and [finalization migration constraints](../../postgres/tests/test_finalization_migrations.py) | Q01 expanded integrity/access failures; Q03 approved load/multiprocess performance thresholds. Browser retries are not a concurrency proof. |
+| AT-11 initial | T01 MCQ correct with override plus incorrect true/false scores 5/7 from old keys despite bank edits; R01 zero; D02 cleared/unanswered; expiry all-unanswered zero or withheld. | [test_scoring.py](../../postgres/tests/test_scoring.py) pure deterministic integer scoring/bounds/zero-point/unanswered; D03 persisted-response adapter; C02 zero-total rejection | Q01/Q02 expanded combinations/workflows; no new scoring, regrading or pass/fail feature. |
+| AT-12 initial | [results.spec.ts](results.spec.ts), T01 and expiry: score-only/zero/withheld, HTTP/HTML/RSC/DOM omission, no-store, empty browser caches/storage, outage/revocation/foreign denial. Submission remains metadata-only. | `test_independent_policies_every_combination_and_boundary`: all 27 combinations at before/equality/after finite end, actual DB/Grade/HTTP with controlled clock sample; additional actual-wall-clock reads and post-lock access checks | D04 configuration UI and R02 history/reporting; Q01 broader disclosure checks; no browser finite-end/timed policy configuration claim. |
+
+Full search/archive (C03), administration (A01), delivery settings/timed UX (D04),
+history/reporting (R02), broader integrity (Q01), accessibility (Q02), operational
+recovery (O01) and load gates (Q03) remain their owners' work. AT-02/13-17, full P0,
+deployment and pilot readiness are not accepted by T01. No successor is dispatched.
+
+### Exact browser case inventory
+
+The unfiltered configuration discovers **33 cases**, not just the original 16.
+Counts by file: access 16, questions 5, quizzes 3, attempts 1, responses 1,
+finalization 2, results 3, lifecycle 2. Each title below is printed by the safe
+reporter; the full-run outcome is recorded in the T01 handoff, not inferred from
+discovery or the existence of this list.
+
+| File | Exact case title |
+| --- | --- |
+| access | EX-I02-01 no-referrer negative control rejects native null origins |
+| access | AT-01 native login and logout forms |
+| access | AT-01 administrator navigation, current actor and private browser state |
+| access | AT-01 author navigation, current actor and private browser state |
+| access | AT-01 learner navigation, current actor and private browser state |
+| access | AT-01 combined navigation, current actor and private browser state |
+| access | AT-01 empty navigation, current actor and private browser state |
+| access | AT-01 persisted session survives built-web restart and keyboard navigation |
+| access | AT-01 old token cannot restore removed roles or disabled account |
+| access | AT-01 inactive mapping denies the existing browser session and direct token |
+| access | AT-01 direct API denies missing, malformed, tampered, wrong-audience and wrong-issuer credentials |
+| access | AT-01 callback state, browser binding and replay fail closed |
+| access | AT-01 real foreign-origin form and missing/null hostile requests are denied |
+| access | AT-01 backend and both database transports fail explicitly without cached actors |
+| access | AT-01 real identity outage respects warm, expired and cold JWKS caches |
+| access | AT-01 actual access-token expiry caps the durable session without refresh |
+| questions | C01 AT-03/04 mcq author creates edits and selects immutable revisions |
+| questions | C01 AT-03/04 true_false author creates edits and selects immutable revisions |
+| questions | C01 signed-in foreign author and non-author roles cannot discover keys |
+| questions | C01 stale browser edit and live role revocation fail visibly |
+| questions | C01 dependency outage retains unsaved form and never reports success |
+| quizzes | C02 AT-04/05 author composes previews publishes and explicitly revises immutable quizzes |
+| quizzes | C02 stale composition and publication outage fail visibly without losing edits |
+| quizzes | C02 real login ownership and publish retry are enforced before disclosure |
+| attempts | D01 AT-06 author assigns and learner lists starts reloads without private payloads |
+| responses | D02 AT-07/08 durable answers and D03 pending-save submission and lost completion response |
+| finalization | D03 AT-09/11 controlled overdue backend fixture catches up on restart and renders expired without timed UX |
+| finalization | T01 AT-09/11/12 controlled overdue backend fixture renders fully withheld expired result |
+| results | R01 AT-12 score-only result omits unreleased data in real HTTP and HTML |
+| results | R01 AT-12 released zero result omits unreleased data in real HTTP and HTML |
+| results | R01 AT-12 fully withheld result omits unreleased data in real HTTP and HTML |
+| lifecycle | T01 AT-03 through AT-12 score-only author-to-result lifecycle preserves frozen history and live access |
+| lifecycle | T01 AT-03 through AT-12 fully withheld author-to-result lifecycle preserves frozen history and live access |
+
 ## D02 AT-07/08 response cases
 
 `responses.spec.ts` extends the actual author-publish-assign/learner-start path
@@ -226,7 +362,8 @@ real learner browser shows the expired projection with disabled answers, no
 timer, no submission control and no disclosed score, key or feedback.
 
 These cases do not claim timed accessibility acceptance, a countdown,
-result-release implementation, history/reporting or pilot readiness. The live
+history/reporting or pilot readiness. R01 supplies result release; T01 repeats
+the expired projection under both approved presets. The live
 voluntary-submit demonstration remains untimed while DEC-09 is held.
 
 ## R01 AT-12 policy-filtered results
@@ -258,7 +395,8 @@ remain out of scope. Execution evidence is recorded in the
 The 23 October 2026 complete local gate passed all **30 browser cases** on
 Chromium 156.0.8078.4, alongside 648 Python cases and all common checks.
 Owned resources were removed normally. This is review evidence, not R01
-acceptance/integration, hosted CI or authorization to start T01.
+acceptance/integration or hosted CI. B.C. subsequently accepted R01 merge
+`8976371` and directed T01; see the current T01 handoff above.
 
 ## C01 AT-03/04 initial cases
 

@@ -143,7 +143,180 @@ No linting tool is selected. I02 adds npm-locked Playwright Test; see
 [the real-browser runbook](../tests/e2e/README.md) for browser installation,
 owned isolated dependencies and `npm run test:e2e`.
 
+## T01 first lifecycle acceptance
+
+**Work item:** T01, First lifecycle acceptance.
+**Owner/integrator/reviewer:** B.C.; assigned active 21 October 2026, execution
+directed 23 October after R01 acceptance reconciliation.
+**State:** ready for review; all assigned T01 checks passed locally.
+T01 is not marked done; B.C. accepts the milestone after review.
+
+**Changes:** `tests/e2e/lifecycle.spec.ts` adds complete real-native-form
+author-to-result journeys for score-only and fully withheld presets.
+`finalization.spec.ts` repeats the accepted controlled historical-expiry fixture
+with withheld results. `responses.spec.ts` extends the accepted interruption
+journey through post-completion process restart and the R01 result page.
+`fixtures.ts` shares the existing privacy observer with fresh identity contexts;
+`playwright.config.ts` includes the new file; `safe-reporter.ts` adds exact
+discovery/outcome counts and safe failure locations. The browser runbook contains
+the repeatable demo, all 33 exact case titles and the acceptance matrix.
+Backlog/phase/handoff records reconcile R01 to done and preserve I02's existing
+done acceptance and closed EX-I02-01. No producer implementation is replaced,
+no mock-success bridge or broad refactor is introduced.
+
+**Requirement coverage:** IAM-01/02; initial AUTH-01 through AUTH-04,
+ATT-01 through ATT-04, SCORE-01 and RESULT-01; applicable section 6-8
+immutability, command replay, strict projection, error and disclosure contracts.
+PRD mapping follows SRS section 10: FR-001/002/003/061, initial
+FR-010/011/012/013/014/018, FR-015/020/021/024/025/026,
+FR-030/031/032/033/035/036/037/038/040/041/042/043 and the
+learner-result portion of FR-050/051/052/056. FR-022/023/034 configurable
+delivery/timing has separate backend evidence only, not full UI acceptance.
+
+**Acceptance:** [the lifecycle matrix](../tests/e2e/README.md#lifecycle-acceptance-matrix)
+maps **AT-01 and initial AT-03 through AT-12** to exact browser files, separate
+producer concurrency/clock/scoring fixtures and remaining owners.
+All assigned initial scopes passed in the unfiltered gate below; full catalogue
+completion is not claimed.
+Native browser paths use Keycloak -> built Next server-only facade -> separate
+FastAPI -> actual PostgreSQL. Supplemental authenticated API probes obtain tokens
+from real sessions only in fixture memory; browser requests never receive them.
+Backend signing peers and controlled clock/expiry fixtures are explicitly separate.
+
+| Assigned T01 criterion | Executable evidence |
+| --- | --- |
+| Both objective types, immutable edits, reuse, preview, publication, assignment | Both `lifecycle.spec.ts` presets create everything through real author forms; preview compares six persistence counts; both published snapshots and old question versions survive later edits. |
+| Start, navigation, pending save, save/refresh/resume, exactly one final grade and result | Both lifecycle cases save both answers, observe pending-save submit blocking under a real parent lock, resume unchanged snapshots, submit/replay, and verify one 5/7 Grade from frozen keys/points. |
+| Withheld and expired outcomes without disclosure | Full withheld lifecycle plus score-only/withheld `finalization.spec.ts` backend-expiry fixtures; HTTP/HTML/RSC/DOM omissions, no-store and empty browser caches/storage; R01 zero/outage regressions retained. |
+| Interrupted saves/submission, durable responses and stable order | Existing D02/D03 actual transport-loss and retry journey, extended through web/API restart and policy-filtered result; both new normal journeys compare complete frozen presentations. |
+| Foreign actor denial, live identity and unchanged I02 regressions | Foreign combined-role author/learner cannot read or replay; committed learner-role removal denies the old token's result/submission and clears rendered result. All 16 I02 cases remain in unfiltered discovery. |
+| Distinct integrity evidence | Existing question/publication/attempt/response/finalization/result database suites and pure S01 tests; real races/rollback/processes are not inferred from browser happy paths. |
+| Reproducible demo and exact scoped acceptance | Browser runbook commands, 33-title inventory and per-AT matrix; later-package gaps below remain explicit. |
+
+**Checks / environment:** local Windows, Node 24.20.0, npm 11.19.0,
+uv 0.12.17, Python 3.12.10, Docker Engine 29.9.2 / Compose 5.6.1,
+PostgreSQL 17.11, Keycloak 26.4.7, Next.js 16.4.2,
+Playwright 1.64.1 / Chromium 156.0.8078.4.
+The local Docker engine was initially stopped and was started and readiness
+verified. `npm run typecheck:e2e` initially failed because `tsc` was missing;
+`npm ci --no-audit --no-fund` restored the locked dependencies and that check
+passed. The existing uv launcher created its missing locked Python environment.
+No dependency manifests/locks were changed and no missing-service run is a pass.
+
+Focused iteration:
+`npm run test:e2e -- --grep "T01|D02|D03 AT-09/11"` passed **5 cases** in owned
+project `quezo-i02-a32e85749331`: D03 score-only expiry 13.731s, T01 withheld
+expiry 8.705s, T01 score-only lifecycle 20.971s, T01 withheld lifecycle 21.048s,
+D02/D03 interruption/result 34.544s. Its owned resources were removed.
+This preceded the privacy-observer reuse and reporter count update; the complete
+gate below validates those final changes as well.
+
+The required unfiltered `npm run test:e2e -- --checks` **passed, exit 0**, with owned
+project `quezo-i02-f8dfc7baf6e8`, loopback PostgreSQL/Keycloak/web/API ports
+56853/56854/56855/56856 on 23 October 2026. Exact executed stages:
+
+| Command / scope | Outcome |
+| --- | --- |
+| `npm run typecheck` | Web/browser TypeScript and strict mypy (85 source files) passed |
+| `npm test` | 12 web checks and **648 Python cases passed**; Python 962.41s |
+| `npm run build` | Passed built Next application |
+| `npm run api:check` | OpenAPI and generated TypeScript current |
+| `npm run test:contracts` | 88 Python (3.94s) and 2 tooling/client cases passed |
+| `npm run test:db` | **283 cases passed**, 924.82s, including real clean/prior-head migrations |
+| `npm run test:identity` | 108 cases passed, 95.48s |
+| `npm run test:identity:integration` | 1 actual-Keycloak HTTP case passed, 9.38s |
+| `npm run test:web:production` | 1 built-web/database/OIDC boundary case passed |
+| Unfiltered real browser | **33 discovered, 33 passed; 0 failed, timed out, skipped or interrupted** |
+
+These counts overlap across commands and are not additive unique-test totals.
+All [33 exact browser titles](../tests/e2e/README.md#exact-browser-case-inventory)
+passed, including all 16 I02 regressions and the real 300-second token expiry.
+Full-run T01 score-only/withheld journeys took 21.041s/17.639s; controlled
+score-only/withheld expiry 7.642s/7.280s; D02/D03 interruption/result 33.841s.
+No producer code fixes were necessary; their focused suites were rerun by the
+unfiltered gate rather than replaced with happy-path assertions.
+The launcher closed application processes/pools and removed its guarded databases,
+two containers and network normally. No development volumes were touched.
+Only static case names, safe counts/durations, commands and environment are
+retained here; no credentials, keys, raw browser state or assessment payloads.
+
+The exact documented demo command
+`npm run test:e2e -- --grep "native login|T01|D02|D03 AT-09/11"`
+was then rerun independently with owned project `quezo-i02-9255c96f1c25`
+(PostgreSQL/Keycloak/web/API ports 60249/60250/60251/60252):
+**6 discovered, 6 passed, zero failures/skips/timeouts/interruptions, exit 0**.
+Native login/logout took 4.707s; controlled score-only/withheld expiry
+9.002s/8.314s; score-only/withheld lifecycle 21.387s/18.024s; interruption/result
+35.446s. All resources were removed normally. This verifies reproducibility
+from fresh owned dependencies, not a replacement for the full gate.
+
+**Contracts:** no changed HTTP operations, schemas, generated client or runtime
+interfaces; T01 uses the accepted `QuestionVersion`, `PublishedQuiz`, `Attempt`,
+save acknowledgement, metadata-only `Completion` and filtered `LearnerResult`.
+No API regeneration is needed for these test/documentation changes; the full
+gate still verifies deterministic OpenAPI/client output with `npm run api:check`.
+Fixture-only `privateIdentity` returns a new page and privacy-checking context
+cleanup, sharing I02 observation rather than weakening it for identity switches.
+
+**Data:** no migration, applied-revision edit, new schema, privilege or Grade
+writer. Head remains `0009_finalization`. The complete gate includes existing
+clean `base -> head`, all producer prior-head upgrades and repeat-head checks,
+including `test_actual_response_head_upgrade_preserves_accepted_saves` for
+`0008_responses -> 0009_finalization`. No new migration is authorized or needed.
+Expiry uses the existing constrained historical fixture with API stopped,
+then normal startup catch-up, never a mutated frozen deadline or user-facing timer.
+Recovery must still preserve snapshots, responses/command ledgers, Grade/items
+and completion events together; no backup/restore/RPO/RTO acceptance is claimed.
+
+**Integration:** uncommitted T01 changes on verified main baseline
+`8976371bdf00bb337a0db0df1818cf739df7b546`; no T01 commit or PR created.
+`gh api repos/bc-bah/quezo/branches/main`, merged PR records and
+`git merge-base --is-ancestor <commit> HEAD` verified the following chain.
+B.C.'s user-directed post-R01 serialized window covers common test fixtures,
+discovery/reporting and documentation only; no shared scripts, CI, manifests,
+application wiring or runtime implementation changes were needed.
+
+| Producer / accepted evidence | Exact merged commit | Included implementation/follow-up commits |
+| --- | --- | --- |
+| [I02](#i02-integrated-browser-gate), [PR #7](https://github.com/bc-bah/quezo/pull/7) | `553a2c8b77a770667f4cef6825f57c3b55f477ed` | Accepted foundation; EX-I02-01 closed |
+| Phase 2 assignment/defaults approval | `49eb37b133e737f61f30a97329940bd6281b2c5a` | Not a replacement for any later producer |
+| [C01](#c01-versioned-objective-questions), [PR #8](https://github.com/bc-bah/quezo/pull/8) | `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c` | `eb9d62d6222ef13c777786bd6969cbbfb11028cd`, `1f2cd53848804c6ea47cf8595ffb5907d4f98bd4` |
+| [C02](#c02-immutable-quiz-publication), [PR #9](https://github.com/bc-bah/quezo/pull/9) | `03797bcbb545ec188da941ff6bb02e380f5b9f1b` | `67ce98a6d86fc1262ed431876f8e63a24c0d05eb`; diagnostic follow-ups `f07640857c922399c4fc4065fa766480415551bc`, `c3c7e40009804a6a47c246cc4a913bfb233d0940` |
+| [D01](#d01-assignment-and-attempt-start), [PR #10](https://github.com/bc-bah/quezo/pull/10) | `b5751a94ce2ab36be8add8070bbbd99573175d0a` | `cbb74f553b7e2ce3df5cc6082c87d94ac19712ee` |
+| [D02](#d02-durable-response-save-and-resume), [PR #11](https://github.com/bc-bah/quezo/pull/11) | `c7d6f7e0d9785e220530536078241725b3588547` | `fbe93dae1b702b909d8db7dc1d5ea9139e37cc49`, `a82bc36b0a8d4c762ec7a11229138c714e63a0de` |
+| [S01](#s01-pure-objective-scoring), [PR #12](https://github.com/bc-bah/quezo/pull/12) | `c9448f78cd6aee397763d37e8d33f8004a441862` | `00195df0d0cd3f0e7fcc79eb241d2f0e944ef475` |
+| [D03](#d03-finalization-and-expiration), [PR #13](https://github.com/bc-bah/quezo/pull/13) | `0cfbff7bb65c9bbad2be049df729459c516516b0` | `9ff05f87aae1cf8789e9b565508f75a5ef6fd275` |
+| [R01](#r01-policy-filtered-result), [PR #14](https://github.com/bc-bah/quezo/pull/14) | `8976371bdf00bb337a0db0df1818cf739df7b546` | `bb194681762e5e5e3563645f67303f9ca51f38cd` |
+
+**Known gaps:** no known failing or unverified assigned T01 criterion remains;
+human milestone acceptance is pending B.C.'s review. Scope exclusions are
+not failed criteria disguised as passes: C03 owns complete search/category/tag,
+move/archive/close and author management; A01 owns in-app account administration;
+D04 owns configurable delivery, schedule/DST/randomization and DEC-09-dependent
+timed UX; R02 owns history/author reporting; Q01 owns expanded integrity/access
+failures; Q02 owns accessibility/workflow acceptance. O01/Q03 own recovery/
+operational/load evidence under their decision gates. This local Chromium run
+is not hosted CI, another browser/OS matrix, a human screen-reader audit, full
+AT-02/13-17, full P0, deployment or pilot readiness.
+
+**Successor handoff:** after B.C. reviews and accepts T01, future assigned
+packages can reuse the integrated producer contracts, both preset journeys,
+privacy-safe fresh-context helper and existing backend integrity fixtures.
+Preserve fixed snapshots, live actor checks, no-store policy projections,
+pending-save guards and replay-safe commands. No successor is dispatched here.
+Repeatable demo:
+`npm run test:e2e -- --grep "native login|T01|D02|D03 AT-09/11"`.
+Full acceptance remains `npm run test:e2e -- --checks`, unfiltered.
+
 ## R01 policy-filtered result
+
+**Acceptance/integration, 23 October 2026:** B.C. directed acceptance/tracking
+to `done` and T01 execution. Live main and T01 ancestry contain
+[PR #14](https://github.com/bc-bah/quezo/pull/14), merge
+`8976371bdf00bb337a0db0df1818cf739df7b546`, implementation
+`bb194681762e5e5e3563645f67303f9ca51f38cd`, and all producers listed below.
+I02 was already accepted/done; no new acceptance exception is introduced.
+The following is the historical R01 review handoff, not a current pending gate.
 
 **Work item / owner:** R01, B.C.; assigned 21 October 2026, execution directed
 23 October after D03 acceptance. **State: ready for review**; the full local
@@ -2186,8 +2359,8 @@ as historical evidence, not a statement of current tracker status.
 
 **Work item:** I02, Integrated login and access gate.
 
-**State:** ready for B.C.'s review, not accepted/done. EX-I02-01 closure remains
-B.C.'s decision. The final local combined command exited 0 with all 16 browser
+**State at the original handoff:** ready for B.C.'s review; superseded by the
+accepted/done record above. The final local combined command exited 0 with all 16 browser
 cases passing, no skipped cases, and owned-resource cleanup completed.
 
 **Changes:** `tests/e2e/` supplies locked Playwright configuration, reusable
@@ -2196,7 +2369,7 @@ secret-safe reporter/runbook. `postgres/tests/run_browser.py` owns isolated
 Compose/provisioning/migration/startup/cleanup, with focused launcher tests.
 Root manifests/lock/scripts and one non-matrix CI browser job connect the suite.
 The approval/checkpoint documents were reconciled only after B.C.'s explicit
-permission in this session; I02 remains active for the human review boundary.
+permission in that session; I02 was then active pending review. It is now done.
 
 Only two producer changes were needed: `frontend/quezo/next.config.ts` uses
 `strict-origin` on documents while explicitly retaining `no-referrer` on
@@ -2359,8 +2532,9 @@ on 22 October 2026. B.C. also confirmed D02 at `c7d6f7e` (PR #11) and
 S01 at `c9448f7` (PR #12) complete, accepted and integrated, and directed D03
 execution after updating the tracking records. On 23 October, B.C. confirmed
 D03 reviewed/integrated at `0cfbff7` (PR #13) and directed R01 execution after
-recording D03 acceptance. R01 and T01 remain active
-assignments, not simultaneously executable packages. Each later consumer must
+recording D03 acceptance. R01 is now accepted/integrated at `8976371` (PR #14);
+B.C. directed T01 execution after reconciliation on 23 October. T01 remains active,
+with milestone acceptance pending B.C.'s review. Each later consumer must
 first verify its own integrated producer
 evidence in the backlog. Use the [copy-ready prompts](implementation/PHASE-2-HANDOFFS.md).
 Preserve `Database.transaction`, live actor checks, generated client/error
