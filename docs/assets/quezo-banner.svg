@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+  <title id="title">Quezo: from first draft to clear results</title>
+  <desc id="desc">Quezo's assessment workflow: build reusable questions, deliver assigned quizzes with save and resume, and review policy-aware results. Navy, lime, and mint brand artwork.</desc>
+  <defs>
+    <clipPath id="frame">
+      <rect width="1280" height="440" rx="24"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="440" fill="#101d2b"/>
+    <circle cx="1170" cy="60" r="300" fill="none" stroke="#b8efcf" stroke-opacity=".1"/>
+    <circle cx="1170" cy="60" r="238" fill="none" stroke="#b8efcf" stroke-opacity=".1"/>
+    <path d="M0 432H1280" stroke="#d9f279" stroke-width="16"/>
+    <g font-family="'Segoe UI', Arial, sans-serif">
+      <rect x="56" y="42" width="48" height="48" rx="13" fill="#d9f279"/>
+      <text x="80" y="73" text-anchor="middle" fill="#101d2b" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-style="italic">q</text>
+      <text x="118" y="76" fill="#fffefa" font-size="34" font-weight="700" letter-spacing="-1.5">quezo</text>
+      <circle cx="62" cy="133" r="5" fill="#ff8e73"/>
+      <text x="78" y="139" fill="#b8efcf" font-size="14" font-weight="700" letter-spacing="2">A FOCUSED ASSESSMENT WORKSPACE</text>
+      <g font-family="Georgia, 'Times New Roman', serif" font-size="64" letter-spacing="-2">
+        <text x="56" y="215" fill="#fffefa">From first draft</text>
+        <text x="56" y="287" fill="#fffefa">to <tspan fill="#d9f279" font-style="italic">clear results.</tspan></text>
+      </g>
+      <text x="58" y="339" fill="#d4dde2" font-size="20">Reusable questions. Durable attempts.</text>
+      <text x="58" y="369" fill="#d4dde2" font-size="20">Results that respect the rules.</text>
+      <rect x="680" y="56" width="544" height="328" rx="20" fill="#1b2d3e" stroke="#b8efcf" stroke-opacity=".25"/>
+      <text x="708" y="95" fill="#b8efcf" font-size="13" font-weight="700" letter-spacing="2">ONE CONNECTED WORKFLOW</text>
+      <path d="M731 146V306" fill="none" stroke="#b8efcf" stroke-opacity=".4" stroke-width="2"/>
+      <circle cx="731" cy="146" r="22" fill="#d9f279"/>
+      <text x="731" y="152" text-anchor="middle" fill="#101d2b" font-size="16" font-weight="700">01</text>
+      <text x="774" y="147" fill="#fffefa" font-size="25" font-weight="600">Build</text>
+      <text x="774" y="174" fill="#d4dde2" font-size="17">Create and reuse fixed question versions</text>
+      <circle cx="731" cy="226" r="22" fill="#b8efcf"/>
+      <text x="731" y="232" text-anchor="middle" fill="#101d2b" font-size="16" font-weight="700">02</text>
+      <text x="774" y="227" fill="#fffefa" font-size="25" font-weight="600">Deliver</text>
+      <text x="774" y="254" fill="#d4dde2" font-size="17">Publish, assign, save, and resume</text>
+      <circle cx="731" cy="306" r="22" fill="#ff8e73"/>
+      <text x="731" y="312" text-anchor="middle" fill="#101d2b" font-size="16" font-weight="700">03</text>
+      <text x="774" y="307" fill="#fffefa" font-size="25" font-weight="600">Review</text>
+      <text x="774" y="334" fill="#d4dde2" font-size="17">Finalize and see permitted results</text>
+    </g>
+  </g>
+</svg>
