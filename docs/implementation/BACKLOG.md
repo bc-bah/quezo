@@ -46,7 +46,12 @@ contain R01 [PR #14](https://github.com/bc-bah/quezo/pull/14), merge
 `bb194681762e5e5e3563645f67303f9ca51f38cd`. All producer merges and implementation
 commits above, I02 and approval `49eb37b` were verified as ancestors.
 I02 was already `done`; its accepted record and closed exception are preserved.
-T01 remains `active`, with its execution gate satisfied, not milestone acceptance.
+T01 is `done`: B.C. requested milestone acceptance/tracking reconciliation on
+23 October 2026. [PR #15](https://github.com/bc-bah/quezo/pull/15) is merged at
+`df06ccc19af947cda05757c79938394763d6edb6`, including implementation `300bbc4`.
+The recorded lifecycle evidence and passing hosted browser/matrix checks support
+acceptance of the Phase 2 exit gate. All eight Phase 2 packages are now `done`.
+C03/R02 are ready for assignment; A01/D04 retain the explicit approval gates below.
 No successor dispatch is implied. B.C. owns integration,
 review/merge and shared-file coordination for this wave; later release holds remain.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
@@ -56,14 +61,15 @@ Approval evidence: [G00](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-oct
 [second wave](../SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01) and
 [I02 assignment/exception](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception).
 Current approval: [Phase 2 assignment/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
-Current assignments: [eight copy-ready prompts](PHASE-2-HANDOFFS.md).
+Completed assignments: [historical Phase 2 prompts](PHASE-2-HANDOFFS.md).
 Integrated foundation baseline: `553a2c8b77a770667f4cef6825f57c3b55f477ed`;
 migration head `0004_identity`. Consumers must also include their later producer
 commits, recorded on acceptance. Accepted C01 merge
 `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c` advances the migration head to
-`0005_questions` and completes C01's initial shared-file window. S01 may run
-independently on its pure scoring/test surfaces. C02 and later shared writes
-and migrations remain serialized along the lifecycle chain by B.C.
+`0005_questions` and completes C01's initial shared-file window. Subsequent
+accepted producers advance the current head to `0009_finalization`; R01/T01 add
+no migration. The Phase 3 starting baseline is T01 merge `df06ccc` plus this
+acceptance update. Shared writes and migration ordering remain serialized by B.C.
 
 | ID | Phase | Package | Prerequisites | Status | Owner | PR/commit and evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -80,11 +86,11 @@ and migrations remain serialized along the lifecycle chain by B.C.
 | S01 | 2 | [Pure objective scoring](02-CORE-LIFECYCLE.md#s01-pure-objective-scoring) | F02 | done | B.C. | Acceptance/integration confirmed 22 October 2026; [PR #12](https://github.com/bc-bah/quezo/pull/12), merge `c9448f7`, implementation `00195df`; [accepted pure scoring contract](../DEVELOPMENT.md#s01-pure-objective-scoring); executable evidence in `postgres/tests/test_scoring.py`; no migration |
 | D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | done | B.C. | Review/acceptance/integration confirmed 23 October 2026; [PR #13](https://github.com/bc-bah/quezo/pull/13), merge `0cfbff7`, implementation `9ff05f8`; [accepted Grade/state handoff and evidence](../DEVELOPMENT.md#d03-finalization-and-expiration): 611 Python / 246 database-suite / 27 browser cases; migration `0009_finalization`; untimed learner UI while DEC-09 held |
 | R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | done | B.C. | Acceptance/tracking directed 23 October 2026; [PR #14](https://github.com/bc-bah/quezo/pull/14), merge `8976371`, implementation `bb19468`, verified on live main and in T01 ancestry. [Accepted handoff/evidence](../DEVELOPMENT.md#r01-policy-filtered-result): 648 Python / 283 database-suite / 30 browser cases; 27 independent policy combinations/boundaries. No migration; head `0009_finalization`. |
-| T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | active | B.C. | Assigned 21 October 2026; execution directed 23 October after R01 acceptance. All producer merges/ancestors verified. [Review-ready section 3 handoff](../DEVELOPMENT.md#t01-first-lifecycle-acceptance) and [AT matrix/demo](../../tests/e2e/README.md#lifecycle-acceptance-matrix): unfiltered common gate passed, 648 Python / 283 database-suite / 33 browser cases, zero skipped. No runtime contract/migration changes; uncommitted. B.C. retains milestone acceptance; no Phase 3/pilot authorization. |
-| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | planned | B.C. | - |
-| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | planned | B.C. | - |
-| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | planned | B.C. | DEC-09 required for timed UX |
-| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | planned | B.C. | - |
+| T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | done | B.C. | Accepted 23 October 2026 following B.C.'s tracking direction; [PR #15](https://github.com/bc-bah/quezo/pull/15), merge `df06ccc`, implementation `300bbc4`; [accepted handoff](../DEVELOPMENT.md#t01-first-lifecycle-acceptance), [AT matrix/demo](../../tests/e2e/README.md#lifecycle-acceptance-matrix), [hosted browser/matrix CI](https://github.com/bc-bah/quezo/actions/runs/39949405839). Recorded unfiltered gate: 648 Python / 283 database-suite / 33 browser cases, zero skipped; reproducible six-case demo passed. No runtime contract/migration changes; head `0009_finalization`. Phase 2 milestone only, not full P0/pilot acceptance. |
+| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | ready | B.C. | T01 accepted at `df06ccc`; awaiting explicit Phase 3 assignment and shared quiz-editor/migration coordination. |
+| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | blocked | B.C. | T01 satisfied. DEC-06 currently permits explicit local provisioning only, no runtime admin credentials; approve a narrowly privileged Keycloak administration identity/integration before dispatch. |
+| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | blocked | B.C. | T01 satisfied. DEC-09 timed-accessibility decision remains held; approve before timed UX implementation or explicitly assign a bounded untimed subset without claiming package completion. |
+| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | ready | B.C. | T01 accepted at `df06ccc`; awaiting explicit Phase 3 assignment and shared contract/migration coordination. |
 | Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |
 | Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 timed-accessibility approval required |
 | O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
@@ -127,6 +133,25 @@ evidence includes all 16 real-browser cases, 12 web checks, 264 Python cases and
 passing hosted browser/Node 22/24/Python 3.12/3.14 jobs. No new application test
 run is claimed by this documentation update. Acceptance is for the working
 identity foundation, not assessment workflows, full WCAG, P0 or pilot readiness.
+
+### T01 milestone acceptance: 23 October 2026
+
+B.C.'s request to reconcile acceptance before Phase 3 is recorded against merged
+PR #15 and its actual handoff, not an uncommitted implementation. The reviewed
+records cover AT-01 and initial AT-03 through AT-12, both release presets,
+controlled backend expiry, interrupted save/submit recovery, immutable snapshots,
+one Grade and policy-filtered results. The retained local unfiltered gate reports
+33 browser cases with no failures/skips and all producer checks passing; the
+independent six-case demo also passed. Hosted browser, Node 22/24 and Python
+3.12/3.14 jobs succeeded in the linked run.
+
+This is acceptance/evidence reconciliation, not a new code review or application
+test run. The [coverage matrix](../../tests/e2e/README.md#lifecycle-acceptance-matrix)
+retains explicit C03/A01/D04/R02 and readiness gaps. No known assigned T01
+criterion remains outstanding in the delivery record. T01 acceptance does not
+approve runtime administration credentials, timed accessibility, Phase 3 dispatch,
+full P0, deployment or pilot readiness. DEC-08/09/10 and later DEC-11 commitments
+remain held; EX-I02-01 remains closed.
 
 ## Update protocol
 

@@ -8,10 +8,10 @@ password grants, request interception, mocked actors or runtime bypasses.
 Master-realm administration is confined to the existing explicit setup helper.
 
 **Accepted baseline:** B.C. accepted I02 and closed EX-I02-01 on 21 October 2026
-after reviewing merged PR #7 and its passing browser/CI evidence. Phase 2 now
-extends these fixtures with package-specific lifecycle journeys; use the
-[Phase 2 handoffs](../../docs/implementation/PHASE-2-HANDOFFS.md).
-An active package assignment does not remove its integrated-producer gate.
+after reviewing merged PR #7 and its passing browser/CI evidence. T01 and the
+Phase 2 lifecycle milestone were accepted on 23 October at PR #15 merge
+`df06ccc`; see the [acceptance record](../../docs/implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026).
+Future assigned packages extend these accepted lifecycle fixtures.
 Keep the existing identity regressions and secret-safe reporting intact.
 
 ## Install and run
@@ -177,9 +177,10 @@ It does not await raw-request-header promises that can remain unresolved for
 interrupted prefetches. Auth response/cookie checks remain awaited; no header
 values or protocol events are written to artifacts.
 
-This is the working-foundations, C01 and C02 demonstration, not A01 account management,
-full quiz delivery, Q02/WCAG, full P0, hosting or pilot acceptance. D01 additionally
-demonstrates assignment/start/resume; D02 adds saving and D03 adds submission. Keyboard
+This is the accepted working-foundations and initial lifecycle demonstration,
+not A01 account management, full delivery configuration, Q02/WCAG, full P0,
+hosting or pilot acceptance. D01 demonstrates assignment/start/resume; D02 adds
+saving, D03 submission and R01 policy-filtered results. Keyboard
 observations are automated Chromium focus checks, not a human screen-reader
 audit. Later assigned packages should extend these same fixtures after their
 producer gates, not introduce a second runner.
@@ -190,7 +191,9 @@ B.C. directed R01 acceptance/tracking to `done` and T01 execution on 23 October
 2026. I02 was already accepted/done. R01 merge `8976371` and all transitive
 producer merges were verified on live GitHub and as local ancestors; see the
 [authoritative backlog](../../docs/implementation/BACKLOG.md).
-T01 milestone acceptance remains B.C.'s review decision.
+T01 milestone acceptance is recorded on 23 October 2026 at PR #15 merge
+`df06ccc`, following reconciliation of the local evidence below and passing
+[hosted checks](https://github.com/bc-bah/quezo/actions/runs/39949405839).
 
 From a fresh checkout containing those producers and the T01 changes, perform
 the install steps above, then run the complete acceptance command:

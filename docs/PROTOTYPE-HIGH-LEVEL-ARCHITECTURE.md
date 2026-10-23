@@ -1,7 +1,7 @@
 # Prototype high-level architecture
 
 **Date:** 20 October 2026  
-**Status:** Working foundations through I02 accepted; Phase 2 lifecycle work assigned with execution gates.
+**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 not dispatched.
 
 **Product baseline:** [PRD v0.1](reference/02-Product-Requirements.md), as scoped by
 [Prototype scope](PROTOTYPE-SCOPE.md).
@@ -86,7 +86,9 @@ real-browser flow and closes EX-I02-01 without relaxing origin validation.
 C01 adds the question-authoring module, owned banks, immutable versions and a
 thin server-only author UI facade. C02 adds quiz composition, learner-shaped
 nonpersistent preview, revision CAS and immutable publication with retained
-command acknowledgements. Delivery remains future work;
+command acknowledgements. D01/D02 add assignment/start and durable responses;
+S01/D03 add scoring, immutable finalization and expiry; R01 adds policy-filtered
+results. T01 accepts the integrated initial lifecycle at merge `df06ccc`;
 shared documentation exposure remains a deployment decision.
 
 ## 4. Module responsibilities and interfaces
@@ -425,5 +427,6 @@ contracts and acceptance cases; dependency-aware packages,
 parallel workstreams and tracking live in the
 [implementation bundle](implementation/README.md). Foundations through I02 are
 done and the F03 browser exception is closed. All eight Phase 2 packages are
-assigned, but consumers wait for integrated producers. Later operational/pilot
-decisions remain held; assessment schemas and UI arrive with these gated slices.
+accepted through T01 merge `df06ccc`, migration head `0009_finalization`.
+See [Phase 3 readiness](SOFTWARE-SPECIFICATION.md#t01-acceptance-and-phase-3-readiness)
+before assigning further work. Later operational/pilot decisions remain held.

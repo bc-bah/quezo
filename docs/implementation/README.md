@@ -3,8 +3,8 @@
 **Date:** 23 October 2026
 
 **Status:** Working foundations including I02 accepted; EX-I02-01 closed.
-C01/C02/D01/D02/S01/D03/R01 accepted and integrated; T01 active with its
-producer gate satisfied. Milestone acceptance remains B.C.'s review decision.
+C01/C02/D01/D02/S01/D03/R01/T01 accepted and integrated. Phase 2 is complete;
+Phase 3 is not dispatched.
 
 ## 1. Start here
 
@@ -16,13 +16,17 @@ those into individually assignable work packages.
 **Current checkpoint, 23 October 2026:** B.C. confirmed I02 completion; merged
 PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
 B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
-retaining their dependency execution gates. Those seven T01 producers are now
-accepted and integrated, through R01 PR #14 merge `8976371`; B.C. directed
-T01 execution after acceptance reconciliation. Exact commits and evidence live
-in the [backlog](BACKLOG.md). No Phase 3 dispatch is authorized. Use the
-[eight copy-ready prompts](PHASE-2-HANDOFFS.md) and
-[Phase 2 approval/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
-B.C. owns every package's integration/review/merge. No agents were launched.
+retaining their dependency execution gates. All eight are now accepted and
+integrated through T01 PR #15 merge `df06ccc`; B.C. requested milestone
+acceptance/tracking reconciliation before Phase 3. Exact commits, local evidence
+and passing hosted checks live in the [backlog](BACKLOG.md).
+C03/R02 are ready for assignment; A01 needs scoped Keycloak administration
+approval and D04 retains DEC-09. No Phase 3 dispatch is authorized. Use the
+[Phase 3 package definitions](03-COMPLETE-P0.md); the
+[eight Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve historical assignments.
+The [Phase 2 defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
+remain the accepted demo boundary until a later scoped approval changes it.
+B.C. remains the backlog owner; Phase 3 review/merge assignment is still required.
 DEC-08/09/10 and later DEC-11 commitments remain held.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
