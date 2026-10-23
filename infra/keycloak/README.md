@@ -6,6 +6,11 @@ credentials. This is a loopback-only development runbook, not deployment or A01
 account administration. The bootstrap administrator exists only in `master`;
 it is never mapped to an application account.
 
+For the all-container Docker Desktop workflow, use the
+[full-app startup instructions](../../docs/DEVELOPMENT.md#full-app-with-docker-desktop).
+Its explicit `provision` tool runs this same provisioner in the local stack's
+shared loopback network; no runtime provisioning or automatic grants are added.
+
 The [second-wave DEC-06/07 approval](../../docs/SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01)
 selected openid-client and pg for F03, and PyJWT with cryptography plus HTTPX for
 I01. Both packages are now merged; I02 owns the combined real-browser proof,

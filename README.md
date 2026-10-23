@@ -46,11 +46,18 @@ tests/e2e/              Real-browser identity and complete initial lifecycle jou
 infra/keycloak/         Explicit local synthetic realm/account provisioning
 docs/                   Scope, architecture, setup guide, original references
 compose.yaml            Optional local PostgreSQL and Keycloak dependencies
+compose.local.yaml      Opt-in full-app Docker Desktop stack
 ```
 
 Quezo uses Next.js/React, Python/FastAPI, PostgreSQL, Keycloak, and Docker.
 The backend in `postgres/` is an independent Python project, not an npm workspace.
 These are two application processes, not microservices.
+
+To run everything in Docker Desktop, follow
+[Full app with Docker Desktop](docs/DEVELOPMENT.md#full-app-with-docker-desktop).
+That workflow builds both apps, migrates the database and explicitly provisions
+a synthetic author/learner login. It does not require host Node.js or Python.
+The host-run development workflow below remains available.
 
 Use Node.js 22+ and npm 10+ for the frontend, plus Python 3.12+ and uv 0.12.17
 for the backend. Install both locked dependency sets from the repository root:

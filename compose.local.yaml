@@ -1,0 +1,123 @@
+name: quezo-local
+
+# A local-only pod: sharing PostgreSQL's network namespace preserves the exact
+# loopback URLs required by the browser, web configuration and identity provisioner.
+services:
+  postgres:
+    extends:
+      file: compose.yaml
+      service: postgres
+    ports: !override
+      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:4000:4000"
+      - "127.0.0.1:3000:3000"
+
+  keycloak:
+    extends:
+      file: compose.yaml
+      service: keycloak
+    profiles: !reset []
+    ports: !reset []
+    network_mode: service:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_HEALTH_ENABLED: "true"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000;
+          printf "GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3;
+          grep -q " 200 " <&3'
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  migrate:
+    image: quezo-local-api
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    network_mode: service:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      QUEZO_MIGRATION_URL: ${QUEZO_MIGRATION_URL:?Generate .env.docker first}
+    command: [".venv/bin/alembic", "upgrade", "head"]
+
+  api:
+    image: quezo-local-api
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    network_mode: service:postgres
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    environment:
+      QUEZO_DATABASE_URL: ${QUEZO_DATABASE_URL:?Generate .env.docker first}
+      QUEZO_OIDC_ISSUER: http://localhost:8080/realms/quezo-local
+      QUEZO_API_AUDIENCE: quezo-api
+    healthcheck:
+      test: ["CMD", ".venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/live', timeout=3).close()"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  web:
+    image: quezo-local-web
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    network_mode: service:postgres
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      QUEZO_WEB_ENV: local
+      QUEZO_WEB_ORIGIN: http://localhost:3000
+      QUEZO_BACKEND_ORIGIN: http://localhost:4000
+      QUEZO_OIDC_ISSUER: http://localhost:8080/realms/quezo-local
+      QUEZO_OIDC_CLIENT_ID: quezo-web
+      QUEZO_OIDC_CLIENT_SECRET: ${QUEZO_OIDC_CLIENT_SECRET:?Generate .env.docker first}
+      QUEZO_API_AUDIENCE: quezo-api
+      QUEZO_WEB_DATABASE_URL: ${QUEZO_WEB_DATABASE_URL:?Generate .env.docker first}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000', {signal: AbortSignal.timeout(3000)}).then(r => {if (!r.ok) process.exit(1)}).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  provision:
+    image: quezo-local-api
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    profiles: ["tools"]
+    network_mode: service:postgres
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_LOCAL_ORIGIN: http://localhost:8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-quezo-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Generate .env.docker first}
+      QUEZO_OIDC_CLIENT_SECRET: ${QUEZO_OIDC_CLIENT_SECRET:?Generate .env.docker first}
+      QUEZO_SYNTHETIC_PASSWORD: ${QUEZO_SYNTHETIC_PASSWORD:?Generate .env.docker first}
+      QUEZO_DATABASE_URL: ${QUEZO_DATABASE_URL:?Generate .env.docker first}
+      QUEZO_OIDC_ISSUER: http://localhost:8080/realms/quezo-local
+    entrypoint: [".venv/bin/python", "/app/infra/keycloak/provision.py", "--confirm-local-synthetic"]
+
+volumes:
+  postgres-data:
+  keycloak-data:

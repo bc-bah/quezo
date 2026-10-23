@@ -21,13 +21,102 @@ D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
 D03 adds metadata-only submission, immutable grading through S01, request-triggered
 expiry and a lifespan-managed bounded expiry worker. R01 adds independent
 policy-filtered learner results and a minimal result page. History/reporting,
-real readiness checks, application containers and deployment remain absent.
+real readiness checks and production deployment remain absent. An opt-in
+[full local Docker stack](#full-app-with-docker-desktop) runs the accepted app.
 A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is
 I02, not established by F03 protocol tests. Database configuration is required
 for both server lifecycles.
 
 ## Prerequisites and startup
+
+### Full app with Docker Desktop
+
+This is a local development/demo stack, not a production deployment or a Phase 3
+readiness claim. Only Docker Desktop with Linux containers and Docker Compose
+2.24.4+ is required to run the app; Node, Python and uv run inside the images.
+The initialization helper uses PowerShell. Run these commands from the repository
+root:
+
+```powershell
+.\infra\docker\Initialize-Local.ps1
+docker compose --env-file .env.docker -f compose.local.yaml up -d --build --wait
+docker compose --env-file .env.docker -f compose.local.yaml run --rm provision --setup-realm
+docker compose --env-file .env.docker -f compose.local.yaml run --rm provision --account combined
+```
+
+Run the two provisioning commands **once**, explicitly, on a fresh stack.
+They deliberately refuse an existing realm/application account; do not rerun
+them during ordinary restarts. The combined synthetic account has author and
+learner roles, not administrator privileges. See the
+[identity runbook](../infra/keycloak/README.md) for additional allowlisted accounts
+and partial-failure recovery. Choose a different synthetic password before
+provisioning each additional account.
+
+Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, for browser
+sign-in), select **Sign in**, and use username **`quezo-test-combined`**.
+Its password is the `QUEZO_SYNTHETIC_PASSWORD` value in the ignored local
+`.env.docker` file. Keep this file private; it also contains the local Keycloak
+administrator and database credentials. Do not paste it or resolved Compose
+configuration into logs or commits. `.dockerignore` excludes all local env files
+from image build contexts.
+
+The API is at http://localhost:4000/docs; process-only liveness is at
+http://localhost:4000/health/live. Keycloak is at http://localhost:8080.
+All four published ports (3000, 4000, 5432 and 8080) bind only to host loopback
+and must be free. The stack deliberately fixes these ports to match the exact
+local realm redirect URIs. Stop any existing host-run app or dependency using
+them first.
+
+The standalone `compose.local.yaml` leaves the existing `compose.yaml` workflow
+unchanged and uses the separate `quezo-local` project and persistent volumes.
+Its containers share PostgreSQL's network namespace as a local-only pod. This
+preserves the existing loopback-only web/database/provisioning safeguards and
+gives the browser, web server and API the **same** `localhost` OIDC issuer without
+loosening validation or requiring host DNS edits. Only PostgreSQL publishes
+ports, including the web/API/Keycloak ports. Do not scale these services or
+recreate PostgreSQL alone; bring the entire stack down and back up when changing
+the network-owning container.
+
+Migrations run as a one-shot restricted migrator before API startup. The API and
+web receive only their own runtime database credentials; only the explicit
+provisioning tool receives identity-administration credentials. Images run the
+application processes as non-root. Health checks wait for PostgreSQL, Keycloak,
+API liveness and an HTTP web response; these are startup checks, **not** a claim
+of the deferred product readiness gate or a substitute for testing sign-in.
+
+For later starts, logs and shutdown:
+
+```powershell
+docker compose --env-file .env.docker -f compose.local.yaml up -d --build --wait
+docker compose --env-file .env.docker -f compose.local.yaml ps -a
+docker compose --env-file .env.docker -f compose.local.yaml logs --tail 100 api web keycloak migrate
+docker compose --env-file .env.docker -f compose.local.yaml down
+```
+
+Shutdown preserves the database, realm and assessments. Keep `.env.docker` with
+those volumes: regenerating credentials does not rotate existing database or
+Keycloak credentials. The helper refuses to overwrite an existing file.
+Do not add `--volumes` to shutdown unless you intentionally want to delete this
+local stack's assessments, identities and sessions. Test services remain in the
+original Compose file and do not share these project volumes.
+
+If your corporate HTTPS proxy causes npm's container build to fail with
+`UNABLE_TO_GET_ISSUER_CERT_LOCALLY`, export the trusted public Windows root
+certificates and apply the optional build override:
+
+```powershell
+.\infra\docker\Export-WindowsCa.ps1
+docker compose --env-file .env.docker -f compose.local.yaml -f infra\docker\compose.ca.yaml up -d --build --wait
+```
+
+Use the same override on subsequent rebuilds. The ignored `.env.docker.ca.pem`
+bundle contains public certificates only, no private keys. BuildKit mounts it
+as a build secret for npm; it is not copied into images or exposed to app
+processes. TLS verification remains enabled. Do not work around this failure
+with `strict-ssl=false` or `NODE_TLS_REJECT_UNAUTHORIZED=0`.
+
+### Host-run application processes
 
 For the C01 author workflow, migration and consumer contract, see
 [C01 versioned objective questions](#c01-versioned-objective-questions).
