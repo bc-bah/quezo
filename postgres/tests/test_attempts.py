@@ -65,7 +65,7 @@ def test_parallel_start_duplicate_and_finalized_replay(
     assert all(result.json()["id"] == assignment["id"] for result in duplicates)
     with psycopg.connect(database.runtime_url) as connection:
         assert connection.execute("SELECT count(*) FROM quezo.attempts").fetchone() == (1,)
-        connection.execute("UPDATE quezo.attempts SET state = 'finalized' WHERE id = %s", (attempt["id"],))
+    assert author.post(f"/api/v1/attempts/{attempt['id']}/submission", json={}, headers=headers(peer)).status_code == 200
     summary = author.get("/api/v1/assignments/" + assignment["id"], headers=headers(peer)).json()
     assert summary["state"] == "completed_remaining" and summary["attemptsRemaining"] == 1
     next_attempt = start(author, assignment, peer)
@@ -74,8 +74,7 @@ def test_parallel_start_duplicate_and_finalized_replay(
         replay = start(author, assignment, peer, command)
         assert replay.status_code == 200 and replay.json()["id"] == attempt["id"]
         assert replay.json()["state"] == "finalized"
-    with psycopg.connect(database.runtime_url) as connection:
-        connection.execute("UPDATE quezo.attempts SET state = 'expired' WHERE state = 'in_progress'")
+    assert author.post(f"/api/v1/attempts/{next_attempt.json()['id']}/submission", json={}, headers=headers(peer)).status_code == 200
     assert start(author, assignment, peer).json()["code"] == "ATTEMPT_LIMIT_REACHED"
     summary = author.get("/api/v1/assignments/" + assignment["id"], headers=headers(peer)).json()
     assert summary["state"] == "exhausted" and summary["attemptsCompleted"] == 2

@@ -4,7 +4,7 @@ import { test, expect, login, accounts, apiOrigin } from "./fixtures";
 
 type S = components["schemas"];
 
-test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits and lost acknowledgement", async ({ page, apps }) => {
+test("D02 AT-07/08 durable answers and D03 pending-save submission and lost completion response", async ({ page, apps }) => {
   test.setTimeout(240_000);
   page.setDefaultTimeout(15_000);
   console.log("D02 Chromium version: " + page.context().browser()!.version());
@@ -108,6 +108,7 @@ test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits a
     await expect(otherQ.getByRole("status")).toContainText("Conflict");
     await expect(otherQ.getByLabel("D02 second", { exact: true })).toBeChecked();
     await expect(otherQ.getByRole("button", { name: "Save answer", exact: true })).toBeDisabled();
+    await expect(other.getByRole("button", { name: "Submit attempt", exact: true })).toBeDisabled();
     await otherQ.getByRole("button", { name: "Keep my local answer" }).click();
     await otherQ.getByRole("button", { name: "Save answer", exact: true }).click();
     await expect(otherQ.getByRole("status")).toHaveText("Saved");
@@ -120,6 +121,7 @@ test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits a
   await q.getByLabel("D02 first", { exact: true }).check();
   await expect(page.getByText("Offline - local edits are not saved.", { exact: false })).toBeVisible();
   await expect(q.getByRole("button", { name: "Save answer", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Submit attempt", exact: true })).toBeDisabled();
   const dialog = page.waitForEvent("dialog");
   const leave = page.getByRole("link", { name: "My assignments", exact: true }).click();
   const warning = await dialog;
@@ -139,9 +141,12 @@ test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits a
     await q.getByLabel("D02 second", { exact: true }).check();
     await q.getByRole("button", { name: "Save answer", exact: true }).click();
     await expect(q.getByRole("status")).toHaveText("Saving");
+    await expect(page.getByText("Waiting for pending saves before submission.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit attempt", exact: true })).toBeDisabled();
     await q.getByLabel("D02 first", { exact: true }).check();
     await held.query("COMMIT");
     await expect(q.getByRole("status")).toContainText("newer edit");
+    await expect(page.getByRole("button", { name: "Submit attempt", exact: true })).toBeDisabled();
     await expect(q.getByLabel("D02 first", { exact: true })).toBeChecked();
     await q.getByRole("button", { name: "Save answer", exact: true }).click();
     await expect(q.getByRole("status")).toHaveText("Saved");
@@ -161,6 +166,7 @@ test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits a
       "SELECT revision::int FROM quezo.attempt_responses WHERE question_id = $1", [initial.questions[0]!.attemptQuestionId],
     )).rows[0].revision).toBe(before + 1);
     await expect(q.getByRole("status")).toContainText("not confirmed saved");
+    await expect(page.getByRole("button", { name: "Submit attempt", exact: true })).toBeDisabled();
     await apps.backendTransport.open();
     await page.getByRole("button", { name: "Reconcile saved answers" }).click();
     await expect(page.getByRole("status").first()).toContainText("Persisted answers reconciled");
@@ -189,6 +195,52 @@ test("D02 AT-07/08 durable answers clear restart conflicts offline newer edits a
   await page.reload();
   await expect(q.getByLabel("D02 first", { exact: true })).toBeChecked();
   expect((await snapshot()).questions[1]!.response.revision).toBe(1);
-  expect(await page.getByRole("button", { name: "Submit", exact: true }).count()).toBe(0);
   console.log("D02 checkpoint: safe failure recovery and final refresh complete");
+  await secondQuestion.getByRole("button", { name: "Clear answer" }).click();
+  await secondQuestion.getByRole("button", { name: "Save answer", exact: true }).click();
+  await expect(secondQuestion.getByRole("status")).toHaveText("Saved");
+  page.once("dialog", async (confirmation) => {
+    expect(confirmation.message()).toContain("1 unanswered question");
+    await confirmation.dismiss();
+  });
+  await page.getByRole("button", { name: "Submit attempt", exact: true }).click();
+  expect((await snapshot()).state).toBe("in_progress");
+  const completionLock = await apps.apiDb.connect();
+  try {
+    await completionLock.query("BEGIN");
+    await completionLock.query("SELECT id FROM quezo.attempts WHERE id = $1 FOR UPDATE", [attemptId]);
+    page.once("dialog", (confirmation) => confirmation.accept());
+    await page.getByRole("button", { name: "Submit attempt", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Submitting", exact: true })).toBeDisabled();
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await expect(page.getByRole("status").first()).toHaveText("Submitting saved answers. Please wait.");
+    await expect(page.getByRole("button", { name: "Reconcile saved answers" })).toBeDisabled();
+    await expect.poll(async () => (await apps.apiDb.query(
+      "SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'",
+    )).rows[0].n).toBeGreaterThan(0);
+    await apps.backendTransport.close();
+    await completionLock.query("COMMIT");
+    await expect.poll(async () => (await apps.apiDb.query(
+      "SELECT count(*)::int AS n FROM quezo.grades WHERE attempt_id=$1", [attemptId],
+    )).rows[0].n).toBe(1);
+    await expect(page.getByRole("status").first()).toContainText("Submission outcome is not confirmed");
+    await expect(q.getByRole("radio").first()).toBeDisabled();
+    await apps.backendTransport.open();
+    await page.getByRole("button", { name: "Retry submission", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Submission confirmed", exact: true })).toBeVisible();
+  } finally {
+    await completionLock.query("ROLLBACK"); completionLock.release();
+  }
+  const completed = await snapshot();
+  expect(completed.completion?.completionReason).toBe("submitted");
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Submission confirmed", exact: true })).toBeVisible();
+  await expect(q.getByRole("radio").first()).toBeDisabled();
+  expect((await snapshot()).completion).toEqual(completed.completion);
+  const html = await page.content();
+  expect([feedback, "earnedPoints", "correctOptionId", "gradeId", '"outcome"'].some((key) => html.includes(key)),
+    "Completion HTML/RSC omits withheld grade, key and feedback").toBe(false);
+  expect((await apps.apiDb.query(
+    "SELECT count(*)::int AS n FROM quezo.grades WHERE attempt_id=$1", [attemptId],
+  )).rows[0].n).toBe(1);
 });

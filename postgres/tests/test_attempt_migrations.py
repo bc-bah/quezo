@@ -11,10 +11,12 @@ from test_identity_access import identity_client, peer
 from test_questions import author
 from test_quizzes import composition, create, publish
 from test_attempts import assigned, start
+from finalization_helpers import prior_schema_lifespan, submit
 
 
 @pytest.fixture
-def database(empty_database: IsolatedDatabase) -> Iterator[IsolatedDatabase]:
+def database(empty_database: IsolatedDatabase, monkeypatch: pytest.MonkeyPatch) -> Iterator[IsolatedDatabase]:
+    monkeypatch.setattr("quezo_api.app.expiration_lifespan", prior_schema_lifespan)
     run_migrations(empty_database.migration_url, "0006_quizzes")
     yield empty_database
 
@@ -28,7 +30,7 @@ def test_actual_publication_head_upgrade_preserves_history(author: TestClient, d
     run_migrations(database.migration_url)
     assert author.get(path).json() == original
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0008_responses",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0009_finalization",)
         assert connection.execute("SELECT count(*) FROM quezo.assignments").fetchone() == (0,)
 
 
@@ -95,8 +97,7 @@ def test_one_active_attempt_and_complete_snapshot_constraints(
     )
     with psycopg.connect(database.runtime_url) as connection, pytest.raises(psycopg.errors.UniqueViolation):
         connection.execute(copy, (uuid4(), attempt["id"]))
-    with psycopg.connect(database.runtime_url) as connection:
-        connection.execute("UPDATE quezo.attempts SET state = 'finalized' WHERE id = %s", (attempt["id"],))
+    assert submit(author, attempt, peer).status_code == 200
     with pytest.raises(psycopg.errors.CheckViolation), psycopg.connect(database.runtime_url) as connection:
         connection.execute(copy, (uuid4(), attempt["id"]))
     with psycopg.connect(database.runtime_url) as connection:

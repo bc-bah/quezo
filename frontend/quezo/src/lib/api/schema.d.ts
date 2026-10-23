@@ -86,6 +86,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/attempts/{attempt_id}/submission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit */
+        post: operations["submit_api_v1_attempts__attempt_id__submission_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/eligible-learners": {
         parameters: {
             query?: never;
@@ -436,6 +453,7 @@ export interface components {
             assignmentId: string;
             /** Attemptnumber */
             attemptNumber: number;
+            completion: components["schemas"]["Completion"] | null;
             /** Deadline */
             deadline: string | null;
             /**
@@ -459,7 +477,7 @@ export interface components {
              * State
              * @enum {string}
              */
-            state: "in_progress" | "finalized" | "expired";
+            state: "in_progress" | "finalized";
             /** Title */
             title: string;
             /**
@@ -474,7 +492,7 @@ export interface components {
              * Attemptstate
              * @enum {string}
              */
-            attemptState: "in_progress" | "finalized" | "expired";
+            attemptState: "in_progress" | "finalized";
             /** Deadline */
             deadline: string | null;
             /**
@@ -529,6 +547,29 @@ export interface components {
         BankWrite: {
             /** Name */
             name: string;
+        };
+        /** Completion */
+        Completion: {
+            /**
+             * Attemptid
+             * Format: uuid
+             */
+            attemptId: string;
+            /**
+             * Completionreason
+             * @enum {string}
+             */
+            completionReason: "submitted" | "expired";
+            /**
+             * Finalizedat
+             * Format: date-time
+             */
+            finalizedAt: string;
+            /**
+             * State
+             * @constant
+             */
+            state: "finalized";
         };
         /** DraftCommand */
         DraftCommand: {
@@ -1018,7 +1059,7 @@ export interface components {
              * Attemptstate
              * @enum {string}
              */
-            attemptState: "in_progress" | "finalized" | "expired";
+            attemptState: "in_progress" | "finalized";
             /**
              * Servertime
              * Format: date-time
@@ -1051,6 +1092,8 @@ export interface components {
         };
         /** StartCommand */
         StartCommand: Record<string, never>;
+        /** SubmissionCommand */
+        SubmissionCommand: Record<string, never>;
         /** ValidationDetails */
         ValidationDetails: {
             /** Fields */
@@ -1631,6 +1674,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SaveResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Sanitized error */
+            default: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    submit_api_v1_attempts__attempt_id__submission_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Server-generated HTTP correlation UUID; not an idempotency key. */
+                    "X-Request-ID"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Completion"];
                 };
             };
             /** @description Unauthorized */

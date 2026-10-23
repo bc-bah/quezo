@@ -33,3 +33,12 @@ Promise<ActionResult<components["schemas"]["SaveResult"]>> {
     })) };
   } catch (error) { return { ok: false, error: publicError(error).envelope }; }
 }
+
+export async function submitAttempt(attemptId: string): Promise<ActionResult<components["schemas"]["Completion"]>> {
+  try {
+    const client = await assessmentClient("learner", true);
+    return { ok: true, value: await apiData(client.POST("/api/v1/attempts/{attempt_id}/submission", {
+      params: { path: { attempt_id: attemptId } }, body: {},
+    })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}

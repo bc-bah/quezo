@@ -108,20 +108,24 @@ def test_rollback_including_deferred_commit_failure(author: TestClient, database
     assert author.put(path(attempt), json=body, headers=headers(peer)).json()["acknowledgement"]["responseRevision"] == 1
 
 
-@pytest.mark.parametrize("terminal", ["finalized", "expired"])
+@pytest.mark.parametrize("terminal", ["submitted", "expired"])
 def test_terminal_replay_is_ack_only_and_live_authorized(
     author: TestClient, database: IsolatedDatabase, peer: SigningPeer, terminal: str,
 ) -> None:
-    attempt = opened(author, database, peer)
+    end = datetime.now(timezone.utc) + timedelta(seconds=3)
+    attempt = opened(author, database, peer, {"availabilityEnd": end.isoformat()} if terminal == "expired" else None)
     body = command(attempt["questions"][0])
     ack = author.put(path(attempt), json=body, headers=headers(peer)).json()["acknowledgement"]
-    with psycopg.connect(database.runtime_url) as connection:
-        connection.execute("UPDATE quezo.attempts SET state = %s WHERE id = %s", (terminal, attempt["id"]))
+    if terminal == "expired":
+        with psycopg.connect(database.runtime_url) as connection:
+            connection.execute("SELECT pg_sleep(greatest(0, extract(epoch FROM (%s - clock_timestamp()))) + 0.01)", (end,))
+    completed = author.post(f"/api/v1/attempts/{attempt['id']}/submission", json={}, headers=headers(peer))
+    assert completed.json()["completionReason"] == terminal
     replay = author.put(path(attempt), json=body, headers=headers(peer)).json()
-    assert replay["acknowledgement"] == ack and replay["attemptState"] == terminal
+    assert replay["acknowledgement"] == ack and replay["attemptState"] == "finalized"
     rejected = author.put(path(attempt), json=command(attempt["questions"][0], 1), headers=headers(peer))
     assert rejected.json()["code"] == "ATTEMPT_FINALIZED"
-    assert rejected.json()["details"]["attemptState"] == terminal
+    assert rejected.json()["details"]["attemptState"] == "finalized"
     seed_account(database, subject="other")
     seed_account(database, subject="admin", roles=("administrator",))
     assert author.put(path(attempt), json=body, headers=headers(peer, "other")).status_code == 404
@@ -175,7 +179,7 @@ def test_post_lock_deadline_and_ack_after_expiry(author: TestClient, database: I
     assert rejection["code"] == "DEADLINE_PASSED" and rejection["details"]["deadline"] == attempt["deadline"]
     assert datetime.fromisoformat(rejection["details"]["serverTime"]) >= end
     replay = author.put(path(attempt), json=body, headers=headers(peer)).json()
-    assert replay["acknowledgement"] == ack and replay["attemptState"] == "in_progress"
+    assert replay["acknowledgement"] == ack and replay["attemptState"] == "finalized"
     with psycopg.connect(database.runtime_url) as connection:
         assert connection.execute("SELECT count(*) FROM quezo.response_commands").fetchone() == (1,)
 
@@ -212,8 +216,9 @@ def test_queued_save_rechecks_authority_and_state(author: TestClient, database: 
             if revoke:
                 lock.execute("DELETE FROM quezo.account_roles WHERE account_id = (SELECT learner_id FROM quezo.attempts WHERE id = %s)", (attempt["id"],))
             else:
-                lock.execute("UPDATE quezo.attempts SET state = 'finalized' WHERE id = %s", (attempt["id"],))
-        assert pending.result().json()["code"] == ("FORBIDDEN" if revoke else "ATTEMPT_FINALIZED")
+                # The queued submit wins the parent before the save in D03's dedicated race tests.
+                lock.execute("UPDATE quezo.accounts SET status = 'disabled' WHERE id = (SELECT learner_id FROM quezo.attempts WHERE id = %s)", (attempt["id"],))
+        assert pending.result().json()["code"] == ("FORBIDDEN" if revoke else "ACCOUNT_DISABLED")
     with psycopg.connect(database.runtime_url) as connection:
         assert connection.execute("SELECT max(revision) FROM quezo.attempt_responses").fetchone() == (0,)
 

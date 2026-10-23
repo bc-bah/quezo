@@ -11,10 +11,12 @@ from test_identity_access import identity_client, peer
 from test_questions import author
 from test_attempts import assigned, headers
 from test_responses import opened, command, path
+from finalization_helpers import prior_schema_lifespan, submit
 
 
 @pytest.fixture
-def database(empty_database: IsolatedDatabase) -> Iterator[IsolatedDatabase]:
+def database(empty_database: IsolatedDatabase, monkeypatch: pytest.MonkeyPatch) -> Iterator[IsolatedDatabase]:
+    monkeypatch.setattr("quezo_api.app.expiration_lifespan", prior_schema_lifespan)
     run_migrations(empty_database.migration_url, "0007_attempt_start")
     yield empty_database
 
@@ -47,7 +49,7 @@ def test_prior_head_backfills_real_frozen_attempt(
     run_migrations(database.migration_url)
     run_migrations(database.migration_url)
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0008_responses",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0009_finalization",)
         assert connection.execute("SELECT * FROM quezo.attempt_questions ORDER BY id").fetchall() == snapshot
         assert connection.execute("SELECT revision, selected_option_id, saved_at FROM quezo.attempt_responses").fetchall() == [(0, None, None)] * 2
     attempt = author.get(f"/api/v1/attempts/{attempt_id}", headers=headers(peer))
@@ -90,7 +92,6 @@ def test_response_constraints_and_retained_private_ledger(
     # A valid-looking mutation still cannot commit without its acknowledgement.
     with pytest.raises(psycopg.errors.CheckViolation), psycopg.connect(database.runtime_url) as connection:
         connection.execute("UPDATE quezo.attempt_responses SET revision = revision + 1, saved_at = clock_timestamp() WHERE question_id = %s", (question_id,))
-    with psycopg.connect(database.runtime_url) as connection:
-        connection.execute("UPDATE quezo.attempts SET state = 'finalized' WHERE id = %s", (attempt["id"],))
+    assert submit(author, attempt, peer).status_code == 200
     with psycopg.connect(database.runtime_url) as connection, pytest.raises(psycopg.errors.CheckViolation):
         connection.execute("UPDATE quezo.attempt_responses SET revision = revision + 1, saved_at = clock_timestamp() WHERE question_id = %s", (question_id,))
