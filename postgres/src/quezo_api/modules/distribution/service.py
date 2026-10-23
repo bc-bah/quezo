@@ -41,7 +41,9 @@ async def get_assignment(
             "v.title, q.state AS quiz_state, v.policy, clock_timestamp() AS now, "
             "(SELECT count(*) FROM quezo.attempts t WHERE t.assignment_id = a.id) AS started, "
             "(SELECT count(*) FROM quezo.attempts t WHERE t.assignment_id = a.id AND t.state <> 'in_progress') AS completed, "
-            "(SELECT t.id FROM quezo.attempts t WHERE t.assignment_id = a.id AND t.state = 'in_progress') AS active "
+            "(SELECT t.id FROM quezo.attempts t WHERE t.assignment_id = a.id AND t.state = 'in_progress') AS active, "
+            "(SELECT t.id FROM quezo.attempts t WHERE t.assignment_id = a.id AND t.state = 'finalized' "
+            'ORDER BY t.attempt_number DESC LIMIT 1) AS "latestCompletedAttemptId" '
             "FROM quezo.assignments a JOIN quezo.quiz_versions v ON v.id = a.version_id "
             "JOIN quezo.quizzes q ON q.id = a.quiz_id WHERE a.id = %s AND "
             + ("q.owner_id = %s" if author else "a.learner_id = %s"),

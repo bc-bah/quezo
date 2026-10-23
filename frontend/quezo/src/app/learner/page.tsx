@@ -17,6 +17,12 @@ export default async function LearnerPage({ searchParams }: { searchParams: Prom
         <p>Started: {assignment.attemptsStarted}; completed: {assignment.attemptsCompleted};
           remaining: {assignment.attemptsRemaining ?? "unlimited"}</p>
         <StartAttempt assignment={assignment} />
+        {assignment.latestCompletedAttemptId && <div>
+          <p>Most recent completed attempt:</p>
+          <a href={`/learner/attempts/${assignment.latestCompletedAttemptId}`}>View completed attempt</a>
+          {" "}
+          <a href={`/learner/attempts/${assignment.latestCompletedAttemptId}/result`}>View result</a>
+        </div>}
       </section>)}
       {page.nextCursor && <a href={`/learner?cursor=${encodeURIComponent(page.nextCursor)}`}>Next assignments</a>}
     </main>;

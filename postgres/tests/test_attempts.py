@@ -48,6 +48,7 @@ def test_parallel_start_duplicate_and_finalized_replay(
     author: TestClient, database: IsolatedDatabase, peer: SigningPeer, same_key: bool,
 ) -> None:
     assignment, request = assigned(author, database, {"attemptLimit": 2})
+    assert assignment["latestCompletedAttemptId"] is None
     key = str(uuid4())
     keys = [key, key if same_key else str(uuid4())]
     with ThreadPoolExecutor(max_workers=2) as pool:
@@ -63,13 +64,19 @@ def test_parallel_start_duplicate_and_finalized_replay(
     assert all(result.status_code == 200 for result in duplicates)
     assert all(result.json()["attemptsStarted"] == 1 for result in duplicates)
     assert all(result.json()["id"] == assignment["id"] for result in duplicates)
+    assert all(result.json()["latestCompletedAttemptId"] is None for result in duplicates)
     with psycopg.connect(database.runtime_url) as connection:
         assert connection.execute("SELECT count(*) FROM quezo.attempts").fetchone() == (1,)
     assert author.post(f"/api/v1/attempts/{attempt['id']}/submission", json={}, headers=headers(peer)).status_code == 200
     summary = author.get("/api/v1/assignments/" + assignment["id"], headers=headers(peer)).json()
     assert summary["state"] == "completed_remaining" and summary["attemptsRemaining"] == 1
+    assert summary["latestCompletedAttemptId"] == attempt["id"]
     next_attempt = start(author, assignment, peer)
     assert next_attempt.status_code == 201 and next_attempt.json()["attemptNumber"] == 2
+    listing = author.get("/api/v1/assignments", headers=headers(peer)).json()["items"]
+    assert len(listing) == 1
+    assert listing[0]["activeAttemptId"] == next_attempt.json()["id"]
+    assert listing[0]["latestCompletedAttemptId"] == attempt["id"]
     for command in keys:
         replay = start(author, assignment, peer, command)
         assert replay.status_code == 200 and replay.json()["id"] == attempt["id"]
@@ -78,6 +85,7 @@ def test_parallel_start_duplicate_and_finalized_replay(
     assert start(author, assignment, peer).json()["code"] == "ATTEMPT_LIMIT_REACHED"
     summary = author.get("/api/v1/assignments/" + assignment["id"], headers=headers(peer)).json()
     assert summary["state"] == "exhausted" and summary["attemptsCompleted"] == 2
+    assert summary["latestCompletedAttemptId"] == next_attempt.json()["id"]
     assert author.post("/api/v1/assignments", json=request).json()["attemptsRemaining"] == 0
 
 

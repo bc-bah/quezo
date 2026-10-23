@@ -118,6 +118,15 @@ with `strict-ssl=false` or `NODE_TLS_REJECT_UNAUTHORIZED=0`.
 
 ### Host-run application processes
 
+In the learner workspace, **My assignments** includes **View completed attempt**
+and **View result** links for the most recent finalized attempt on each assignment,
+including submitted or expired attempts with no starts remaining. These links
+remain available while another attempt is in progress; **Resume attempt** still
+opens the active attempt. Results continue to honor the published release policy:
+navigation does not release withheld scores, answer keys or explanations. This
+is a return path for the latest completed attempt, not the deferred full attempt
+history/reporting workspace.
+
 For the C01 author workflow, migration and consumer contract, see
 [C01 versioned objective questions](#c01-versioned-objective-questions).
 For quiz composition and publication, see [C02](#c02-immutable-quiz-publication).

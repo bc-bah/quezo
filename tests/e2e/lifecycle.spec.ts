@@ -212,8 +212,16 @@ for (const preset of ["after_finalization", "never"] as const) {
       expect(presentation(await snapshot())).toEqual(presentation(initial));
       expect((await snapshot()).questions).toEqual(saved.questions);
 
-      await learner.getByRole("link", { name: "View result", exact: true }).click();
+      await learner.getByRole("link", { name: "My assignments", exact: true }).click();
+      const completedAssignment = learner.getByRole("region", { name: title, exact: true });
+      await expect(completedAssignment.getByRole("button", { name: "Start attempt", exact: true })).toHaveCount(0);
+      await completedAssignment.getByRole("link", { name: "View completed attempt", exact: true }).click();
+      await expect(learner).toHaveURL(attemptUrl);
+      await expect(learner.getByRole("heading", { name: "Submission confirmed", exact: true })).toBeVisible();
+      await learner.getByRole("link", { name: "My assignments", exact: true }).click();
+      await learner.getByRole("region", { name: title, exact: true }).getByRole("link", { name: "View result", exact: true }).click();
       const resultUrl = attemptUrl + "/result";
+      await expect(learner).toHaveURL(resultUrl);
       await expect(learner.getByRole("region", { name: "Score", exact: true })).toContainText(
         preset === "never" ? "Score withheld." : "5 / 7 points (71.4%)",
       );

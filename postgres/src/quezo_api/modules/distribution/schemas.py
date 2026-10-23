@@ -25,6 +25,6 @@ class Assignment(ApiModel):
     attempts_completed: NonNegativeInteger
     attempts_remaining: NonNegativeInteger | None
     active_attempt_id: PublicId | None
+    latest_completed_attempt_id: PublicId | None
     availability_start: UtcTimestamp | None
     availability_end: UtcTimestamp | None
-

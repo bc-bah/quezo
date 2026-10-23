@@ -442,6 +442,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Latestcompletedattemptid */
+            latestCompletedAttemptId: string | null;
             /**
              * Learnerid
              * Format: uuid

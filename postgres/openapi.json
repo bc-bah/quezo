@@ -159,6 +159,18 @@
             "title": "Id",
             "type": "string"
           },
+          "latestCompletedAttemptId": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latestcompletedattemptid"
+          },
           "learnerId": {
             "format": "uuid",
             "title": "Learnerid",
@@ -204,6 +216,7 @@
           "attemptsCompleted",
           "attemptsRemaining",
           "activeAttemptId",
+          "latestCompletedAttemptId",
           "availabilityStart",
           "availabilityEnd"
         ],
