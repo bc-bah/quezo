@@ -49,7 +49,7 @@ def test_prior_head_backfills_real_frozen_attempt(
     run_migrations(database.migration_url)
     run_migrations(database.migration_url)
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0009_finalization",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0010_author_workspace",)
         assert connection.execute("SELECT * FROM quezo.attempt_questions ORDER BY id").fetchall() == snapshot
         assert connection.execute("SELECT revision, selected_option_id, saved_at FROM quezo.attempt_responses").fetchall() == [(0, None, None)] * 2
     attempt = author.get(f"/api/v1/attempts/{attempt_id}", headers=headers(peer))

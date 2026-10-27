@@ -19,6 +19,8 @@ export function QuizError({ error }: { error: S["ErrorEnvelope"] | string | null
       {field.path.join(".")}: {field.reason.replaceAll("_", " ")}
     </p>)}
     <p>Reference: {error.requestId}</p>
+    {error.code === "DRAFT_REVISION_CONFLICT" && <button type="button"
+      onClick={() => window.location.reload()}>Reload saved draft (discard local edits)</button>}
   </div>;
 }
 
@@ -33,6 +35,8 @@ export function Composition({ quiz, initial, choices }: {
   const [laterPage, setLaterPage] = useState(false);
   const [questionId, setQuestionId] = useState("");
   const [versionId, setVersionId] = useState("");
+  const [filters, setFilters] = useState({ text: "", category: "", tag: "", bankId: "" });
+  const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<S["ErrorEnvelope"] | string | null>(null);
   const selected = body.questions ?? [];
@@ -56,7 +60,10 @@ export function Composition({ quiz, initial, choices }: {
   async function loadChoices(cursor: string | null) {
     setPending(true); setError(null);
     try {
-      const result = await availableQuestions(cursor);
+      const result = await availableQuestions(cursor, {
+        text: filters.text || null, category: filters.category || null,
+        tag: filters.tag || null, bankId: filters.bankId || null,
+      });
       if (!result.ok) { setError(result.error); return; }
       setAvailable(result.value);
       setLaterPage(cursor !== null);
@@ -70,6 +77,17 @@ export function Composition({ quiz, initial, choices }: {
       if (!result.ok) { setError(result.error); return; }
       add({ questionId: result.value.questionId, versionId: result.value.versionId, pointOverride: null });
     } catch { setError("The revision could not be loaded. Your draft is unchanged."); }
+    finally { setPending(false); }
+  }
+  async function updateVersion(index: number) {
+    setPending(true); setError(null); setNotice("");
+    try {
+      const result = await exactQuestion(selected[index]!.questionId);
+      if (!result.ok) { setError(result.error); return; }
+      setBody({ ...body, questions: selected.map((item, i) =>
+        i === index ? { ...item, versionId: result.value.versionId } : item) });
+      setNotice(`Question ${index + 1} explicitly selected revision ${result.value.revision}. Save the draft to retain this choice.`);
+    } catch { setError("The current revision could not be loaded. Your pinned selection is unchanged."); }
     finally { setPending(false); }
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -99,6 +117,7 @@ export function Composition({ quiz, initial, choices }: {
           Inspect selected question {index + 1}
         </a>
         <p>Question: <code>{item.questionId}</code>; pinned version: <code>{item.versionId}</code></p>
+        <button type="button" onClick={() => updateVersion(index)}>Use latest revision for question {index + 1}</button>
         <label>Point override for question {index + 1}<input type="number" min={0} max={10000} step={1}
           value={item.pointOverride ?? ""} onChange={(event) => setBody({ ...body, questions: selected.map((entry, i) =>
             i === index ? { ...entry, pointOverride: event.target.value === "" ? null : Number(event.target.value) } : entry) })} /></label>
@@ -110,6 +129,15 @@ export function Composition({ quiz, initial, choices }: {
         </button>
       </li>)}</ol>
       <h3>Available current revisions</h3>
+      <label>Selection search text<input maxLength={4000} value={filters.text}
+        onChange={(event) => setFilters({ ...filters, text: event.target.value })} /></label>
+      <label>Selection category<input maxLength={100} value={filters.category}
+        onChange={(event) => setFilters({ ...filters, category: event.target.value })} /></label>
+      <label>Selection tag<input maxLength={50} value={filters.tag}
+        onChange={(event) => setFilters({ ...filters, tag: event.target.value })} /></label>
+      <label>Selection bank ID<input value={filters.bankId}
+        onChange={(event) => setFilters({ ...filters, bankId: event.target.value })} /></label>
+      <button type="button" onClick={() => loadChoices(null)}>Search available questions</button>
       {available.items.length === 0 && <p>Create questions in your question banks first.</p>}
       <ul>{available.items.map((item) => <li key={item.questionId}>
         <p className="plain-text">{item.promptExcerpt}</p>
@@ -130,6 +158,6 @@ export function Composition({ quiz, initial, choices }: {
     </fieldset>
     <QuizError error={error} />
     <button disabled={pending}>{quiz ? "Save draft" : "Create quiz"}</button>
-    <p role="status">{pending ? "Working..." : ""}</p>
+    <p role="status">{pending ? "Working..." : notice}</p>
   </form>;
 }

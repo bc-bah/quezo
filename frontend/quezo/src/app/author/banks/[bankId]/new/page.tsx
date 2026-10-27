@@ -12,10 +12,10 @@ export default async function NewQuestionPage({ params }: { params: Promise<{ ba
     const bank = await apiData(client.GET("/api/v1/question-banks/{bank_id}", { params: { path: { bank_id: bankId } } }));
     const options = [{ id: randomUUID(), text: "" }, { id: randomUUID(), text: "" }];
     return <AuthorPage><h1>New question in {bank.name}</h1>
-      <QuestionForm bankId={bankId} initial={{
+      {bank.archived ? <p role="alert">This bank is archived. New questions cannot be created here.</p> : <QuestionForm bankId={bankId} initial={{
         questionType: "mcq", prompt: "", options, correctOptionId: options[0]!.id,
         defaultPoints: 1, feedback: "",
-      }} />
+      }} />}
     </AuthorPage>;
   } catch (error) { return <AuthorError error={error} />; }
 }

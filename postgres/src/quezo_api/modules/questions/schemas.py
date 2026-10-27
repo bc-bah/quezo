@@ -46,6 +46,34 @@ class BankWrite(ApiModel):
 
 class Bank(BankWrite):
     id: PublicId
+    archived: bool = False
+
+
+Category = Annotated[
+    StrictStr, Field(min_length=1, max_length=100),
+    AfterValidator(plain_text), AfterValidator(required_text),
+]
+Tag = Annotated[
+    StrictStr, Field(min_length=1, max_length=50),
+    AfterValidator(plain_text), AfterValidator(required_text),
+]
+
+
+class QuestionMetadata(ApiModel):
+    category: Category | None = None
+    tags: Annotated[list[Tag], Field(max_length=20)] = Field(default_factory=list)
+
+
+class Organization(QuestionMetadata):
+    question_id: PublicId
+    bank_id: PublicId
+    archived: bool
+    bank_archived: bool
+
+
+class QuestionMove(ApiModel):
+    bank_id: PublicId
+    expected_revision: Revision
 
 
 class Option(ApiModel):
@@ -73,11 +101,11 @@ class QuestionContent(ApiModel):
         return self
 
 
-class QuestionCreate(QuestionContent):
+class QuestionCreate(QuestionContent, QuestionMetadata):
     bank_id: PublicId
 
 
-class QuestionEdit(QuestionContent):
+class QuestionEdit(QuestionContent, QuestionMetadata):
     expected_revision: Revision
 
 
@@ -97,7 +125,19 @@ class QuestionSummary(ApiModel):
     question_type: QuestionType
     prompt_excerpt: Annotated[str, Field(max_length=120)]
     default_points: Points
+    category: Category | None = None
+    tags: Annotated[list[Tag], Field(max_length=20)] = Field(default_factory=list)
+    archived: bool = False
+    bank_archived: bool = False
 
 
 class QuestionListParams(PaginationParams):
     bank_id: PublicId | None = None
+    include_archived: bool = False
+    text: Annotated[str, Field(min_length=1, max_length=4000), AfterValidator(plain_text)] | None = None
+    category: Category | None = None
+    tag: Tag | None = None
+
+
+class BankListParams(PaginationParams):
+    include_archived: bool = False

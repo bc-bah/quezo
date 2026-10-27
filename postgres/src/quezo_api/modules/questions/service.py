@@ -7,8 +7,8 @@ from psycopg.types.json import Jsonb
 from quezo_api.errors import ApiError, ErrorCode
 from quezo_api.modules.identity.access import require_owner, require_role
 from quezo_api.modules.questions.schemas import (
-    Bank, BankWrite, QuestionContent, QuestionCreate, QuestionEdit,
-    QuestionListParams, QuestionSummary, QuestionVersion,
+    Bank, BankListParams, BankWrite, Organization, QuestionContent, QuestionCreate, QuestionEdit,
+    QuestionListParams, QuestionMove, QuestionSummary, QuestionVersion,
 )
 from quezo_api.schemas import Actor, Page, PaginationParams, Role
 
@@ -22,7 +22,7 @@ VERSION_FIELDS = """
 SUMMARY_FIELDS = """
     q.id AS "questionId", q.bank_id AS "bankId", v.id AS "versionId",
     v.revision, v.question_type AS "questionType", left(v.prompt, 120) AS "promptExcerpt",
-    v.default_points AS "defaultPoints"
+    v.default_points AS "defaultPoints", q.category, q.tags, q.archived, b.archived AS "bankArchived"
 """
 
 
@@ -42,7 +42,7 @@ async def get_bank(connection: Connection, actor: Actor, bank_id: UUID) -> Bank:
     require_role(actor, Role.AUTHOR)
     async with connection.cursor(row_factory=dict_row) as cursor:
         await cursor.execute(
-            "SELECT id, name FROM quezo.question_banks WHERE id = %s AND owner_id = %s",
+            "SELECT id, name, archived FROM quezo.question_banks WHERE id = %s AND owner_id = %s",
             (bank_id, actor.user_id),
         )
         row = await cursor.fetchone()
@@ -51,16 +51,16 @@ async def get_bank(connection: Connection, actor: Actor, bank_id: UUID) -> Bank:
     return Bank.model_validate(row)
 
 
-async def list_banks(connection: Connection, actor: Actor, page: PaginationParams) -> Page[Bank]:
+async def list_banks(connection: Connection, actor: Actor, page: BankListParams) -> Page[Bank]:
     require_role(actor, Role.AUTHOR)
     after = cursor_id(page.cursor)
     if after is not None:
         await get_bank(connection, actor, after)
     async with connection.cursor(row_factory=dict_row) as cursor:
         await cursor.execute(
-            "SELECT id, name FROM quezo.question_banks WHERE owner_id = %s AND NOT archived "
+            "SELECT id, name, archived FROM quezo.question_banks WHERE owner_id = %s AND (%s OR NOT archived) "
             "AND (%s::uuid IS NULL OR id > %s) ORDER BY id LIMIT %s",
-            (actor.user_id, after, after, page.page_size + 1),
+            (actor.user_id, page.include_archived, after, after, page.page_size + 1),
         )
         rows = await cursor.fetchall()
     items = [Bank.model_validate(row) for row in rows[:page.page_size]]
@@ -126,10 +126,14 @@ async def list_questions(
             " FROM quezo.questions q JOIN quezo.question_versions v "
             "ON (v.question_id, v.revision) = (q.id, q.revision) "
             "JOIN quezo.question_banks b ON b.id = q.bank_id "
-            "WHERE q.owner_id = %s AND NOT q.archived AND NOT b.archived "
+            "WHERE q.owner_id = %s AND (%s OR (NOT q.archived AND NOT b.archived)) "
             "AND (%s::uuid IS NULL OR q.bank_id = %s) "
+            "AND (%s::text IS NULL OR strpos(lower(v.prompt), lower(%s)) > 0) "
+            "AND (%s::text IS NULL OR q.category = %s) "
+            "AND (%s::text IS NULL OR %s = ANY(q.tags)) "
             "AND (%s::uuid IS NULL OR q.id > %s) ORDER BY q.id LIMIT %s",
-            (actor.user_id, page.bank_id, page.bank_id, after, after, page.page_size + 1),
+            (actor.user_id, page.include_archived, page.bank_id, page.bank_id, page.text, page.text,
+             page.category, page.category, page.tag, page.tag, after, after, page.page_size + 1),
         )
         rows = await cursor.fetchall()
     items = [QuestionSummary.model_validate(row) for row in rows[:page.page_size]]
@@ -151,6 +155,7 @@ async def list_versions(
         await cursor.execute(
             "SELECT " + SUMMARY_FIELDS +
             " FROM quezo.questions q JOIN quezo.question_versions v ON v.question_id = q.id "
+            "JOIN quezo.question_banks b ON b.id = q.bank_id "
             "WHERE q.id = %s AND q.owner_id = %s AND v.revision > %s "
             "ORDER BY v.revision, v.id LIMIT %s",
             (question_id, actor.user_id, revision, page.page_size + 1),
@@ -194,6 +199,11 @@ async def create_question(
         (question_id, body.bank_id, actor.user_id),
     )
     version_id = await insert_version(connection, question_id, 1, body)
+    if body.category is not None or body.tags:
+        await connection.execute(
+            "UPDATE quezo.questions SET category = %s, tags = %s WHERE id = %s",
+            (body.category, body.tags, question_id),
+        )
     return await get_question(connection, actor, question_id, version_id)
 
 
@@ -211,12 +221,87 @@ async def edit_question(
     assert row is not None
     if row[2] or row[1] == 2147483647:
         raise ApiError(ErrorCode.INVALID_STATE)
+    await require_selectable(connection, actor, question_id)
     if row[1] != body.expected_revision:
         raise ApiError(ErrorCode.DRAFT_REVISION_CONFLICT)
     revision = body.expected_revision + 1
     version_id = await insert_version(connection, question_id, revision, body)
     await connection.execute(
-        "UPDATE quezo.questions SET revision = %s WHERE id = %s AND owner_id = %s",
-        (revision, question_id, actor.user_id),
+        "UPDATE quezo.questions SET revision = %s, "
+        "category = CASE WHEN %s THEN %s ELSE category END, "
+        "tags = CASE WHEN %s THEN %s::text[] ELSE tags END WHERE id = %s AND owner_id = %s",
+        (revision, "category" in body.model_fields_set, body.category,
+         "tags" in body.model_fields_set, body.tags, question_id, actor.user_id),
     )
     return await get_question(connection, actor, question_id, version_id)
+
+
+async def get_organization(connection: Connection, actor: Actor, question_id: UUID) -> Organization:
+    require_role(actor, Role.AUTHOR)
+    async with connection.cursor(row_factory=dict_row) as cursor:
+        await cursor.execute(
+            'SELECT q.id AS "questionId", q.bank_id AS "bankId", q.archived, b.archived AS "bankArchived", q.category, q.tags '
+            "FROM quezo.questions q JOIN quezo.question_banks b ON b.id = q.bank_id "
+            "WHERE q.id = %s AND q.owner_id = %s AND b.owner_id = %s",
+            (question_id, actor.user_id, actor.user_id),
+        )
+        row = await cursor.fetchone()
+    if row is None:
+        raise ApiError(ErrorCode.NOT_FOUND)
+    return Organization.model_validate(row)
+
+
+async def require_selectable(connection: Connection, actor: Actor, question_id: UUID) -> None:
+    require_role(actor, Role.AUTHOR)
+    cursor = await connection.execute(
+        "SELECT bank_id, archived FROM quezo.questions WHERE id = %s AND owner_id = %s FOR SHARE",
+        (question_id, actor.user_id),
+    )
+    row = await cursor.fetchone()
+    if row is None:
+        raise ApiError(ErrorCode.NOT_FOUND)
+    bank = await connection.execute(
+        "SELECT archived FROM quezo.question_banks WHERE id = %s AND owner_id = %s FOR SHARE",
+        (row[0], actor.user_id),
+    )
+    if row[1] or await bank.fetchone() != (False,):
+        raise ApiError(ErrorCode.INVALID_STATE)
+
+
+async def archive_bank(connection: Connection, actor: Actor, bank_id: UUID) -> Bank:
+    await get_bank(connection, actor, bank_id)
+    await connection.execute(
+        "UPDATE quezo.question_banks SET archived = true WHERE id = %s AND owner_id = %s",
+        (bank_id, actor.user_id),
+    )
+    return await get_bank(connection, actor, bank_id)
+
+
+async def organize_question(
+    connection: Connection, actor: Actor, question_id: UUID, body: QuestionMove | None = None,
+) -> Organization:
+    require_role(actor, Role.AUTHOR)
+    cursor = await connection.execute(
+        "SELECT revision, archived FROM quezo.questions WHERE id = %s AND owner_id = %s FOR UPDATE",
+        (question_id, actor.user_id),
+    )
+    row = await cursor.fetchone()
+    if row is None:
+        raise ApiError(ErrorCode.NOT_FOUND)
+    if body is None:
+        await connection.execute("UPDATE quezo.questions SET archived = true WHERE id = %s", (question_id,))
+    else:
+        bank = await get_bank(connection, actor, body.bank_id)
+        if row[1] or bank.archived:
+            raise ApiError(ErrorCode.INVALID_STATE)
+        if row[0] != body.expected_revision:
+            raise ApiError(ErrorCode.DRAFT_REVISION_CONFLICT)
+        target = await connection.execute(
+            "SELECT archived FROM quezo.question_banks WHERE id = %s FOR SHARE", (body.bank_id,),
+        )
+        if await target.fetchone() != (False,):
+            raise ApiError(ErrorCode.INVALID_STATE)
+        await connection.execute(
+            "UPDATE quezo.questions SET bank_id = %s WHERE id = %s", (body.bank_id, question_id),
+        )
+    return await get_organization(connection, actor, question_id)

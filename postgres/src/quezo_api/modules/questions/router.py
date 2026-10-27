@@ -10,8 +10,8 @@ from quezo_api.modules.identity.access import get_identity, require_role, resolv
 from quezo_api.modules.identity.tokens import VerifiedIdentity
 from quezo_api.modules.questions import service
 from quezo_api.modules.questions.schemas import (
-    Bank, BankWrite, QuestionCreate, QuestionEdit, QuestionListParams,
-    QuestionSummary, QuestionVersion,
+    Bank, BankListParams, BankWrite, Organization, QuestionCreate, QuestionEdit, QuestionListParams,
+    QuestionMove, QuestionSummary, QuestionVersion,
 )
 from quezo_api.schemas import Actor, Page, PaginationParams, Role
 
@@ -43,7 +43,7 @@ Transaction = Annotated[tuple[service.Connection, Actor], Depends(author_transac
 
 
 @router.get("/question-banks")
-async def banks(tx: Transaction, page: Annotated[PaginationParams, Query()]) -> Page[Bank]:
+async def banks(tx: Transaction, page: Annotated[BankListParams, Query()]) -> Page[Bank]:
     return await service.list_banks(*tx, page)
 
 
@@ -60,6 +60,11 @@ async def bank(tx: Transaction, bank_id: UUID) -> Bank:
 @router.patch("/question-banks/{bank_id}")
 async def edit_bank(tx: Transaction, bank_id: UUID, body: BankWrite) -> Bank:
     return await service.write_bank(*tx, body, bank_id)
+
+
+@router.post("/question-banks/{bank_id}/archive")
+async def archive_bank(tx: Transaction, bank_id: UUID) -> Bank:
+    return await service.archive_bank(*tx, bank_id)
 
 
 @router.get("/questions")
@@ -80,6 +85,21 @@ async def question(tx: Transaction, question_id: UUID) -> QuestionVersion:
 @router.patch("/questions/{question_id}")
 async def edit_question(tx: Transaction, question_id: UUID, body: QuestionEdit) -> QuestionVersion:
     return await service.edit_question(*tx, question_id, body)
+
+
+@router.get("/questions/{question_id}/organization")
+async def organization(tx: Transaction, question_id: UUID) -> Organization:
+    return await service.get_organization(*tx, question_id)
+
+
+@router.post("/questions/{question_id}/move")
+async def move(tx: Transaction, question_id: UUID, body: QuestionMove) -> Organization:
+    return await service.organize_question(*tx, question_id, body)
+
+
+@router.post("/questions/{question_id}/archive")
+async def archive_question(tx: Transaction, question_id: UUID) -> Organization:
+    return await service.organize_question(*tx, question_id)
 
 
 @router.get("/questions/{question_id}/versions")

@@ -173,7 +173,9 @@ def test_validation_failure_rollback_and_unsupported_commands(author: TestClient
     body["questions"][0]["pointOverride"] = 1
     valid = create(author, body)
     path = f"/api/v1/quizzes/{valid['id']}"
-    for command in ["close", "archive", "reopen", "start", "submission"]:
+    for command in ["close", "archive"]:
+        assert author.post(path + "/" + command, json={}).status_code == 422
+    for command in ["duplicate", "reopen", "start", "submission"]:
         assert author.post(path + "/" + command, json={}).status_code == 404
     for header in [{}, {"Idempotency-Key": "invalid"}]:
         assert author.post(path + "/publish", json={"expectedRevision": 1}, headers=header).status_code == 422

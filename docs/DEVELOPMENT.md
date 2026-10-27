@@ -1059,6 +1059,137 @@ with a forward migration, and wires overdue-read/write reconciliation without
 changing attempt deadlines or retained start mappings. These consumers still
 require B.C.'s D01 acceptance and integration; no successor is authorized here.
 
+## C03 complete author workspace
+
+**Assignment:** B.C. confirmed integration/review ownership on 27 October 2026
+and confirmed D04 is unassigned. C03 has the exclusive shared editor/assembly,
+generated-contract and next-migration window. Branch
+`feature/c03-author-workspace` starts at integrated dev `354da49`, which contains
+T01 merge `df06ccc`; the input migration head was `0009_finalization`.
+This is implementation evidence for review, not tracker acceptance, a deployment
+approval or a claim that the entire acceptance catalogue is complete.
+
+### Organization and reuse
+
+Use **Question banks** to create/rename banks and **Search questions** to search
+all owned questions. Bank pages provide the same search within that bank.
+Prompt text uses a case-insensitive literal substring, not wildcard or regular
+expression matching. Category and tag filters are exact and can be combined with
+text/bank filters. All filters survive bounded, stable UUID-cursor pagination.
+Category is optional (1-100 characters when supplied); each of up to 20 tags is
+1-50 characters. These are current question-organization metadata, not learner
+content or retroactive additions to immutable question/publication/attempt
+snapshots. Question content edits still create immutable revisions. Omitting
+metadata in a direct edit preserves it; explicit null category/empty tags clear it.
+
+The question page moves a question to another active owned bank without changing
+question/version identity. Destination-bank choices are paginated. An unarchived
+question may be moved out of an archived bank; an individually archived question
+is read-only. Bank/question archive requires UI acknowledgement explaining retained
+history. Default lists/search and the quiz selector exclude individually archived
+questions and every question in an archived bank. Explicit **Include archived**
+management views retain inspection links; they do not make that content selectable.
+Archive is the approved removal operation; no destructive delete/restore command
+is introduced.
+
+The composition selector supports bank/text/category/tag filtering and pagination,
+reuse in multiple quizzes, exact historical revision IDs and explicit **Use latest
+revision** per selected question. That button changes only the local draft pin
+until save; ordinary question edits never update pins silently. New selections
+are rechecked under question/bank share locks by the authoring module, including
+direct service calls. Archived content cannot be newly inserted through a forged
+exact revision. An already-retained exact pin can still be saved, previewed and
+published after its source is archived; changing its version or selecting it in a
+new quiz is a new selection and is rejected. Existing publications are never
+rewritten.
+
+### Draft and publication lifecycle
+
+The quiz route owns the editor wrapper and integrates the unchanged D04 policy
+subview. It shows paginated immutable publication history with exact version links.
+Revision-draft creation remains explicit while the current publication stays live.
+Save, preview and publication use expected draft revision; stale tabs retain local
+edits, show the conflict and offer an explicit reload/discard action. Publication
+continues to use the retained idempotency command and immutable snapshots.
+
+Close serializes on the same quiz row used by draft/publication commands and new
+attempt admission. It blocks starts across all publications, freezes any pending
+draft and preserves existing attempts' deadlines/resume/finalization. Archive
+accepts a never-published draft or a closed quiz with no persisted in-progress
+attempts. It rejects published-to-archive, reopening and all archived/closed edits
+or publication. Both controls explain history retention; archived quizzes remain
+available in an explicit management view and publication detail stays accessible.
+The preview still uses the learner-safe projection and creates no assignment,
+attempt, grade or reporting records. No D04 policy controls were added.
+
+### Contracts, data and acceptance evidence
+
+New routes: bank archive; question organization read/move/archive; publication
+history; quiz close/archive. Existing bank/question/quiz lists gain archive
+visibility parameters; question search adds `text`, `category` and `tag`.
+The generated OpenAPI and TypeScript client remain authoritative. Author-role
+and ownership checks apply before lists/search, cursor resolution, nested IDs
+and direct service operations. Foreign resources are 404; non-author roles are
+403, including administrator-only actors.
+
+`0010_author_workspace` follows the actual `0009_finalization` head and adds
+nullable category and bounded tag-array columns to stable questions, with
+independent database checks. It changes no immutable-version schema, publication
+trigger, attempt, response, grade or command ledger. Clean/upgrade/repeat-head and
+failed-upgrade rollback checks use disposable PostgreSQL. Existing applied
+revisions are unchanged. Recovery is forward-only and must preserve the existing
+history/ledgers; do not delete development volumes or rewrite an applied revision.
+
+| Catalogue scenarios | Inherited from accepted T01 inputs | New C03 evidence | Remaining boundary |
+| --- | --- | --- | --- |
+| AT-03: both question types, input bounds, ownership | C01 question schema/persistence tests and real-browser creation/edit/bounds/foreign-author cases | `postgres/tests/test_author_workspace.py`: metadata lower/upper/invalid bounds, combined literal/category/tag search, pagination, move/archive, role/nested-ID/direct-service checks; `tests/e2e/author-workspace.spec.ts`: native metadata/search/page/move/archive and real foreign-author denial | Browser metadata-bound combinations are representative, not every boundary permutation; exhaustive new bounds are HTTP/database tests |
+| AT-04: reuse, new revisions, unchanged publications/attempts/grades | C02 reuse/immutable-publication tests and T01 frozen-attempt/finalization/result cases | C03 tests explicitly update one draft pin, retain the other quiz/publication, change prompt/key/points/feedback, archive sources/quiz, and compare stored private attempt snapshots, old publication and finalized result/grade records | No regrade, reset or duplicate-quiz command |
+| AT-05: draft/preview/publish, stale conflict, publish replay, invalid states, no preview side effects | C02 CAS/concurrent publish/replay, learner-safe preview and zero assignment/attempt/grade side-effect assertions; C02 real stale-tab/outage UI tests | C03 persistence tests cover close/draft race, stale close, frozen pending revision, invalid transitions, active-attempt archive rejection, resume/finalize after close, unpublished abandonment and retained publication history; C03 browser journey covers explicit update/preview/history/close/rejected archive/final archive | Advanced delivery-policy editing and timed preview/accessibility remain D04/DEC-09; this package makes no blanket full-AT or Q02 accessibility acceptance claim |
+
+Focused checks during implementation use the guarded isolated PostgreSQL helpers
+and `npm run test:e2e -- --grep C03`. The common application/browser gate is
+`npm run test:e2e -- --checks`; run outcomes are recorded at handoff. The browser
+suite uses actual Keycloak sign-in, server sessions, JWT/JWKS validation, the
+production Next build and restricted PostgreSQL, not injected actors or API
+response substitutes. The Python HTTP tests use real JWT verification/persistence
+with the existing controlled signing-peer transport; they are not independent
+real-provider evidence.
+
+**Executed checks, 27 October 2026:** Windows, Node 24.20.0, Python 3.12.10,
+uv 0.12.17, PostgreSQL 17.11, Chromium 156.0.8078.4 and the locked Playwright
+1.64.1. All database/browser services were newly owned disposable services;
+the launchers removed them and their networks without touching development data.
+
+| Command | Outcome |
+| --- | --- |
+| `npm run api:generate` / `npm run api:check` | Passed; OpenAPI and TypeScript client are current |
+| `npm run typecheck` | Passed: Next/TypeScript, strict mypy (87 sources), browser TypeScript |
+| `python -m pytest --tb=short tests\test_author_workspace.py` (from `postgres`, `PYTHONPATH=src`, owned isolated test database supplied by the existing helpers) | 19 passed in 103.87 seconds; includes current-head upgrade, repeat head, failed-upgrade rollback and independent database bounds |
+| `npm run test:contracts` | 88 Python cases and 2 Node contract-tool cases passed |
+| `npm run test:web:production` (owned isolated database) | 1 built-Next HTTP/database/OIDC-peer case passed |
+| `npm run test:e2e` | Production build and all 36 real-provider browser cases passed; zero failures, skips or interruptions, including all 3 new C03 cases and inherited C01/C02/T01 cases |
+| `uv run --directory postgres --locked alembic heads` | Single head `0010_author_workspace` |
+| `git diff --check` | Passed |
+
+The attempted umbrella `npm run test:e2e -- --checks` passed type checking and
+12 web unit cases, then its full Python run reported **665 passed, 2 failed**
+in 1081.88 seconds. Both failures were the HTTP contract test's old exact route
+inventory, not application/persistence failures. The inventory was updated for
+the delivered C03 routes; the subsequent 88-case contract run above passed both
+variants. The focused C03 persistence checks and complete production/browser suite
+were then rerun successfully. The umbrella launcher itself was **not rerun to a
+green end-to-end exit**, and its later duplicate database/identity command stages
+are not claimed as separately executed. Earlier focused runs also caught a stale
+unsupported-command assertion and an ambiguous browser status locator; both were
+corrected before the successful results above. No hosted CI or additional runtime
+matrix result is claimed.
+
+Excluded scope remains duplicate quiz, pool selection, imports, rich media,
+D04 policy controls and unrelated reporting/account administration. B.C. must
+serialize any later migration after `0010_author_workspace` and integrate D04's
+settings through the single quiz-route owner. No commit/PR, successor dispatch or
+tracker acceptance is performed by C03.
+
 ## C02 immutable quiz publication
 
 ### Acceptance record: 21 October 2026

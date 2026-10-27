@@ -60,6 +60,7 @@ For a focused regression or the repeatable working-foundations demonstration:
 ```powershell
 npm run test:e2e -- --grep "native login|negative control"
 npm run test:e2e -- --grep "native login|navigation|persisted session"
+npm run test:e2e -- --grep C03
 ```
 
 Filtered runs are not complete AT-01 evidence. The `browser` CI job runs the
@@ -86,7 +87,7 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0009_finalization`, and calls I01's allowlisted
+Next, migrates a fresh database to `0010_author_workspace`, and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.
@@ -117,6 +118,24 @@ docker network rm <owned-project>_default
 
 Never use volume deletion, broad process-name termination, or drop a caller-supplied
 database. The normally completed command leaves no services running.
+
+## C03 author workspace evidence
+
+`author-workspace.spec.ts` adds native bank/question organization, category/tag/text
+search and pagination, owned-bank movement and explicit archive/history views.
+Its composition journey reuses a revision in two quizzes, explicitly updates only
+one draft pin, previews/publishes it, inspects publication history, closes a quiz,
+observes rejection of archive while an actual attempt is active, finalizes and
+archives without changing frozen private questions, publications or results.
+Another real author is denied discovery and direct organization/lifecycle writes,
+including protected HTML/RSC routes. Tokens come only from the actual signed-in
+server session, not a password grant or injected browser identity.
+
+These extend, not replace, C01/C02 and T01 cases for both question types, bounds,
+stale editor/replay, safe preview/no side effects and historical finalization.
+See the [C03 evidence map](../../docs/DEVELOPMENT.md#c03-complete-author-workspace)
+for inherited/new/partial/out-of-package catalogue scenarios. A filtered C03 run
+alone is not full AT-03/04/05 acceptance or D04/Q02 readiness.
 
 ## Acceptance scenarios
 

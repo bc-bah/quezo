@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { components } from "../../lib/api/schema";
-import { createQuestion, editQuestion, saveBank } from "./actions";
+import { archiveBank, availableBanks, createQuestion, editQuestion, organizeQuestion, saveBank } from "./actions";
 
 type Schemas = components["schemas"];
 type Content = Omit<Schemas["QuestionCreate"], "bankId">;
@@ -20,6 +20,8 @@ function FormError({ error }: { error: ErrorEnvelope | string | null }) {
       {field.path.join(".")}: {field.reason.replaceAll("_", " ")}
     </p>)}
     <p>Reference: {error.requestId}</p>
+    {error.code === "DRAFT_REVISION_CONFLICT" && <button type="button"
+      onClick={() => window.location.reload()}>Reload current question (discard local edits)</button>}
   </div>;
 }
 
@@ -100,6 +102,19 @@ export function QuestionForm({ bankId, initial, current }: {
         onChange={(event) => setBody({ ...body, prompt: event.target.value })} />
       <label>Default points<input type="number" min={0} max={10000} step={1} value={points} required
         onChange={(event) => setPoints(event.target.value)} /></label>
+      <label>Category<input maxLength={100} value={body.category ?? ""}
+        onChange={(event) => setBody({ ...body, category: event.target.value || null })} /></label>
+      <fieldset><legend>Tags</legend>
+        {(body.tags ?? []).map((tag, index) => <div key={index}>
+          <label>Tag {index + 1}<input required maxLength={50} value={tag}
+            onChange={(event) => setBody({ ...body, tags: (body.tags ?? []).map((item, i) =>
+              i === index ? event.target.value : item) })} /></label>
+          <button type="button" onClick={() => setBody({ ...body,
+            tags: (body.tags ?? []).filter((_, i) => i !== index) })}>Remove tag {index + 1}</button>
+        </div>)}
+        <button type="button" disabled={(body.tags ?? []).length >= 20}
+          onClick={() => setBody({ ...body, tags: [...(body.tags ?? []), ""] })}>Add tag</button>
+      </fieldset>
       <fieldset>
         <legend>Choices and one correct answer</legend>
         {body.options.map((option, index) => <div key={option.id} className="question-option">
@@ -128,4 +143,68 @@ export function QuestionForm({ bankId, initial, current }: {
     <button disabled={pending}>{current ? "Save new revision" : "Create question"}</button>
     <p role="status">{pending ? "Saving question..." : ""}</p>
   </form>;
+}
+
+export function OrganizationControls({ bank, question, organization, banks }: {
+  bank?: Schemas["Bank"]; question?: Schemas["QuestionVersion"];
+  organization?: Schemas["Organization"]; banks?: Schemas["Page_Bank_"];
+}) {
+  const router = useRouter();
+  const [choices, setChoices] = useState(banks);
+  const [target, setTarget] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<ErrorEnvelope | string | null>(null);
+  async function archive() {
+    setPending(true); setError(null);
+    try {
+      const result = bank ? await archiveBank(bank.id) : await organizeQuestion(question!.questionId);
+      if (!result.ok) { setError(result.error); return; }
+      router.refresh();
+    } catch { setError("Archive could not be confirmed. Reload to inspect the saved state."); }
+    finally { setPending(false); }
+  }
+  async function move() {
+    setPending(true); setError(null);
+    try {
+      const result = await organizeQuestion(question!.questionId, {
+        bankId: target, expectedRevision: question!.revision,
+      });
+      if (!result.ok) { setError(result.error); return; }
+      router.refresh();
+    } catch { setError("Move could not be confirmed. Reload to inspect the saved bank."); }
+    finally { setPending(false); }
+  }
+  async function load(cursor: string | null) {
+    setPending(true); setError(null);
+    try {
+      const result = await availableBanks(cursor);
+      if (!result.ok) { setError(result.error); return; }
+      setChoices(result.value); setTarget("");
+    } catch { setError("Banks could not be loaded. The question has not been moved."); }
+    finally { setPending(false); }
+  }
+  const archived = bank?.archived || organization?.archived;
+  return <section><h2>Organization</h2>
+    <p>Archiving excludes content from new selection. Existing drafts, publications, assignments and attempts retain their pinned history.
+      Archiving a bank also excludes its questions from search and new selection.</p>
+    {archived ? <p>This {bank ? "bank" : "question"} is archived and read-only.</p> : <>
+      {question && choices && <fieldset disabled={pending}>
+        <legend>Move between owned banks without changing question identity</legend>
+        <label>Destination bank<select value={target} onChange={(event) => setTarget(event.target.value)}>
+          <option value="">Select a bank</option>
+          {choices.items.filter((item) => item.id !== question.bankId).map((item) =>
+            <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select></label>
+        {choices.nextCursor && <button type="button" onClick={() => load(choices.nextCursor)}>Next destination banks</button>}
+        <button type="button" onClick={() => load(null)}>First destination banks</button>
+        <button type="button" disabled={!target} onClick={move}>Move question</button>
+      </fieldset>}
+      <label><input type="checkbox" checked={confirmed} disabled={pending}
+        onChange={(event) => setConfirmed(event.target.checked)} /> I understand history is retained when archiving</label>
+      <button type="button" disabled={pending || !confirmed} onClick={archive}>Archive {bank ? "bank" : "question"}</button>
+    </>}
+    <FormError error={error} />
+    <p role="status">{pending ? "Working..." : ""}</p>
+  </section>;
 }

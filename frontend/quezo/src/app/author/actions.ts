@@ -45,4 +45,38 @@ export async function editQuestion(
   } catch (error) {
     return { ok: false, error: publicError(error).envelope };
   }
+
+}
+
+export async function archiveBank(id: string): Promise<ActionResult<Schemas["Bank"]>> {
+  try {
+    const client = await questionClient(true);
+    return { ok: true, value: await apiData(client.POST("/api/v1/question-banks/{bank_id}/archive", {
+      params: { path: { bank_id: id } },
+    })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
+
+export async function organizeQuestion(id: string, move?: Schemas["QuestionMove"]):
+Promise<ActionResult<Schemas["Organization"]>> {
+  try {
+    const client = await questionClient(true);
+    const value = move
+      ? await apiData(client.POST("/api/v1/questions/{question_id}/move", {
+        params: { path: { question_id: id } }, body: move,
+      }))
+      : await apiData(client.POST("/api/v1/questions/{question_id}/archive", {
+        params: { path: { question_id: id } },
+      }));
+    return { ok: true, value };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
+}
+
+export async function availableBanks(cursor: string | null): Promise<ActionResult<Schemas["Page_Bank_"]>> {
+  try {
+    const client = await questionClient();
+    return { ok: true, value: await apiData(client.GET("/api/v1/question-banks", {
+      params: { query: { cursor } },
+    })) };
+  } catch (error) { return { ok: false, error: publicError(error).envelope }; }
 }

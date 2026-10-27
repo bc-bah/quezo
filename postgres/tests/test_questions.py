@@ -192,7 +192,7 @@ def test_pagination_bank_edit_and_strict_http(author: TestClient, caplog: pytest
     assert [item["id"] for item in page["items"]] == banks[:2]
     assert page["nextCursor"] == banks[1]
     assert author.get("/api/v1/question-banks", params={"cursor": banks[1]}).json() == {
-        "items": [{"id": banks[2], "name": "Synthetic bank"}], "nextCursor": None,
+        "items": [{"id": banks[2], "name": "Synthetic bank", "archived": False}], "nextCursor": None,
     }
     assert author.patch(f"/api/v1/question-banks/{banks[0]}", json={"name": "Renamed"}).status_code == 200
     assert author.get(f"/api/v1/question-banks/{banks[0]}").json()["name"] == "Renamed"
@@ -214,4 +214,4 @@ def test_pagination_bank_edit_and_strict_http(author: TestClient, caplog: pytest
     assert response.status_code == 422
     assert sentinel not in response.text + caplog.text
     assert author.post("/api/v1/questions", json={**content(), "bankId": str(uuid4())}).status_code == 404
-    assert author.post(f"/api/v1/questions/{ids[0]}/archive").status_code == 404
+    assert author.post(f"/api/v1/questions/{ids[0]}/archive").status_code == 200

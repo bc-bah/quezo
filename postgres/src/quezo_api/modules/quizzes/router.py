@@ -11,7 +11,7 @@ from quezo_api.modules.identity.tokens import VerifiedIdentity
 from quezo_api.modules.quizzes import service
 from quezo_api.modules.quizzes.schemas import (
     DraftCommand, DraftEdit, PublishedQuiz, PublishAcknowledgement, Quiz,
-    QuizComposition, QuizPreview, QuizSummary,
+    PublicationSummary, QuizComposition, QuizListParams, QuizPreview, QuizSummary,
 )
 from quezo_api.schemas import Actor, Page, PaginationParams, Role
 
@@ -41,7 +41,7 @@ Transaction = Annotated[tuple[service.Connection, Actor], Depends(author_transac
 
 
 @router.get("")
-async def quizzes(tx: Transaction, page: Annotated[PaginationParams, Query()]) -> Page[QuizSummary]:
+async def quizzes(tx: Transaction, page: Annotated[QuizListParams, Query()]) -> Page[QuizSummary]:
     return await service.list_quizzes(*tx, page)
 
 
@@ -85,3 +85,20 @@ async def publish(
 @router.get("/{quiz_id}/versions/{version_id}")
 async def version(tx: Transaction, quiz_id: UUID, version_id: UUID) -> PublishedQuiz:
     return await service.get_version(*tx, quiz_id, version_id)
+
+
+@router.get("/{quiz_id}/versions")
+async def versions(
+    tx: Transaction, quiz_id: UUID, page: Annotated[PaginationParams, Query()],
+) -> Page[PublicationSummary]:
+    return await service.list_publications(*tx, quiz_id, page)
+
+
+@router.post("/{quiz_id}/close")
+async def close(tx: Transaction, quiz_id: UUID, body: DraftCommand) -> Quiz:
+    return await service.transition(*tx, quiz_id, body, "closed")
+
+
+@router.post("/{quiz_id}/archive")
+async def archive(tx: Transaction, quiz_id: UUID, body: DraftCommand) -> Quiz:
+    return await service.transition(*tx, quiz_id, body, "archived")

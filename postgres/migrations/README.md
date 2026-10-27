@@ -21,6 +21,7 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0007_attempt_start` | `0006_quizzes` | Unique pinned assignments, numbered attempts, frozen private/presentation snapshots and retained start command mappings |
 | `0008_responses` | `0007_attempt_start` | Revision-zero responses, response CAS constraints and retained save acknowledgement ledger |
 | `0009_finalization` | `0008_responses` | Atomic completion reason/time, one immutable Grade and item results, minimal completion event |
+| `0010_author_workspace` | `0009_finalization` | Current question category/tags with database bounds; no immutable content/history changes |
 
 Only `public.alembic_version` records migration state. C01 adds question tables;
 C02 adds quiz publication, acknowledgement and publication-event tables, but no
@@ -41,10 +42,29 @@ I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
+### C03 author organization storage
+
+The current head is `0010_author_workspace`, appended after the verified
+`0009_finalization` integration baseline under B.C.'s exclusive C03 migration
+window. It adds nullable `questions.category` (1-100 characters when supplied)
+and `questions.tags` (0-20 non-null tags, each 1-50 characters), using the existing
+plain-text validation plus a checked array-validation function.
+Existing questions get null category/empty tags. These are mutable organization
+metadata on stable questions, not changes to immutable versions or snapshots.
+All existing ownership FKs, immutability triggers and runtime/web privileges remain.
+
+The C03 tests exercise actual `0009_finalization -> head`, repeat-head execution,
+independent constraint failures and atomic failed-DDL rollback. Existing migration
+tests also retain clean-database and earlier-head upgrades with frozen publications,
+attempts, saves and ledgers. No applied revision is edited. Production/development
+databases are not migrated by tests; use the existing restricted migrator after
+integration review. Failure before commit leaves the old head; an applied
+correction requires a new forward revision, never an edited applied migration.
+
 ### D03 finalization storage
 
 R01 reads this accepted storage through policy-filtered projections; it adds no
-migration, result database or Grade writer. Head remains `0009_finalization`.
+migration, result database or Grade writer. Its integration head was `0009_finalization`.
 Its overdue-result read reuses D03's atomic finalizer and existing recovery rules.
 The web role still has no assessment-table access.
 

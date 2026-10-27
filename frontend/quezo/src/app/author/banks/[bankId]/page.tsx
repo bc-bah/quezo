@@ -1,25 +1,25 @@
 import { apiData, questionClient } from "../../../../lib/server/questions";
-import { BankForm } from "../../forms";
-import { AuthorError, AuthorPage, QuestionList } from "../../shared";
+import { BankForm, OrganizationControls } from "../../forms";
+import { AuthorError, AuthorPage } from "../../shared";
+import { SearchResults, type SearchParams } from "../../search";
 
 export const dynamic = "force-dynamic";
 
 export default async function BankPage({ params, searchParams }: {
-  params: Promise<{ bankId: string }>; searchParams: Promise<{ cursor?: string }>;
+  params: Promise<{ bankId: string }>; searchParams: Promise<SearchParams>;
 }) {
   try {
     const { bankId } = await params;
-    const { cursor } = await searchParams;
+    const values = await searchParams;
     const client = await questionClient();
-    const [bank, questions] = await Promise.all([
-      apiData(client.GET("/api/v1/question-banks/{bank_id}", { params: { path: { bank_id: bankId } } })),
-      apiData(client.GET("/api/v1/questions", { params: { query: { bankId, cursor: cursor ?? null } } })),
-    ]);
+    const bank = await apiData(client.GET("/api/v1/question-banks/{bank_id}", { params: { path: { bank_id: bankId } } }));
     return <AuthorPage><h1>{bank.name}</h1>
-      <a href={`/author/banks/${bankId}/new`}>Create question</a>
-      <QuestionList items={questions.items} />
-      {questions.nextCursor && <a href={`/author/banks/${bankId}?cursor=${encodeURIComponent(questions.nextCursor)}`}>Next questions</a>}
-      <BankForm bank={bank} />
+      {!bank.archived && <>
+        <a href={`/author/banks/${bankId}/new`}>Create question</a>
+        <BankForm bank={bank} />
+      </>}
+      {await SearchResults({ values: bank.archived ? { ...values, includeArchived: "true" } : values, bankId })}
+      <OrganizationControls bank={bank} />
     </AuthorPage>;
   } catch (error) { return <AuthorError error={error} />; }
 }

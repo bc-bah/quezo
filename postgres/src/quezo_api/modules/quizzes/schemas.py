@@ -6,7 +6,7 @@ from quezo_api.modules.questions.schemas import (
     Option, Points, Prompt, QuestionType, QuestionVersion, Revision, plain_text, required_text,
 )
 from quezo_api.modules.quizzes.policies import QuizPolicy
-from quezo_api.schemas import ApiModel, PublicId, UtcTimestamp
+from quezo_api.schemas import ApiModel, PaginationParams, PublicId, UtcTimestamp
 
 Title = Annotated[
     StrictStr, Field(min_length=1, max_length=200),
@@ -54,6 +54,19 @@ class QuizSummary(ApiModel):
 
 class Quiz(QuizSummary):
     draft: QuizComposition | None
+
+
+class QuizListParams(PaginationParams):
+    include_archived: bool = False
+
+
+class PublicationSummary(ApiModel):
+    id: PublicId
+    quiz_id: PublicId
+    draft_revision: Revision
+    title: Title
+    possible_points: Annotated[StrictInt, Field(gt=0, le=2000000)]
+    published_at: UtcTimestamp
 
 
 class PublishedQuestion(ApiModel):

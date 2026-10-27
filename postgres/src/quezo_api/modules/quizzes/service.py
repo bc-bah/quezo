@@ -13,7 +13,7 @@ from quezo_api.modules.questions.schemas import QuestionVersion
 from quezo_api.modules.quizzes.policies import QuizPolicy
 from quezo_api.modules.quizzes.schemas import (
     DraftCommand, DraftEdit, PublishedQuestion, PublishedQuiz, PublishAcknowledgement,
-    Quiz, QuizComposition, QuizPreview, QuizSummary,
+    PublicationSummary, Quiz, QuizComposition, QuizListParams, QuizPreview, QuizSummary,
 )
 from quezo_api.schemas import Actor, Page, PaginationParams, Role
 
@@ -35,7 +35,7 @@ async def get_quiz(connection: Connection, actor: Actor, quiz_id: UUID, *, lock:
     return Quiz.model_validate(row)
 
 
-async def list_quizzes(connection: Connection, actor: Actor, page: PaginationParams) -> Page[QuizSummary]:
+async def list_quizzes(connection: Connection, actor: Actor, page: QuizListParams) -> Page[QuizSummary]:
     require_role(actor, Role.AUTHOR)
     after = questions.cursor_id(page.cursor)
     if after is not None:
@@ -44,9 +44,10 @@ async def list_quizzes(connection: Connection, actor: Actor, page: PaginationPar
         await cursor.execute(
             'SELECT id, title, state, draft_revision AS "draftRevision", '
             'draft IS NOT NULL AS "hasDraft", published_version_id AS "publishedVersionId" '
-            "FROM quezo.quizzes WHERE owner_id = %s AND (%s::uuid IS NULL OR id > %s) "
+            "FROM quezo.quizzes WHERE owner_id = %s AND (%s OR state <> 'archived') "
+            "AND (%s::uuid IS NULL OR id > %s) "
             "ORDER BY id LIMIT %s",
-            (actor.user_id, after, after, page.page_size + 1),
+            (actor.user_id, page.include_archived, after, after, page.page_size + 1),
         )
         rows = await cursor.fetchall()
     items = [QuizSummary.model_validate(row) for row in rows[:page.page_size]]
@@ -57,9 +58,13 @@ async def list_quizzes(connection: Connection, actor: Actor, page: PaginationPar
 
 async def selected_questions(
     connection: Connection, actor: Actor, body: QuizComposition,
+    retained: QuizComposition | None = None,
 ) -> list[PublishedQuestion]:
+    existing = {(item.question_id, item.version_id) for item in retained.questions} if retained else set()
     result = []
     for position, selection in enumerate(body.questions, 1):
+        if (selection.question_id, selection.version_id) not in existing:
+            await questions.require_selectable(connection, actor, selection.question_id)
         question = await questions.get_question(connection, actor, selection.question_id, selection.version_id)
         result.append(PublishedQuestion.model_validate({
             "position": position, "question": question, "pointOverride": selection.point_override,
@@ -92,7 +97,7 @@ async def edit_draft(connection: Connection, actor: Actor, quiz_id: UUID, body: 
     if quiz.draft is None or quiz.draft_revision == 2147483647:
         raise ApiError(ErrorCode.INVALID_STATE)
     draft = QuizComposition.model_validate(body.model_dump(exclude={"expected_revision"}))
-    await selected_questions(connection, actor, draft)
+    await selected_questions(connection, actor, draft, quiz.draft)
     await connection.execute(
         "UPDATE quezo.quizzes SET title = %s, draft = %s, draft_revision = draft_revision + 1 WHERE id = %s",
         (draft.title, Jsonb(draft.model_dump(mode="json")), quiz_id),
@@ -167,7 +172,7 @@ async def preview(connection: Connection, actor: Actor, quiz_id: UUID, body: Dra
     check_revision(quiz, body.expected_revision)
     if quiz.draft is None:
         raise ApiError(ErrorCode.INVALID_STATE)
-    items = await selected_questions(connection, actor, quiz.draft)
+    items = await selected_questions(connection, actor, quiz.draft, quiz.draft)
     return learner_preview(quiz.draft.title, quiz.draft.instructions, items, quiz.draft.policy)
 
 
@@ -197,7 +202,7 @@ async def publish(
         raise ApiError(ErrorCode.INVALID_STATE)
     # Revalidate stored content/policies and every exact selection inside this transaction.
     draft = QuizComposition.model_validate(quiz.draft.model_dump())
-    items = await selected_questions(connection, actor, draft)
+    items = await selected_questions(connection, actor, draft, quiz.draft)
     total = sum(item.effective_points for item in items)
     if not items or total <= 0:
         raise ApiError(ErrorCode.VALIDATION_FAILED)
@@ -240,3 +245,50 @@ async def publish(
         (actor.user_id, quiz_id, version_id, request_id, correlation_id),
     )
     return acknowledgement, True
+
+
+async def list_publications(
+    connection: Connection, actor: Actor, quiz_id: UUID, page: PaginationParams,
+) -> Page[PublicationSummary]:
+    await get_quiz(connection, actor, quiz_id)
+    after = questions.cursor_id(page.cursor)
+    revision = 0
+    if after is not None:
+        revision = (await get_version(connection, actor, quiz_id, after)).draft_revision
+    async with connection.cursor(row_factory=dict_row) as cursor:
+        await cursor.execute(
+            'SELECT id, quiz_id AS "quizId", draft_revision AS "draftRevision", title, '
+            'possible_points AS "possiblePoints", published_at AS "publishedAt" '
+            "FROM quezo.quiz_versions WHERE quiz_id = %s AND owner_id = %s AND draft_revision > %s "
+            "ORDER BY draft_revision, id LIMIT %s",
+            (quiz_id, actor.user_id, revision, page.page_size + 1),
+        )
+        rows = await cursor.fetchall()
+    items = [PublicationSummary.model_validate(row) for row in rows[:page.page_size]]
+    return Page[PublicationSummary].model_validate({
+        "items": items, "nextCursor": str(items[-1].id) if len(rows) > page.page_size else None,
+    })
+
+
+async def transition(
+    connection: Connection, actor: Actor, quiz_id: UUID, body: DraftCommand, target: str,
+) -> Quiz:
+    quiz = await get_quiz(connection, actor, quiz_id, lock=True)
+    if quiz.draft_revision != body.expected_revision:
+        raise ApiError(ErrorCode.DRAFT_REVISION_CONFLICT)
+    if target == "closed":
+        if quiz.state != "published":
+            raise ApiError(ErrorCode.INVALID_STATE)
+    elif target == "archived":
+        if quiz.state not in ("draft", "closed"):
+            raise ApiError(ErrorCode.INVALID_STATE)
+        active = await connection.execute(
+            "SELECT 1 FROM quezo.attempts t JOIN quezo.assignments a ON a.id = t.assignment_id "
+            "WHERE a.quiz_id = %s AND t.state = 'in_progress' LIMIT 1", (quiz_id,),
+        )
+        if await active.fetchone() is not None:
+            raise ApiError(ErrorCode.INVALID_STATE)
+    else:
+        raise ApiError(ErrorCode.INVALID_STATE)
+    await connection.execute("UPDATE quezo.quizzes SET state = %s WHERE id = %s", (target, quiz_id))
+    return await get_quiz(connection, actor, quiz_id)
