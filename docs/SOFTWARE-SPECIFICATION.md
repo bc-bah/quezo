@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 awaiting assignment and scoped approvals.
+**Status:** Foundations, Phase 2 and C03 accepted; A01/D04/R02 ready for separate sequential dispatch under the 27 October scoped approvals.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -46,16 +46,16 @@ approval means the decision is not approved.
 | ID | Proposed baseline / unresolved choice | Required before | Owner | Approval |
 | --- | --- | --- | --- | --- |
 | DEC-01 | Named-learner assignments; one assignment per learner/version; no self-enrollment; one active attempt per assignment; starts and expirations consume allowance | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
-| DEC-02 | Availability end caps duration; no grace period or late offline answers; close blocks new starts but preserves active deadlines; archived quizzes are read-only and retain history | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
+| DEC-02 | Availability end caps standard duration; approved pre-start accessible timing may override the attempt deadline, never the start cutoff; no grace period or late offline answers; close preserves active deadlines; archive retains history | Domain implementation | B.C. | Approved 20 October 2026; scoped accessible-timing amendment approved 27 October 2026 in the Phase 3 approval record below |
 | DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | B.C. | Approved as written by B.C., 20 October 2026 |
-| DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved as written by B.C., 20 October 2026 |
-| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation | Identity implementation | B.C. | Second-wave F03 and I01 approvals by B.C., 20 October 2026; explicit local provisioning only, no runtime admin credentials |
+| DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved 20 October 2026; adjusted learner duration ceiling of 6048000 seconds approved 27 October 2026; authored duration bounds unchanged |
+| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation; separately scoped least-privilege A01 administration adapter | Identity implementation | B.C. | F03/I01 approved 20 October 2026; local provisioning only in those packages. A01 local-realm administration boundary approved 27 October 2026; exact permissions must be verified/recorded before privileged implementation |
 | DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions; PyJWT with cryptography and repository-convention HTTPX for I01 | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; F03 npm-locked dependencies and I01 uv-locked dependencies approved by B.C., 20 October 2026 |
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
-| DEC-09 | Approve timed-assessment accessibility approach, including timing adjustment/extension or a justified applicable exception; unlimited quizzes alone do not establish WCAG conformance | Timed UX implementation | B.C. | Held; close before D04 timed UX and Q02 acceptance; no timed-accessibility conformance claim |
+| DEC-09 | Pre-start learner timing adjustment/off choice, pinned per attempt, with explicit scheduled-availability interaction | Timed UX implementation | B.C. | Approved 27 October 2026 as specified in the Phase 3 record below; implementation and Q02 verification still required, no WCAG conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
-| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | Scoped assignment extended 21 October 2026: B.C. owns foundation and all Phase 2 package integration/review/merge; later reviewers, release approval, dates and budget held |
+| DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | B.C. owns foundation/Phase 2 and, confirmed 27 October 2026, C03/A01/D04/R02 integration/review/merge. Sequential separate dispatch A01 then D04 then R02; release approval, dates and budget remain held |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
@@ -266,7 +266,7 @@ Do not silently coerce unsupported writes into demo defaults. Advanced policy
 controls remain D04 work; authors may choose either minimal release preset so
 T01 can demonstrate released aggregate scores and fully withheld results.
 
-DEC-09 remains held: no user-facing timed learner workflow/countdown is accepted
+At this historical Phase 2 checkpoint DEC-09 remained held: no user-facing timed learner workflow/countdown was accepted
 in Phase 2. D03 must still implement and test authoritative backend expiry;
 T01 uses an explicitly controlled backend expiry fixture to demonstrate an
 expired result, not a timed-accessibility claim. DEC-08 remains held: no numeric
@@ -287,18 +287,67 @@ moving to Phase 3. T01 is accepted at [PR #15](https://github.com/bc-bah/quezo/p
 merge `df06ccc19af947cda05757c79938394763d6edb6`, implementation `300bbc4`,
 following review of its recorded lifecycle evidence and successful hosted
 browser/Node/Python jobs. All Phase 2 packages are `done`; the migration head
-remains `0009_finalization`. See the
+at that checkpoint was `0009_finalization`. See the
 [acceptance record](implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026)
 and [scoped AT matrix](../tests/e2e/README.md#lifecycle-acceptance-matrix).
 
-The T01 predecessor gate is satisfied for all four Phase 3 packages. C03/R02
-are ready for explicit assignment, not active. A01 requires a scoped extension
-of DEC-06 for its narrowly privileged Keycloak administration identity/integration;
-the existing no-runtime-admin-credentials approval is not silently overridden.
-D04 retains the DEC-09 timed-accessibility gate. Phase 3 scope, review/merge
-ownership and shared-file windows still require assignment. No new implementation,
-credential provisioning, deployment, full P0 or pilot approval is granted here.
-DEC-08/09/10 and later DEC-11 commitments remain held.
+The T01 predecessor gate is satisfied for all Phase 3 packages. The original
+Phase 3 checkout was `354da49`, head `0009_finalization`; its latest-finalized
+learner return link is only partial AT-13 evidence. The following dated record
+supersedes the original unassigned/decision-held Phase 3 checkpoint.
+
+### C03 acceptance and Phase 3 approvals: 27 October 2026
+
+B.C. reviewed the updated local Docker author workspace, confirmed satisfaction,
+requested its commit/merge into local `dev`, and then directed backlog/acceptance
+reconciliation. C03 is accepted at `2eba9eb8f2986664687059f974ad4282b0b1dd49`,
+fast-forward integrated into local `dev` from `354da49`. Current migration head
+is `0010_author_workspace`, also verified applied in the local Docker stack.
+No remote push, PR or hosted CI result is asserted. The
+[C03 evidence map](DEVELOPMENT.md#c03-complete-author-workspace) distinguishes
+inherited/new/partial/out-of-package AT-03/04/05 cases and records the umbrella
+check limitation. Package acceptance does not declare full catalogue AT IDs,
+full P0, accessibility conformance or pilot readiness.
+
+B.C. explicitly approved these additional synthetic local-development decisions:
+
+- **A01 / DEC-06:** a dedicated local-realm service identity limited to user
+  provisioning/status/profile and required role mapping. No master-realm,
+  client/realm administration, application credential storage or unrestricted
+  administration proxy. Service secrets are server-side ignored configuration,
+  never browser data, logs or source. Application authorization remains
+  authoritative. Setup remains explicit/local, not external provisioning.
+  Before privileged implementation, verify and record the exact least-privilege
+  Keycloak permissions; escalate any need to broaden them. This is a bounded
+  implementation verification step, not approval of unknown broader privileges.
+- **D04 / DEC-09:** before starting an attempt, every eligible learner may keep
+  the authored timing, choose an adjusted duration supporting at least ten times
+  the authored duration, or turn off timing. Availability end remains a hard
+  cutoff for **new starts**. For an explicitly adjusted attempt it does not
+  shorten the chosen duration; turning timing off removes both duration and
+  availability-end attempt deadlines. Standard attempts retain the earlier-bound
+  rule. Freeze the choice/effective deadline on the attempt. This explicitly
+  amends DEC-02 and DEC-05: authored duration remains 60-604800 seconds, adjusted
+  duration supports up to 6048000 seconds. No post-start extension, reset,
+  reopening, late answer grace or retroactive change to existing attempts.
+  Snapshot/schema/start-command changes require a reviewed forward migration and
+  regenerated contracts. Result-release policy remains pinned and unchanged:
+  after-availability-end disclosure still requires finalization and the original
+  published availability end; timing adjustment does not release active answers.
+  Approval is not evidence that these controls exist or meet WCAG; D04 and Q02
+  must test them.
+- **Ownership / DEC-11:** B.C. remains integration/review/merge owner. Prepare
+  A01, then D04, then R02 for **separate explicit dispatch**, one shared-file/
+  generated-contract/migration writer at a time. No concurrent assignment or
+  automatic successor execution. The next agent branches from the actual current
+  local `dev` plus this approval/tracking update; reverify head after each merge.
+  C03's exclusive editor window is complete; D04's separately dispatched owner
+  may integrate its settings through the existing wrapper without redesigning
+  C03 composition/lifecycle.
+
+A01/D04/R02 are `ready`, not `active`; implementation owners are assigned on
+dispatch. The [handoff packet](implementation/PHASE-3-HANDOFFS.md) carries these
+contracts. DEC-08/10 and release/date/budget commitments remain held.
 
 ## 3. Actors and authorization
 
@@ -429,7 +478,11 @@ has since finalized. A different start command resumes the one active attempt,
 or creates a new attempt only if allowance remains.
 
 Allocate the attempt number and fix all question content, option IDs/order,
-points, policy, start time and deadline atomically. Randomize the order of all
+points, policy, explicit pre-start timing choice (standard/adjusted/off), start
+time and effective deadline atomically under the approved D04 timing amendment.
+Resume/replay preserves the original choice/deadline; a new request cannot
+extend an existing attempt. Preserve compatibility with pre-D04 snapshots.
+Randomize the order of all
 selected questions/options when configured; do not select a pool subset.
 Refresh/resume returns exactly that presentation. Private scoring data is stored
 server-side but excluded from the learner representation.
@@ -466,8 +519,13 @@ them. Server-acknowledged answers must survive those events.
 
 Store UTC instants and the author's IANA scheduling zone. Start is allowed at or
 after availability start and strictly before availability end. The deadline is the
-earlier present bound of availability end and start plus duration; both absent
-means no deadline. Resolve ambiguous/nonexistent daylight-saving inputs explicitly.
+earlier present bound of availability end and start plus duration for standard
+timing; both absent means no deadline. Under the approved 27 October DEC-09
+amendment, an explicit pre-start adjusted choice uses start plus the chosen
+duration without the availability-end cap; timing off uses no attempt deadline.
+Availability end still gates new starts in every mode. Persist the choice and
+effective deadline atomically with the attempt; existing attempts never change.
+Resolve ambiguous/nonexistent daylight-saving inputs explicitly.
 
 Use authoritative database wall-clock time after acquiring the attempt lock,
 not browser time or a transaction-start timestamp captured before waiting.
@@ -564,6 +622,7 @@ values. Trim required text for emptiness while preserving intentional content.
 | Questions per published quiz / tags per question | 1-200 / 0-20 |
 | Points per question including override | 0-10,000; quiz total must exceed zero |
 | Duration / attempt limit | Null means unlimited; otherwise 60-604,800 seconds / 1-100 attempts |
+| Learner pre-start accessible timing (DEC-09, 27 October amendment) | Standard, explicitly adjusted duration (60-6,048,000 seconds, supports at least 10 times the authored duration), or timing off; authored bounds unchanged; freeze choice/deadline per attempt |
 | List page size | Default 25, maximum 100; stable ordering with a unique-ID tiebreaker |
 | Request body | Maximum 256 KiB; return 413 above the limit; compose large quizzes using question-version references |
 
@@ -582,7 +641,7 @@ enforce the following independently of UI behavior:
 | QuestionVersion | Immutable content/options/key/default points/feedback; stable option IDs within revision |
 | Quiz, QuizVersion, QuizQuestion | Draft revision separate from publication; immutable referenced question versions, order, effective points and rules |
 | Assignment | Unique learner/version pair; pinned publication and allowance |
-| Attempt | Unique assignment/attempt number; at most one in-progress attempt per assignment; frozen deadline/policy |
+| Attempt | Unique assignment/attempt number; at most one in-progress attempt per assignment; frozen deadline/policy and explicit pre-start timing choice (D04 target; preserve existing snapshots) |
 | AttemptQuestion, Response | Unique attempt position; fixed content/order/private scoring; one response per attempt question; monotonic response revision |
 | Grade | Unique attempt reference; immutable totals/outcomes consistent with finalization |
 | Command acknowledgement | Unique actor/target/operation/request key; fingerprint and stable acknowledgement |
@@ -706,8 +765,10 @@ is made by `/api/v1`.
 
 All core flows require semantic labels, keyboard operation, visible focus,
 screen-reader status announcements, responsive layout and non-color-only state.
-Timer announcements must not flood assistive technology. Final timing behavior
-depends on DEC-09; a countdown alone is not an accessibility plan.
+Timer announcements must not flood assistive technology. Implement the pre-start
+adjust/off controls and scheduled-availability interaction approved under DEC-09
+on 27 October; a countdown alone is not an accessibility plan. Q02 must verify
+the delivered behavior before any timed-accessibility conformance claim.
 
 ## 9. Quality and operational acceptance
 
@@ -748,12 +809,12 @@ setup, action, expected result and retained evidence.
 | AT-06 | Assign named learner, duplicate assignment, unauthorized link, concurrent start/replay, attempt limit including expired attempts; both randomization flags on/off and stable refresh order | AUTH-04, ATT-01 |
 | AT-07 | Saved answer refresh/restart, clear answer, duplicate save, stale revision, mismatched idempotency payload and cross-tab conflict | ATT-02 |
 | AT-08 | Disconnect with unsaved edit, lost acknowledgement, reconnect/retry, pending-save submission guard and clear status announcements | ATT-02, ATT-04 |
-| AT-09 | Exact schedule/deadline boundaries, daylight-saving ambiguity, delayed lock admission, quiz closure, expiry catch-up and worker races | ATT-03 |
+| AT-09 | Exact schedule/deadline boundaries, daylight-saving ambiguity, delayed lock admission, quiz closure, expiry catch-up and worker races; standard/adjusted/off timing, schedule cutoff versus attempt deadline, immutable choice and server bounds | ATT-03 |
 | AT-10 | Concurrent submit/save/expiry and response loss yield exactly one Grade and valid final snapshot; rollback yields no partial result | ATT-04, QUAL-01 |
 | AT-11 | MCQ/true-false, point overrides, wrong/unanswered, zero-point items, invalid zero-total quiz, expired all-unanswered attempt | SCORE-01 |
 | AT-12 | Every release mode at boundary times; inspect JSON/HTML/cache for hidden keys, explanations, item outcomes and grades | RESULT-01 |
 | AT-13 | Learner history and author participation/completion/score/submission views agree on attempt/version identity and denominators | RESULT-01, RESULT-02 |
-| AT-14 | Keyboard/screen-reader/responsive flows and approved timed-assessment accessibility behavior | QUAL-03 |
+| AT-14 | Keyboard/screen-reader/responsive flows, usable pre-start timing adjustment/off controls and the approved schedule/deadline interaction; approval alone is not evidence | QUAL-03 |
 | AT-15 | Reproducible deployment/migration, liveness vs readiness, structured errors/metrics and fail-closed dependency outages | QUAL-02, QUAL-05, QUAL-06 |
 | AT-16 | Agreed workload/burst and multi-process runs meet approved thresholds without integrity/disclosure failures | QUAL-08, QUAL-09 |
 | AT-17 | Isolated backup restore, recovered identity/access behavior, measured RPO/RTO and privacy/retention review | QUAL-02, QUAL-07, QUAL-10 |

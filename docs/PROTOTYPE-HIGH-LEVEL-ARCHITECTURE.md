@@ -215,8 +215,17 @@ Finalized retries return the same result, not a new attempt.
 
 ### Time and result release
 
-The server computes `deadlineAt` as the earlier of availability end and
-start time plus the configured duration, ignoring absent bounds. Start is allowed
+For standard timing the server computes `deadlineAt` as the earlier of availability
+end and start time plus the configured duration, ignoring absent bounds.
+The 27 October DEC-09/02/05 amendment approves a pre-start learner choice:
+standard, adjusted duration (60-6048000 seconds, supporting at least ten times
+the authored duration), or off. Authored bounds remain 60-604800 seconds.
+An explicitly adjusted deadline is start plus chosen duration without the
+availability-end cap; off removes both deadline bounds. Assessment execution
+must validate/pin the choice and effective deadline atomically with the attempt,
+including replay/resume behavior; it never mutates active/historical snapshots.
+These controls are D04's approved target, not yet implemented C03 behavior.
+Start is allowed
 at or after availability start and strictly before availability end; answer saves
 and voluntary submit must be admitted strictly before the attempt deadline.
 At or after the deadline, finalization is expiration and uses only accepted saves.
@@ -231,11 +240,15 @@ fields entirely. Authors can inspect only their own quizzes' submissions;
 administration privilege does not automatically imply permission to read answers.
 
 **Review examples:** Does a learner started at 09:59 get cut off at a 10:00
-availability end despite a 20-minute duration? This proposal says yes. Does an
+availability end despite a 20-minute duration? Yes for standard timing; an
+explicitly adjusted attempt retains its chosen duration, and off has no attempt
+deadline. None of these modes permits a new start at/after 10:00. Does an
 author closing a quiz at 09:58 terminate existing attempts? This proposal says
 no. Editing the original question or publishing a new version never changes
-either learner's content, grade, or release policy. Approve these distinctions
-before implementing them.
+either learner's content, grade, or release policy. After-availability-end release
+still uses the pinned authored schedule and requires finalization, even when an
+adjusted attempt outlives that schedule. D04 must evidence these approved
+distinctions; this record is not timed-accessibility conformance.
 
 ## 7. Durable save and finalization protocol
 
@@ -427,6 +440,9 @@ contracts and acceptance cases; dependency-aware packages,
 parallel workstreams and tracking live in the
 [implementation bundle](implementation/README.md). Foundations through I02 are
 done and the F03 browser exception is closed. All eight Phase 2 packages are
-accepted through T01 merge `df06ccc`, migration head `0009_finalization`.
-See [Phase 3 readiness](SOFTWARE-SPECIFICATION.md#t01-acceptance-and-phase-3-readiness)
-before assigning further work. Later operational/pilot decisions remain held.
+accepted through T01 merge `df06ccc`. C03 is accepted/integrated into local dev
+at `2eba9eb`, current head `0010_author_workspace`. See the
+[27 October Phase 3 approval/readiness record](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
+before separately dispatching A01, D04 and R02 in sequence. B.C. owns integration/
+review/merge and serializes shared writes/migrations. Later operational/pilot
+decisions remain held.

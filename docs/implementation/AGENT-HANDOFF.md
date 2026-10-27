@@ -678,8 +678,9 @@ accepted and `done`, through T01 PR #15 merge `df06ccc` on 23 October.
 The [Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve original execution contracts;
 they are historical, not new assignments. Current acceptance evidence and
 Phase 3 readiness/approval gates live in the [backlog](BACKLOG.md).
-Future assigned consumers must include T01 and the current acceptance record;
-migration head remains `0009_finalization`. No Phase 3 dispatch is implied.
+Future consumers must include T01 plus C03 `2eba9eb` and the current approval/
+tracking update; current head is `0010_author_workspace`. Phase 2's historical
+head was `0009_finalization`. No successor is dispatched by this record.
 
 | Package | Copy-ready prompt | Implementation gate |
 | --- | --- | --- |
@@ -691,3 +692,17 @@ migration head remains `0009_finalization`. No Phase 3 dispatch is implied.
 | D03 | [Finalization and expiration](PHASE-2-HANDOFFS.md#d03-dispatch-prompt) | Done; accepted merge `0cfbff7` |
 | R01 | [Policy-filtered result](PHASE-2-HANDOFFS.md#r01-dispatch-prompt) | Done; accepted merge `8976371` |
 | T01 | [First lifecycle acceptance](PHASE-2-HANDOFFS.md#t01-dispatch-prompt) | Done; accepted merge `df06ccc` |
+
+## 8. Prepared Phase 3 prompts
+
+The [Phase 3 handoff packet](PHASE-3-HANDOFFS.md) contains scoped prompts for
+C03, A01, D04 and R02. C03 is accepted/done at local dev `2eba9eb`; its prompt is
+historical. A01/D04/R02 are ready for separate explicit dispatch in that order,
+with B.C. owning integration/review/merge and one shared-file/contract/migration
+writer at a time. Implementation owners remain unassigned until dispatch.
+The [27 October approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
+approve A01's scoped DEC-06 boundary and D04's DEC-09 design plus DEC-02/05
+timing amendments. Verify exact Keycloak least privileges before privileged A01
+implementation; broader privileges require escalation. Verify actual current
+contracts/head after each merge (now `0010_author_workspace`). A ready row is
+not automatic permission to execute a successor. Release/pilot holds remain.

@@ -121,15 +121,18 @@ creation of these documents.
 | Audience, organization scope, priority coverage | Single-organization, low-stakes, all P0; confirmed by user | Product; confirmed 20 October 2026 |
 | Technology stack | Next.js/React, Python/FastAPI, PostgreSQL, Keycloak and Docker; two-language stack explicitly accepted | Confirmed 20 October 2026 |
 | Exact versions, packages, module layout | Foundations through I02 integrated and locked, including Playwright browser evidence; Phase 2 reuses these tools | B.C.; Phase 2 assignment 21 October 2026; production suitability still requires review |
-| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01 through DEC-05 approved; initial lifecycle implemented and accepted through T01; advanced author/configuration/reporting surfaces remain Phase 3 | B.C.; baseline approved 20 October, T01 accepted 23 October 2026 |
-| Keycloak realm/provider, login claims, administration privileges | DEC-06 implemented for local synthetic realm, confidential web client and API audience; live application roles/status; explicit provisioning without runtime admin credentials | B.C.; I02 combined browser gate accepted; production and A01 administration integration not approved here |
+| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01-05 baseline implemented through T01; C03 author workspace accepted; D04 timing adjust/off approved as scoped DEC-02/05/09 amendments, not yet implemented; reporting remains R02 | B.C.; baseline 20 October, T01 acceptance 23 October, C03 and scoped amendments 27 October 2026 |
+| Keycloak realm/provider, login claims, administration privileges | I02 local identity/session boundary accepted; scoped local-realm least-privilege A01 service identity approved; exact permissions must be verified/recorded before privileged implementation | B.C.; DEC-06 scoped amendment 27 October 2026; no production/external provisioning or broader administration approval |
+| Timed learner accessibility | Pre-start standard/adjusted/off choice with pinned deadline and availability cutoff distinction approved; D04 implementation and Q02 evidence pending | B.C.; DEC-09 approved 27 October 2026; no WCAG conformance claim |
 | First customer, pilot data policy, retention/deletion obligations | DEC-10 held; synthetic data only meanwhile | B.C. to obtain product/privacy review before pilot |
 | Hosting, workload, recovery objectives, availability commitment | DEC-08/10 held; local Docker is not hosting approval | B.C. to obtain engineering/operations review before applicable operational gates |
-| Delivery date, budget, release approver | DEC-11 later commitments held; B.C. owns foundation and Phase 2 integration/review/merge | B.C. before scheduling/release commitment |
+| Delivery date, budget, release approver | DEC-11 later commitments held; B.C. owns foundation, Phase 2 and C03/A01/D04/R02 integration/review/merge | B.C. before scheduling/release commitment |
 
 **Current gate:** T01 is accepted at merge `df06ccc`, completing Phase 2;
 I02 and EX-I02-01 closure remain accepted. See the
-[Phase 3 readiness record](SOFTWARE-SPECIFICATION.md#t01-acceptance-and-phase-3-readiness):
-C03/R02 are ready for assignment, A01 needs scoped administration approval,
-and D04 retains DEC-09. The demo stays untimed. No Phase 3 dispatch, deployment
-or pilot is authorized by milestone acceptance.
+[27 October readiness record](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026):
+C03 is accepted at local dev `2eba9eb`, head `0010_author_workspace`.
+A01/D04/R02 are ready for separate explicit dispatch in that order, not active.
+B.C. serializes shared writes/migrations. Existing UI remains untimed until
+D04 implements approved timing controls. No automatic dispatch, deployment or
+pilot is authorized by milestone acceptance.

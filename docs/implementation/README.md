@@ -1,10 +1,11 @@
 # Phased implementation plan
 
-**Date:** 23 October 2026
+**Date:** 27 October 2026
 
 **Status:** Working foundations including I02 accepted; EX-I02-01 closed.
 C01/C02/D01/D02/S01/D03/R01/T01 accepted and integrated. Phase 2 is complete;
-Phase 3 is not dispatched.
+C03 is accepted and integrated locally; A01/D04/R02 are ready for separate
+sequential dispatch under the approved 27 October boundaries.
 
 ## 1. Start here
 
@@ -13,21 +14,32 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint, 23 October 2026:** B.C. confirmed I02 completion; merged
+**Current checkpoint, 27 October 2026:** B.C. confirmed I02 completion; merged
 PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
 B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
 retaining their dependency execution gates. All eight are now accepted and
 integrated through T01 PR #15 merge `df06ccc`; B.C. requested milestone
 acceptance/tracking reconciliation before Phase 3. Exact commits, local evidence
 and passing hosted checks live in the [backlog](BACKLOG.md).
-C03/R02 are ready for assignment; A01 needs scoped Keycloak administration
-approval and D04 retains DEC-09. No Phase 3 dispatch is authorized. Use the
+C03 is accepted at local dev commit `2eba9eb`, head `0010_author_workspace`,
+after B.C.'s local app review and requested commit/merge. The
+[C03 acceptance/evidence record](BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026)
+retains case-level AT coverage and the umbrella-check limitation.
+A01's scoped DEC-06 boundary and D04's DEC-09 timing design (with DEC-02/05
+amendments) are explicitly approved. A01/D04/R02 are ready, not active;
+prepare separate explicit dispatches in order A01, D04, R02, single shared-file/
+contract/migration writer at a time. Latest-attempt navigation is not full
+AT-13 acceptance. Use the
 [Phase 3 package definitions](03-COMPLETE-P0.md); the
+[prepared, gate-aware Phase 3 prompts](PHASE-3-HANDOFFS.md); the
 [eight Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve historical assignments.
 The [Phase 2 defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-remain the accepted demo boundary until a later scoped approval changes it.
-B.C. remains the backlog owner; Phase 3 review/merge assignment is still required.
-DEC-08/09/10 and later DEC-11 commitments remain held.
+remain the implemented demo boundary until D04 delivers the
+[27 October approved timing amendments](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+B.C. is tracker coordinator and integration/review/merge owner; implementation
+owners are named on each separate dispatch. A01 must verify/record exact Keycloak
+permissions before privileged implementation. DEC-08/10 and release/date/budget
+commitments remain held. No successor implementation is started by this update.
 
 1. Review **G00** and approve the decisions needed for the first development wave.
 2. Assign a human integration owner and update the [backlog](BACKLOG.md).
@@ -62,6 +74,8 @@ Detailed packages are grouped by what an assignee needs to read:
 - [Foundation packages](01-FOUNDATIONS.md): G00 and identity/platform work.
 - [Core lifecycle packages](02-CORE-LIFECYCLE.md): the first end-to-end assessment.
 - [P0 completion packages](03-COMPLETE-P0.md): parallel feature-completion tracks.
+- [Phase 3 handoffs](PHASE-3-HANDOFFS.md): prepared prompts with explicit
+  assignment and decision gates; not authorization to dispatch.
 - [Readiness packages](04-READINESS.md): hardening, operations and final acceptance.
 
 ## 3. Dependency and parallelism view
@@ -142,7 +156,7 @@ An integration owner coordinates these shared surfaces:
 | FastAPI app/router registration | Domain routers stay local; integration owner resolves registration/lifespan changes without duplicate initialization |
 | OpenAPI export/generated TypeScript client | Server models are authoritative; regenerate after producer merges; no hand-editing generated output |
 | Root web layout/session facade/shared navigation | Web foundation owner or designated integrator changes these; feature owners work in their route subtree |
-| Quiz editor route and quiz-module assembly | C03 owns composition/lifecycle, D04 owns policy settings; agree file seams before concurrent work and serialize their shared route/assembly edits |
+| Quiz editor route and quiz-module assembly | C03 integrated composition/lifecycle and its wrapper; D04 is next sole settings/wrapper writer during its separate dispatch. B.C. serializes A01, D04, R02 shared writes; preserve C03 behavior |
 | Shared test fixtures and tracker | Integrator maintains common fixtures and merges evidence/status updates; package tests live in feature-specific files |
 
 Within a feature, prefer a vertical slice: migration + backend + UI + tests.
@@ -180,8 +194,9 @@ are integrated. Do not create arbitrary parallel subtasks that edit the same fil
 ## 6. Approval and pilot boundaries
 
 G00 authorizes only explicitly selected development work. DEC-08 is needed before
-turning proposed performance numbers into gates; DEC-09 is needed before completing
-timed UX; DEC-10 is needed before real learner data or a shared pilot. G01 records
+turning proposed performance numbers into gates; DEC-09's approved 27 October
+design must be implemented and verified before timed UX acceptance; DEC-10 is
+needed before real learner data or a shared pilot. G01 records
 actual results and unresolved decisions, not an inferred launch approval.
 
 The prototype may be accepted as a synthetic-data demonstration while pilot

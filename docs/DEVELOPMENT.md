@@ -1066,8 +1066,25 @@ and confirmed D04 is unassigned. C03 has the exclusive shared editor/assembly,
 generated-contract and next-migration window. Branch
 `feature/c03-author-workspace` starts at integrated dev `354da49`, which contains
 T01 merge `df06ccc`; the input migration head was `0009_finalization`.
-This is implementation evidence for review, not tracker acceptance, a deployment
-approval or a claim that the entire acceptance catalogue is complete.
+The original review handoff below is superseded by the acceptance record here;
+it is not deployment approval or a claim that the entire catalogue is complete.
+
+**Acceptance/integration, 27 October 2026:** B.C. reviewed the updated local
+Docker application, confirmed satisfaction, requested staging/commit/merge to
+local `dev`, then directed acceptance/backlog reconciliation. Commit
+`2eba9eb8f2986664687059f974ad4282b0b1dd49` was fast-forward integrated into local
+`dev`; no remote push/PR or hosted CI is claimed. C03's exclusive writer window
+is complete. The [acceptance record](implementation/BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026)
+retains case-level AT evidence and the umbrella-check limitation.
+
+The existing local stack was rebuilt using
+`docker compose --env-file .env.docker -f compose.local.yaml -f infra\docker\compose.ca.yaml up -d --build --wait`.
+The public Windows CA build-secret override was used without disclosing secrets.
+Database and Keycloak volumes/accounts were preserved; migration
+`0010_author_workspace` applied successfully. All services were healthy, web
+returned HTTP 200, API liveness and new C03 routes were checked.
+Open `http://localhost:3000` (not `127.0.0.1`, because realm redirects are exact).
+This is local synthetic validation, not hosted deployment/pilot approval.
 
 ### Organization and reuse
 
@@ -1187,8 +1204,9 @@ matrix result is claimed.
 Excluded scope remains duplicate quiz, pool selection, imports, rich media,
 D04 policy controls and unrelated reporting/account administration. B.C. must
 serialize any later migration after `0010_author_workspace` and integrate D04's
-settings through the single quiz-route owner. No commit/PR, successor dispatch or
-tracker acceptance is performed by C03.
+settings through the single quiz-route owner. The original implementation handoff
+performed no commit/PR or tracker acceptance; the later user-directed local
+commit/merge and acceptance are recorded above. No successor dispatch occurred.
 
 ## C02 immutable quiz publication
 
@@ -2770,20 +2788,27 @@ D03 reviewed/integrated at `0cfbff7` (PR #13) and directed R01 execution after
 recording D03 acceptance. R01 is now accepted/integrated at `8976371` (PR #14);
 B.C. directed T01 execution after reconciliation on 23 October, then requested
 milestone acceptance/tracking. T01 is accepted at `df06ccc` (PR #15), closing
-Phase 2. C03/R02 are ready for assignment; A01 needs scoped administration
-approval and D04 retains DEC-09. Each later consumer must
+Phase 2. C03 is subsequently accepted/integrated at local dev `2eba9eb`, head
+`0010_author_workspace`, on 27 October. A01/D04/R02 are ready for separate explicit
+dispatch in that order after the scoped DEC-06 and DEC-09/02/05 approvals.
+Exact Keycloak permissions must be verified/recorded before privileged A01
+implementation. B.C. owns integration/review/merge and serializes shared-file/
+contract/migration windows. Each later consumer must
 first verify its own integrated producer
 evidence in the backlog. The [Phase 2 prompts](implementation/PHASE-2-HANDOFFS.md)
-are now historical; [Phase 3 packages](implementation/03-COMPLETE-P0.md) remain undispatched.
+are now historical; [Phase 3 packages](implementation/03-COMPLETE-P0.md) record
+C03 complete and the remaining three prepared, not active.
 Preserve `Database.transaction`, live actor checks, generated client/error
 conventions, the I02 fixtures and secret-safe browser reporting.
 
 The [approved demo defaults](SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-keep learner interaction untimed while DEC-09 is held. Backend deadline/release
+keep existing learner interaction untimed until D04 implements the
+[27 October approved timing approach](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+Backend deadline/release
 boundary tests and controlled expired-attempt fixtures are still required;
 they do not establish timed UX acceptance. No automatic database retry policy
-or performance gates are approved under DEC-08. Phase 3, real data and pilot
-work still need separate assignments/approvals.
+or performance gates are approved under DEC-08. Remaining Phase 3 work needs
+separate explicit dispatch; real data/pilot/release approvals remain held.
 
 Read [scope](PROTOTYPE-SCOPE.md), [architecture](PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md)
 and the [software specification](SOFTWARE-SPECIFICATION.md) for behavior and

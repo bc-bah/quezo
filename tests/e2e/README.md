@@ -11,6 +11,13 @@ Master-realm administration is confined to the existing explicit setup helper.
 after reviewing merged PR #7 and its passing browser/CI evidence. T01 and the
 Phase 2 lifecycle milestone were accepted on 23 October at PR #15 merge
 `df06ccc`; see the [acceptance record](../../docs/implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026).
+C03 was accepted on 27 October after B.C.'s local app review and requested
+commit/merge at local dev `2eba9eb`, head `0010_author_workspace`; see the
+[C03 acceptance record](../../docs/implementation/BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026).
+All 36 real-provider browser cases passed, including 3 new C03 cases. The
+umbrella `--checks` run was not rerun to a green exit after correcting two stale
+route inventories; exact separate successful checks and limitations are in the
+[C03 handoff](../../docs/DEVELOPMENT.md#c03-complete-author-workspace).
 Future assigned packages extend these accepted lifecycle fixtures.
 Keep the existing identity regressions and secret-safe reporting intact.
 
@@ -136,6 +143,10 @@ stale editor/replay, safe preview/no side effects and historical finalization.
 See the [C03 evidence map](../../docs/DEVELOPMENT.md#c03-complete-author-workspace)
 for inherited/new/partial/out-of-package catalogue scenarios. A filtered C03 run
 alone is not full AT-03/04/05 acceptance or D04/Q02 readiness.
+The package is accepted, not a blanket full-catalogue or WCAG claim.
+A01/D04/R02 are ready for separate explicit dispatch in that order; B.C. owns
+integration/review/merge with one shared writer. DEC-09 timing design is approved,
+but D04 controls and Q02 accessibility evidence are still pending.
 
 ## Acceptance scenarios
 
@@ -272,6 +283,11 @@ browser state is retained.
 ### Lifecycle acceptance matrix
 
 These are **initial lifecycle scopes**, not completion of every catalogue row.
+The table is the historical T01 checkpoint; C03 now supplies the search,
+revision-management and close/archive evidence identified as remaining below.
+Use the [current C03 case map](../../docs/DEVELOPMENT.md#c03-complete-author-workspace)
+and [acceptance reconciliation](../../docs/implementation/BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026)
+for current scope rather than treating those historical C03 gaps as blockers.
 The 23 October 2026 unfiltered gate passed all 33 browser cases, with zero
 skips/failures, and every required producer check. Exact execution results are in the
 [T01 section 3 handoff](../../docs/DEVELOPMENT.md#t01-first-lifecycle-acceptance).
@@ -293,14 +309,16 @@ browser paths; no browser happy path is claimed to prove concurrent integrity.
 | AT-11 initial | T01 MCQ correct with override plus incorrect true/false scores 5/7 from old keys despite bank edits; R01 zero; D02 cleared/unanswered; expiry all-unanswered zero or withheld. | [test_scoring.py](../../postgres/tests/test_scoring.py) pure deterministic integer scoring/bounds/zero-point/unanswered; D03 persisted-response adapter; C02 zero-total rejection | Q01/Q02 expanded combinations/workflows; no new scoring, regrading or pass/fail feature. |
 | AT-12 initial | [results.spec.ts](results.spec.ts), T01 and expiry: score-only/zero/withheld, HTTP/HTML/RSC/DOM omission, no-store, empty browser caches/storage, outage/revocation/foreign denial. Submission remains metadata-only. | `test_independent_policies_every_combination_and_boundary`: all 27 combinations at before/equality/after finite end, actual DB/Grade/HTTP with controlled clock sample; additional actual-wall-clock reads and post-lock access checks | D04 configuration UI and R02 history/reporting; Q01 broader disclosure checks; no browser finite-end/timed policy configuration claim. |
 
-Full search/archive (C03), administration (A01), delivery settings/timed UX (D04),
+At that T01 checkpoint, full search/archive (C03), administration (A01), delivery settings/timed UX (D04),
 history/reporting (R02), broader integrity (Q01), accessibility (Q02), operational
 recovery (O01) and load gates (Q03) remain their owners' work. AT-02/13-17, full P0,
 deployment and pilot readiness are not accepted by T01. No successor is dispatched.
 
 ### Exact browser case inventory
 
-The unfiltered configuration discovers **33 cases**, not just the original 16.
+The T01 checkpoint discovered **33 cases**, not just the original 16. C03 adds
+3 cases, bringing the current unfiltered suite to **36**; its scenario inventory
+and outcomes are recorded in the C03 section above.
 Counts by file: access 16, questions 5, quizzes 3, attempts 1, responses 1,
 finalization 2, results 3, lifecycle 2. Each title below is printed by the safe
 reporter; the full-run outcome is recorded in the T01 handoff, not inferred from

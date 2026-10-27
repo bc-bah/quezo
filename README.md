@@ -277,26 +277,36 @@ All eight Phase 2 packages are accepted and integrated:
 | T01 | First complete real-browser lifecycle acceptance |
 
 T01 was accepted through [#15](https://github.com/bc-bah/quezo/pull/15),
-merge `df06ccc`. The migration head is `0009_finalization`. See the
+merge `df06ccc`. Its migration head was `0009_finalization`. See the
 [T01 acceptance and Phase 3 readiness record](docs/SOFTWARE-SPECIFICATION.md#t01-acceptance-and-phase-3-readiness),
 [backlog acceptance record](docs/implementation/BACKLOG.md#t01-milestone-acceptance-23-october-2026),
 and [detailed execution evidence](docs/DEVELOPMENT.md#t01-first-lifecycle-acceptance).
 
+C03's complete author workspace was subsequently accepted after B.C.'s local
+app review and requested commit/merge on 27 October 2026. Local `dev` is at
+`2eba9eb`, current migration head `0010_author_workspace`; see the
+[C03 acceptance/evidence record](docs/implementation/BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026).
+This is package acceptance, not full catalogue AT-03/04/05, WCAG, hosted CI or
+pilot acceptance.
+
 ### Remaining gates
 
-- **Phase 3:** C03 author controls and R02 history/reporting are ready for
-  explicit assignment, not active. A01 administration needs scoped Keycloak
-  administration approval. D04 advanced delivery controls retains the DEC-09
-  timed-accessibility decision gate.
+- **Phase 3:** A01 administration, D04 delivery controls and R02 history/reporting
+  are ready for separate explicit dispatch in that order, not active. The
+  [27 October approvals](docs/SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
+  cover A01's limited local-realm identity and D04 pre-start timing adjust/off
+  design. Verify exact Keycloak least privileges before privileged A01
+  implementation; D04 controls/accessibility evidence remain undelivered.
 - **Quality and operations:** full accessibility, integrity/security hardening,
   measured load, readiness checks, production deployment, and restore evidence
   remain later work. Local application containers are available for development
   and synthetic-data demonstrations, not deployment-readiness evidence.
 - **Approval:** full P0, real-data/shared pilot, and production readiness are
-  not approved. DEC-08/09/10 and later DEC-11 commitments remain held.
+  not approved. DEC-08/10 and release/date/budget commitments remain held.
 
-B.C. owns the backlog. Phase 3 scope, review/merge ownership, and shared-file
-windows still require assignment. Backend expiry evidence does not establish
+B.C. owns the backlog and integration/review/merge. Implementation owners and
+exclusive shared-file/contract/migration windows are named on each separate
+dispatch. Backend expiry or timing-design approval does not establish
 an accepted timed learner UI or timed-accessibility conformance.
 
 </details>

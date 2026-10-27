@@ -13,7 +13,7 @@ work is available but not yet accepted.
 owner, PR/commit and evidence links as work progresses. A blocked item records the
 specific decision or predecessor, not a generic "waiting."
 
-**Current state (23 October 2026):** I02 is `done`; EX-I02-01 is closed after
+**Current state (27 October 2026):** I02 is `done`; EX-I02-01 is closed after
 B.C.'s completion confirmation and review of merged browser/CI evidence.
 C01 is `done` following B.C.'s explicit acceptance/integration confirmation.
 C02 is also `done` at B.C.'s explicit direction, accepting the verified local
@@ -51,25 +51,40 @@ T01 is `done`: B.C. requested milestone acceptance/tracking reconciliation on
 `df06ccc19af947cda05757c79938394763d6edb6`, including implementation `300bbc4`.
 The recorded lifecycle evidence and passing hosted browser/matrix checks support
 acceptance of the Phase 2 exit gate. All eight Phase 2 packages are now `done`.
-C03/R02 are ready for assignment; A01/D04 retain the explicit approval gates below.
-No successor dispatch is implied. B.C. owns integration,
-review/merge and shared-file coordination for this wave; later release holds remain.
+C03 is now `done`: B.C. reviewed the updated local Docker app, requested commit
+and merge to local `dev`, and directed acceptance reconciliation on 27 October.
+Implementation/integration commit is `2eba9eb`; head is `0010_author_workspace`.
+A01/D04/R02 are `ready` after B.C.'s explicit
+[scoped approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+Prepare separate dispatches in order **A01, then D04, then R02**, under B.C.'s
+integration/review ownership, with one shared-file/contract/migration writer at
+a time. No remaining package is active or assigned an implementation owner by
+this record. A01 verifies exact least-privilege permissions before privileged
+implementation; D04 implements the approved timing adjustment/off interaction,
+not the old hard-cap rule for opted-in adjusted attempts. Later release holds remain.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
 dependency. Decision gates still apply as specified by the package.
 
 Approval evidence: [G00](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026),
 [second wave](../SOFTWARE-SPECIFICATION.md#second-wave-approval-f03-and-i01) and
 [I02 assignment/exception](../SOFTWARE-SPECIFICATION.md#i02-assignment-and-completion-exception).
-Current approval: [Phase 2 assignment/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults).
+Current approval: [C03 acceptance and Phase 3 approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026);
+the [Phase 2 assignment/defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
+remain historical, except for the explicitly amended D04 timing boundary.
 Completed assignments: [historical Phase 2 prompts](PHASE-2-HANDOFFS.md).
+Prepared next-wave prompts: [Phase 3 handoffs](PHASE-3-HANDOFFS.md); no package
+is assigned by that document.
 Integrated foundation baseline: `553a2c8b77a770667f4cef6825f57c3b55f477ed`;
 migration head `0004_identity`. Consumers must also include their later producer
 commits, recorded on acceptance. Accepted C01 merge
 `e66f459c5a6b225bd3d1b4bbce6b5b87de67974c` advances the migration head to
 `0005_questions` and completes C01's initial shared-file window. Subsequent
 accepted producers advance the current head to `0009_finalization`; R01/T01 add
-no migration. The Phase 3 starting baseline is T01 merge `df06ccc` plus this
-acceptance update. Shared writes and migration ordering remain serialized by B.C.
+no migration. C03 is integrated locally at `2eba9eb` (containing `354da49` and
+T01 merge `df06ccc`), advancing head to `0010_author_workspace`. This is the
+next-package baseline plus the current approval/tracking update; use a newer
+B.C.-recorded integrated baseline after each sequential package merge.
+Shared writes and migration ordering remain serialized by B.C.
 
 | ID | Phase | Package | Prerequisites | Status | Owner | PR/commit and evidence / blocker |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -87,17 +102,68 @@ acceptance update. Shared writes and migration ordering remain serialized by B.C
 | D03 | 2 | [Finalization and expiration](02-CORE-LIFECYCLE.md#d03-finalization-and-expiration) | D02, S01 | done | B.C. | Review/acceptance/integration confirmed 23 October 2026; [PR #13](https://github.com/bc-bah/quezo/pull/13), merge `0cfbff7`, implementation `9ff05f8`; [accepted Grade/state handoff and evidence](../DEVELOPMENT.md#d03-finalization-and-expiration): 611 Python / 246 database-suite / 27 browser cases; migration `0009_finalization`; untimed learner UI while DEC-09 held |
 | R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | done | B.C. | Acceptance/tracking directed 23 October 2026; [PR #14](https://github.com/bc-bah/quezo/pull/14), merge `8976371`, implementation `bb19468`, verified on live main and in T01 ancestry. [Accepted handoff/evidence](../DEVELOPMENT.md#r01-policy-filtered-result): 648 Python / 283 database-suite / 30 browser cases; 27 independent policy combinations/boundaries. No migration; head `0009_finalization`. |
 | T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | done | B.C. | Accepted 23 October 2026 following B.C.'s tracking direction; [PR #15](https://github.com/bc-bah/quezo/pull/15), merge `df06ccc`, implementation `300bbc4`; [accepted handoff](../DEVELOPMENT.md#t01-first-lifecycle-acceptance), [AT matrix/demo](../../tests/e2e/README.md#lifecycle-acceptance-matrix), [hosted browser/matrix CI](https://github.com/bc-bah/quezo/actions/runs/39949405839). Recorded unfiltered gate: 648 Python / 283 database-suite / 33 browser cases, zero skipped; reproducible six-case demo passed. No runtime contract/migration changes; head `0009_finalization`. Phase 2 milestone only, not full P0/pilot acceptance. |
-| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | ready | B.C. | T01 accepted at `df06ccc`; awaiting explicit Phase 3 assignment and shared quiz-editor/migration coordination. |
-| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | blocked | B.C. | T01 satisfied. DEC-06 currently permits explicit local provisioning only, no runtime admin credentials; approve a narrowly privileged Keycloak administration identity/integration before dispatch. |
-| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | blocked | B.C. | T01 satisfied. DEC-09 timed-accessibility decision remains held; approve before timed UX implementation or explicitly assign a bounded untimed subset without claiming package completion. |
-| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | ready | B.C. | T01 accepted at `df06ccc`; awaiting explicit Phase 3 assignment and shared contract/migration coordination. |
+| C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | done | B.C. | Accepted/integrated 27 October 2026 after local app review; local dev fast-forward `2eba9eb`; head `0010_author_workspace`; [case-level evidence and check limitations](../DEVELOPMENT.md#c03-complete-author-workspace), [acceptance record below](#c03-acceptance-and-next-package-readiness-27-october-2026). No remote PR/push or hosted CI claimed. |
+| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | ready | Unassigned; B.C. integration/review | First separate dispatch. Scoped DEC-06 amendment approved 27 October; verify/record exact local-realm least privileges before privileged implementation. Baseline `2eba9eb`, head `0010_author_workspace`, plus this tracking update. |
+| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | ready | Unassigned; B.C. integration/review | Second separate dispatch, after A01's serialized write window. DEC-09 and scoped DEC-02/05 timing amendments approved 27 October; implement pre-start adjust/off, immutable choice and start-cutoff/deadline distinction. Reverify integrated baseline/head after A01. |
+| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | ready | Unassigned; B.C. integration/review | Third separate dispatch after D04's serialized write window; reverify actual head/contracts. Latest-completed-attempt link remains partial AT-13 only; full history/reporting not implemented or accepted. |
 | Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |
-| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 timed-accessibility approval required |
+| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 approved 27 October; D04 implementation and actual accessibility/workflow evidence still required |
 | O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
 | Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | B.C. | DEC-08 benchmark/gates required |
 | G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | B.C. | DEC-11 later approvers/release commitments and release evidence required; DEC-10 gates any pilot |
 
 ## Review findings and completion exceptions
+
+### C03 acceptance and next-package readiness: 27 October 2026
+
+**Accepted by B.C.** after reviewing the rebuilt local Docker app and requesting
+commit/merge to `dev`, followed by explicit tracking reconciliation. C03 commit
+`2eba9eb8f2986664687059f974ad4282b0b1dd49` is locally fast-forward integrated;
+no remote merge/PR is invented. Head `0010_author_workspace` follows
+`0009_finalization`; the local stack was rebuilt, migration applied and app
+health/new routes verified without replacing existing database/Keycloak volumes.
+
+Evidence: [C03 scenario map and outcomes](../DEVELOPMENT.md#c03-complete-author-workspace),
+[19 focused persistence tests](../../postgres/tests/test_author_workspace.py),
+[3 new real-provider browser journeys](../../tests/e2e/author-workspace.spec.ts).
+All 36 browser cases passed, including inherited C01/C02/T01; type checks,
+88 Python + 2 Node contract checks, production build/HTTP, generated-contract
+checks and whitespace checks passed. The umbrella `--checks` invocation stopped
+with 665 passes/two stale route-inventory failures; corrected inventories passed
+the subsequent focused contract suite. No green umbrella rerun or hosted CI
+result is claimed.
+
+| Acceptance | Accepted package evidence | Still partial / outside this package |
+| --- | --- | --- |
+| AT-03 | Inherited C01/T01 both-type/content-bound/ownership evidence; C03 metadata bounds, combined text/category/tag search, pagination, owned moves/archives, direct/nested-ID and real foreign-author checks | Browser bounds are representative; exhaustive new bounds are HTTP/database evidence; no blanket catalogue/WCAG claim |
+| AT-04 | Reuse in two quizzes, explicit revision update, immutable old publications, private attempt snapshots and finalized results/grade retention across edit/archive | No duplicate command, regrade or reset |
+| AT-05 | Inherited stale-tab/CAS, replay, preview/no-side-effects tests; new history, close/archive, pending-draft freeze, stale/invalid transitions, active-attempt rejection and resume/finalize after close | Advanced delivery/timed preview/accessibility remains D04/Q02; not accepted as full advanced-policy coverage |
+| AT-01/02 | Existing identity evidence retained | A01 administration not implemented/accepted |
+| AT-06/09/12/13/14 | Existing T01/R01 evidence retained; latest-completed-attempt link is partial history | D04 settings/accessibility and R02 full history/reporting need new evidence; no new completion claims |
+
+B.C.'s explicit DEC-06/09/02/05 approvals and serialized dispatch order are in the
+[specification approval record](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+A01/D04/R02 are ready for separate assignment, not active. The order is a
+shared-write/integration schedule, not new domain prerequisite edges.
+Exact Keycloak permissions must be verified before privileged A01 implementation.
+No credentials, successor code, deployment, release or pilot is authorized by
+this documentation task. DEC-08/10 and release/date/budget holds remain.
+
+### Phase 3 checkout baseline and partial AT-13 evidence: 27 October 2026
+
+The pre-C03 integrated checkout included `354da49`, which adds learner-workspace
+links to view the most recent finalized attempt and its policy-filtered result.
+The behavior and its browser scenario are documented in
+[DEVELOPMENT.md](../DEVELOPMENT.md#host-run-application-processes) and
+[lifecycle.spec.ts](../../tests/e2e/lifecycle.spec.ts); a result remains governed
+by R01 release policy.
+This is a useful return path, not paginated learner history, author reporting,
+or full AT-13 acceptance. It does not change T01's accepted scope or complete
+R02. That starting baseline/head `0009_finalization` is superseded by the C03
+acceptance record above: next dispatch uses `2eba9eb` and `0010_author_workspace`
+plus this tracking update, or a newer B.C.-recorded integrated baseline.
+See the [prepared Phase 3 handoffs](PHASE-3-HANDOFFS.md); no package is assigned
+by this record.
 
 ### EX-I02-01: Native login/logout Origin
 
@@ -150,8 +216,9 @@ test run. The [coverage matrix](../../tests/e2e/README.md#lifecycle-acceptance-m
 retains explicit C03/A01/D04/R02 and readiness gaps. No known assigned T01
 criterion remains outstanding in the delivery record. T01 acceptance does not
 approve runtime administration credentials, timed accessibility, Phase 3 dispatch,
-full P0, deployment or pilot readiness. DEC-08/09/10 and later DEC-11 commitments
-remain held; EX-I02-01 remains closed.
+full P0, deployment or pilot readiness. At that checkpoint DEC-08/09/10 and later
+DEC-11 commitments remained held; the 27 October record above supersedes the
+DEC-09/ownership holds, not release/pilot gates. EX-I02-01 remains closed.
 
 ## Update protocol
 
