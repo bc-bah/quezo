@@ -54,12 +54,11 @@ acceptance of the Phase 2 exit gate. All eight Phase 2 packages are now `done`.
 C03 is now `done`: B.C. reviewed the updated local Docker app, requested commit
 and merge to local `dev`, and directed acceptance reconciliation on 27 October.
 Implementation/integration commit is `2eba9eb`; head is `0010_author_workspace`.
-A01/D04/R02 are `ready` after B.C.'s explicit
-[scoped approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
-Prepare separate dispatches in order **A01, then D04, then R02**, under B.C.'s
-integration/review ownership, with one shared-file/contract/migration writer at
-a time. No remaining package is active or assigned an implementation owner by
-this record. A01 verifies exact least-privilege permissions before privileged
+A01 is explicitly dispatched under B.C.'s
+[scoped approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026);
+D04/R02 remain `ready` for separate dispatch in order **D04, then R02**, under
+B.C.'s integration/review ownership, with one shared-file/contract/migration
+writer at a time. A01 verifies exact effective permissions before privileged
 implementation; D04 implements the approved timing adjustment/off interaction,
 not the old hard-cap rule for opted-in adjusted attempts. Later release holds remain.
 Prerequisites are logical AND. `-` means none; phase order is not an additional
@@ -103,7 +102,7 @@ Shared writes and migration ordering remain serialized by B.C.
 | R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | done | B.C. | Acceptance/tracking directed 23 October 2026; [PR #14](https://github.com/bc-bah/quezo/pull/14), merge `8976371`, implementation `bb19468`, verified on live main and in T01 ancestry. [Accepted handoff/evidence](../DEVELOPMENT.md#r01-policy-filtered-result): 648 Python / 283 database-suite / 30 browser cases; 27 independent policy combinations/boundaries. No migration; head `0009_finalization`. |
 | T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | done | B.C. | Accepted 23 October 2026 following B.C.'s tracking direction; [PR #15](https://github.com/bc-bah/quezo/pull/15), merge `df06ccc`, implementation `300bbc4`; [accepted handoff](../DEVELOPMENT.md#t01-first-lifecycle-acceptance), [AT matrix/demo](../../tests/e2e/README.md#lifecycle-acceptance-matrix), [hosted browser/matrix CI](https://github.com/bc-bah/quezo/actions/runs/39949405839). Recorded unfiltered gate: 648 Python / 283 database-suite / 33 browser cases, zero skipped; reproducible six-case demo passed. No runtime contract/migration changes; head `0009_finalization`. Phase 2 milestone only, not full P0/pilot acceptance. |
 | C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | done | B.C. | Accepted/integrated 27 October 2026 after local app review; local dev fast-forward `2eba9eb`; head `0010_author_workspace`; [case-level evidence and check limitations](../DEVELOPMENT.md#c03-complete-author-workspace), [acceptance record below](#c03-acceptance-and-next-package-readiness-27-october-2026). No remote PR/push or hosted CI claimed. |
-| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | ready | Unassigned; B.C. integration/review | First separate dispatch. Scoped DEC-06 amendment approved 27 October; verify/record exact local-realm least privileges before privileged implementation. Baseline `2eba9eb`, head `0010_author_workspace`, plus this tracking update. |
+| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | active | Copilot A01 session; B.C. integration/review | Explicitly dispatched 27 October. B.C. approved local FGAP `manage` and `view-users` (including transitive read-only `query-groups`); Quezo exposes no delete/reset or group mutation. Verified Keycloak 26.4.7: dedicated `quezo-account-admin` client policy, `Users` resource type, `view` + `manage`; scoped `query-users`/`view-users` service-account roles. Disabled create, profile read/update and exact search passed before implementation. Code/migration now in the A01 checkout, current head 0011; focused checks do not constitute full AT-01/02 or acceptance. Starting baseline `2eba9eb`, migration `0010_author_workspace`, plus approval/tracking update. |
 | D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | ready | Unassigned; B.C. integration/review | Second separate dispatch, after A01's serialized write window. DEC-09 and scoped DEC-02/05 timing amendments approved 27 October; implement pre-start adjust/off, immutable choice and start-cutoff/deadline distinction. Reverify integrated baseline/head after A01. |
 | R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | ready | Unassigned; B.C. integration/review | Third separate dispatch after D04's serialized write window; reverify actual head/contracts. Latest-completed-attempt link remains partial AT-13 only; full history/reporting not implemented or accepted. |
 | Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |

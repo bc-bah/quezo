@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from enum import StrEnum
 import re
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
 from uuid import UUID
 
 from pydantic import (
@@ -12,6 +12,7 @@ from pydantic import (
     ConfigDict,
     Field,
     StrictInt,
+    model_validator,
 )
 from pydantic.alias_generators import to_camel
 
@@ -69,6 +70,52 @@ class Actor(ApiModel):
     user_id: PublicId
     roles: list[Role]
     status: AccessStatus
+
+
+class AccountProvisionRequest(ApiModel):
+    username: Annotated[str, Field(min_length=3, max_length=128, pattern=r"^[A-Za-z0-9._@+-]+$")]
+    email: Annotated[str | None, Field(max_length=254)] = None
+    roles: Annotated[list[Role], Field(max_length=3)] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_request(self) -> "AccountProvisionRequest":
+        if self.email is not None and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", self.email):
+            raise ValueError("A valid email address is required")
+        if len(set(self.roles)) != len(self.roles):
+            raise ValueError("Roles must be unique")
+        self.username = self.username.lower()
+        return self
+
+
+class AccountRoleUpdate(ApiModel):
+    roles: Annotated[list[Role], Field(max_length=3)]
+
+    @model_validator(mode="after")
+    def validate_request(self) -> "AccountRoleUpdate":
+        if len(set(self.roles)) != len(self.roles):
+            raise ValueError("Roles must be unique")
+        return self
+
+
+ProvisioningState = Literal["pending", "complete", "failed"]
+IdentitySyncState = Literal["in_sync", "pending", "failed"]
+
+
+class AccountAdminView(ApiModel):
+    user_id: PublicId
+    username: str | None
+    email: str | None
+    status: AccessStatus
+    roles: list[Role]
+    provisioning_state: ProvisioningState
+    provisioning_error_code: str | None
+    identity_sync_state: IdentitySyncState
+    identity_error_code: str | None
+
+
+class AccountAdminPage(ApiModel):
+    items: list[AccountAdminView]
+    next_cursor: str | None = None
 
 
 def _query_integer(value: object) -> object:

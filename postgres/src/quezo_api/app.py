@@ -9,6 +9,7 @@ import httpx2 as httpx
 from quezo_api.database import Database, DatabaseSettings
 from quezo_api.errors import ErrorEnvelope, install_error_handling
 from quezo_api.openapi import ContractAPI
+from quezo_api.modules.identity.account_admin import AccountAdminSettings, KeycloakAccountAdmin
 from quezo_api.modules.identity.router import router as identity_router
 from quezo_api.modules.questions.router import router as questions_router
 from quezo_api.modules.quizzes.router import router as quizzes_router
@@ -28,6 +29,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     ) as identity_client:
         app.state.database = database
         app.state.token_verifier = TokenVerifier(settings, identity_client)
+        admin_settings = AccountAdminSettings.from_env()
+        app.state.account_admin = (
+            KeycloakAccountAdmin(admin_settings, identity_client)
+            if admin_settings is not None else None
+        )
         async with expiration_lifespan(database):
             yield
 

@@ -15,6 +15,7 @@ test("navigation uses native keyboard-operable links/buttons and focusable desti
     assert.match(html, /aria-label="Main navigation"/);
     assert.ok(html.includes(`href="#${role}"`));
     assert.ok(html.includes(`id="${role}" tabindex="-1"`));
+    if (role === "administrator") assert.match(html, /href="\/admin\/accounts">Manage accounts/);
     assert.match(html, /<button type="submit">Sign out<\/button>/);
     assert.doesNotMatch(html, /onclick|tabindex="[1-9]/);
     for (const other of ["administrator", "author", "learner"].filter((value) => value !== role)) {

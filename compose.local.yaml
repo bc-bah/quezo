@@ -65,6 +65,8 @@ services:
       QUEZO_DATABASE_URL: ${QUEZO_DATABASE_URL:?Generate .env.docker first}
       QUEZO_OIDC_ISSUER: http://localhost:8080/realms/quezo-local
       QUEZO_API_AUDIENCE: quezo-api
+      QUEZO_ACCOUNT_ADMIN_CLIENT_ID: ${QUEZO_ACCOUNT_ADMIN_CLIENT_ID:-quezo-account-admin}
+      QUEZO_ACCOUNT_ADMIN_CLIENT_SECRET: ${QUEZO_ACCOUNT_ADMIN_CLIENT_SECRET:?Generate .env.docker first}
     healthcheck:
       test: ["CMD", ".venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/live', timeout=3).close()"]
       interval: 5s

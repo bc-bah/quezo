@@ -48,7 +48,7 @@ export function SessionShell({ view }: { view: SessionView }) {
                   {role === "author"
                     ? <p><a href="/author">Manage question banks</a></p>
                     : role === "learner" ? <p><a href="/learner">My assignments</a></p>
-                    : <p>This workspace is not implemented yet.</p>}
+                    : <p><a href="/admin/accounts">Manage accounts</a></p>}
                 </section>
               ),
             )}

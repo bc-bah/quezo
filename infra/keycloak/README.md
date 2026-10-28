@@ -1,10 +1,11 @@
 # Local synthetic identity setup
 
-I01 supplies `realm.json` and the explicit `provision.py` command. Neither the API
-nor the web process imports the provisioner or receives Keycloak administration
-credentials. This is a loopback-only development runbook, not deployment or A01
-account administration. The bootstrap administrator exists only in `master`;
-it is never mapped to an application account.
+I01 supplies `realm.json` and the explicit `provision.py` command. The API never
+receives the bootstrap `master` administrator credentials. A01's API receives
+only the dedicated local `quezo-account-admin` client secret; the web process
+never receives it. This is a loopback-only development runbook, not deployment.
+The bootstrap administrator exists only in `master`; it is never mapped to an
+application account.
 
 For the all-container Docker Desktop workflow, use the
 [full-app startup instructions](../../docs/DEVELOPMENT.md#full-app-with-docker-desktop).
@@ -28,7 +29,8 @@ not new runtime administration privileges.
 | Exact web origin / registered post-logout URI | `http://localhost:3000` / `http://localhost:3000` |
 | Scope / access-token audience | `openid quezo-api` / `quezo-api` |
 | Signing / access-token lifetime | RS256 / 300 seconds |
-| Disabled capabilities | Registration, implicit flow, direct password grants, service accounts, full-scope access |
+| Web client disabled capabilities | Registration, implicit flow, direct password grants, service accounts, full-scope access |
+| A01 client | Separate confidential client; service account enabled, full-scope access disabled |
 
 The optional `quezo-api` client scope supplies **both** the audience mapper and
 Keycloak 26's access-token `sub` mapper. Omitting the latter can produce an
@@ -42,20 +44,55 @@ compatibility, not a claim that F03 performs SSO logout. Do not add wildcards or
 change F03's redirect/session behavior. To use another web origin, coordinate
 an explicit exact-URI configuration change; there is no runtime redirect input.
 
+## A01 local account-administration service
+
+The verified local Keycloak 26.4.7 installation uses a separate confidential
+`quezo-account-admin` service client with service accounts enabled and
+`fullScopeAllowed=false`. Its service account is scoped to
+`realm-management/query-users` and `view-users`; the latter transitively includes
+read-only `query-groups`. Fine-grained admin permissions are enabled. A client
+policy targeting only this service client grants `view` and `manage` on the
+`Users` resource type. A user policy is not sufficient for the
+client-credentials request context. No `manage-users`, role-mapping, group
+mutation, client or realm administration role is assigned.
+
+The approved Keycloak `manage` scope still includes deletion/password-reset
+effects. The Quezo API deliberately has no delete, password or credential-reset
+operation. The secret is generated into ignored `.env.docker`, passed only to
+the API, and never goes to the web process or browser. The service fails closed
+when this local configuration is absent. Realm bootstrap does not provision
+application credentials; account identities start disabled and no password is
+collected or stored. The local operator must use an independently controlled
+Keycloak credential process before an account can sign in.
+
+Before using A01 against any local realm, verify the client identity and exact
+effective policy/role mapping against this table. Do not copy this permission
+set to a shared or production realm without a separate approval. `view-users`
+is an explicit B.C. approval and is not an implicit grant for query-groups.
+
 ## Explicit setup and provisioning
 
 First bootstrap/migrate the local application database per
 [`docs/DEVELOPMENT.md`](../../docs/DEVELOPMENT.md). Use a dedicated local shell;
 the root `.env` is for Compose and is not automatically loaded by Python.
 Export nonempty, distinct local-only secrets without placing them in command
-arguments or source control. The provisioner requires secrets of at least
-16 characters.
+arguments or source control. Provisioning-only secrets require at least 16
+characters; the generated A01 client secret must match the configured client.
 
-| Provisioning-only variable | Purpose |
+Realm import and the existing synthetic provisioner do not create or grant the
+A01 service identity. That is a separate explicit local setup operation. Before
+starting A01, create/verify the exact client and permission rows in the A01
+configuration table above; the API does not bootstrap or broaden those grants.
+`Initialize-Local.ps1` stores a fresh service secret in ignored `.env.docker`,
+and `compose.local.yaml` passes it only to the API. If the client/policy is
+absent, A01 calls fail closed rather than falling back to the master user.
+
+| Local-only variable | Purpose |
 | --- | --- |
 | `KEYCLOAK_LOCAL_ORIGIN` | Exact loopback HTTP origin, default `http://localhost:8080` |
 | `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD` | Explicit local `master` bootstrap administration; never an application identity |
 | `QUEZO_OIDC_CLIENT_SECRET` | Injected into the new confidential client in memory; share only with the web server |
+| `QUEZO_ACCOUNT_ADMIN_CLIENT_ID`, `QUEZO_ACCOUNT_ADMIN_CLIENT_SECRET` | Dedicated local A01 service identity; the client secret goes to the API only |
 | `QUEZO_SYNTHETIC_PASSWORD` | Password for the selected synthetic account; choose a distinct value per account |
 | `QUEZO_DATABASE_URL` | Restricted `quezo_runtime` URL to the local migrated database; no migration/admin DB credential |
 | `QUEZO_OIDC_ISSUER` | Must exactly equal the local origin plus `/realms/quezo-local` |
@@ -115,8 +152,10 @@ The local operator is the provisioning actor; full A01 audit/admin operations
 and last-admin mutation protection remain A01 work (this command removes none).
 
 Remove administration and synthetic-password variables from application shells.
-The API requires only database, issuer and API audience settings. The web needs
-its own restricted database and confidential client settings, never admin access.
+The API requires its restricted database, issuer, API audience and dedicated
+account-administration service-client settings for A01; it never receives the
+bootstrap administrator credentials. The web needs its own restricted database
+and confidential client settings, never A01 or master administration access.
 No application passwords are stored in PostgreSQL.
 
 ## Isolated actual Keycloak check

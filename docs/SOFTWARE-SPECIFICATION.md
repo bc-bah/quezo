@@ -2,7 +2,7 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Foundations, Phase 2 and C03 accepted; A01/D04/R02 ready for separate sequential dispatch under the 27 October scoped approvals.
+**Status:** Foundations, Phase 2 and C03 accepted; A01 explicitly dispatched under the 27 October scoped DEC-06 approvals; D04/R02 remain ready for separate sequential dispatch.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -50,7 +50,7 @@ approval means the decision is not approved.
 | DEC-03 | Single-answer MCQ and true/false; nonnegative integer points, no penalties/partial credit, positive quiz total | Domain implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-04 | Independent score/key/explanation release after finalization, after availability end, or never; per-item grading is gated with answer-key release | Result and publication implementation | B.C. | Approved as written by B.C., 20 October 2026 |
 | DEC-05 | Input bounds in section 6, unlimited values, revision protocol and idempotency retention; retained request records have no automatic cleanup in the prototype | Contract implementation | B.C. | Approved 20 October 2026; adjusted learner duration ceiling of 6048000 seconds approved 27 October 2026; authored duration bounds unchanged |
-| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation; separately scoped least-privilege A01 administration adapter | Identity implementation | B.C. | F03/I01 approved 20 October 2026; local provisioning only in those packages. A01 local-realm administration boundary approved 27 October 2026; exact permissions must be verified/recorded before privileged implementation |
+| DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation; separately scoped least-privilege A01 administration adapter | Identity implementation | B.C. | F03/I01 approved 20 October 2026; local provisioning only in those packages. A01 local-realm boundary approved 27 October 2026. B.C. follow-up approval 27 October 2026 permits the local A01 service identity's fine-grained user `manage` capability, including Keycloak user deletion/password-reset capability that Keycloak does not separate from `manage`; Quezo must not expose deletion or credential-reset operations. Exact effective permissions must be verified and recorded before privileged implementation; no other realm/group/client administration is approved. |
 | DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions; PyJWT with cryptography and repository-convention HTTPX for I01 | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; F03 npm-locked dependencies and I01 uv-locked dependencies approved by B.C., 20 October 2026 |
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
 | DEC-09 | Pre-start learner timing adjustment/off choice, pinned per attempt, with explicit scheduled-availability interaction | Timed UX implementation | B.C. | Approved 27 October 2026 as specified in the Phase 3 record below; implementation and Q02 verification still required, no WCAG conformance claim |
@@ -317,9 +317,15 @@ B.C. explicitly approved these additional synthetic local-development decisions:
   administration proxy. Service secrets are server-side ignored configuration,
   never browser data, logs or source. Application authorization remains
   authoritative. Setup remains explicit/local, not external provisioning.
-  Before privileged implementation, verify and record the exact least-privilege
-  Keycloak permissions; escalate any need to broaden them. This is a bounded
-  implementation verification step, not approval of unknown broader privileges.
+  B.C.'s 27 October follow-up approves the local service identity's fine-grained
+  user `manage` capability, which Keycloak also uses for user deletion and
+  password-reset operations; Quezo must not expose those operations. Before
+  privileged implementation, verify and record the exact effective permissions.
+  No master/realm/client or group administration, credential storage, or other
+  broader capability is approved. A further 27 October approval permits the
+  local service account's `view-users` role for account search/profile access,
+  including its transitive read-only `query-groups` role; group mutation remains
+  excluded.
 - **D04 / DEC-09:** before starting an attempt, every eligible learner may keep
   the authored timing, choose an adjusted duration supporting at least ten times
   the authored duration, or turn off timing. Availability end remains a hard
@@ -345,9 +351,25 @@ B.C. explicitly approved these additional synthetic local-development decisions:
   may integrate its settings through the existing wrapper without redesigning
   C03 composition/lifecycle.
 
-A01/D04/R02 are `ready`, not `active`; implementation owners are assigned on
-dispatch. The [handoff packet](implementation/PHASE-3-HANDOFFS.md) carries these
-contracts. DEC-08/10 and release/date/budget commitments remain held.
+A01 is `active` for the explicitly dispatched session; D04/R02 remain `ready`
+for separate dispatch after A01's integration window. The [handoff
+packet](implementation/PHASE-3-HANDOFFS.md) carries these contracts. DEC-08/10
+and release/date/budget commitments remain held.
+
+**A01 effective Keycloak permissions verified 27 October 2026:** On local
+Keycloak 26.4.7, the dedicated `quezo-account-admin` confidential client uses a
+service account with only `realm-management/query-users` and `view-users`
+assigned and scoped; the token contains those roles plus the `query-groups`
+composite implied by `view-users`. Fine-grained access is granted by a `client`
+policy targeting only `quezo-account-admin`, attached to the `Users` resource
+type with only `view` and `manage` scopes. A user policy for the service-account
+user does not authorize the client-credentials request context. The exact
+client-bound policy evaluated `PERMIT`; through the service identity, disabled
+synthetic-user creation returned 201, profile read returned 200, profile update
+returned 204, and exact username search found the synthetic fixture. No
+`manage-users`, role-mapping, group-mutation, client, or realm-administration
+permission is granted. Keycloak `manage` still carries its approved delete and
+password-reset effects; no Quezo endpoint exposes either operation.
 
 ## 3. Actors and authorization
 

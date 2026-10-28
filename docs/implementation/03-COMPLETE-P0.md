@@ -10,8 +10,8 @@ the [software specification](../SOFTWARE-SPECIFICATION.md).
 ([milestone evidence](BACKLOG.md#t01-milestone-acceptance-23-october-2026));
 the current integrated local `dev` baseline is C03 `2eba9eb` (migration head
 `0010_author_workspace`). C03 is accepted/done after B.C.'s local app review
-and requested commit/merge. A01/D04/R02 are `ready`, not active, under the
-[27 October scoped approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+and requested commit/merge. A01 is explicitly dispatched; D04/R02 remain `ready`
+under the [27 October scoped approvals](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
 B.C. owns integration/review/merge; prepare separate explicit dispatches in order
 A01, D04, R02 with a single shared-file/contract/migration writer at a time.
 Verify exact Keycloak least privileges before privileged A01 implementation.
@@ -61,12 +61,22 @@ Use a narrowly privileged Keycloak administration identity and expose partial
 failure/retry without activating incomplete users. Enforce application-side
 revocation promptly and protect the last active administrator.
 
-**Approval/readiness:** ready for first separate dispatch under B.C.'s 27 October
-DEC-06 amendment. Dedicated local-realm identity only, limited to user
-provisioning/status/profile and required role mapping. Verify/record exact
-least-privilege permissions before privileged implementation; broader permissions
-require escalation. Server-side ignored secrets, no master/realm/client admin,
-no credential storage/unrestricted proxy, no external provisioning.
+**Approval/readiness:** dispatched as the first separate package under B.C.'s
+27 October DEC-06 amendments. Dedicated local-realm identity only, for user
+provisioning/status/profile and required role mapping. B.C.'s follow-up approval
+permits the fine-grained Keycloak user `manage` capability, including the user
+deletion/password-reset capabilities that Keycloak does not separate from it;
+Quezo must not expose deletion or credential-reset operations. B.C. also approved
+`view-users` for account search/profile access, including its transitive
+read-only `query-groups` role; group mutation remains excluded. The effective
+local Keycloak 26.4.7 mapping was verified before privileged implementation:
+`query-users` and `view-users` roles on the dedicated client-credentials service
+account, plus a client policy targeting only `quezo-account-admin` with `view`
+and `manage` on the `Users` resource type. A client policy is required because a
+user policy does not match this caller context. Disabled synthetic create, profile
+read/update and exact username search all succeeded. Server-side ignored
+secrets; no master/realm/client/group mutation administration, credential
+storage, unrestricted proxy, or external provisioning.
 
 **Done:** all three roles can be administered through the app; stale tokens do not
 preserve revoked access; identity-service failures are visible and retries cannot

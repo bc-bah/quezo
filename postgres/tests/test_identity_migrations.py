@@ -25,11 +25,13 @@ def test_actual_f03_head_upgrade_preserves_sessions(empty_database: IsolatedData
     seed_account(empty_database)
     run_migrations(empty_database.migration_url)
     with psycopg.connect(empty_database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0010_author_workspace",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0011_account_administration",)
         assert connection.execute("SELECT count(*) FROM quezo.accounts").fetchone() == (1,)
 
 
-@pytest.mark.parametrize("table", ["accounts", "account_roles", "identity_mappings"])
+@pytest.mark.parametrize(
+    "table", ["accounts", "account_roles", "identity_mappings", "account_admin_events"],
+)
 def test_web_role_cannot_read_or_write_identity(database: IsolatedDatabase, table: str) -> None:
     with psycopg.connect(database.web_url) as connection:
         with pytest.raises(psycopg.errors.InsufficientPrivilege):
@@ -62,6 +64,10 @@ def test_identity_relational_constraints_and_default_ineligibility(database: Iso
         )
         assert connection.execute("SELECT status FROM quezo.accounts WHERE id = %s", (other_id,)).fetchone() == ("disabled",)
         assert connection.execute("SELECT active FROM quezo.identity_mappings WHERE account_id = %s", (other_id,)).fetchone() == (False,)
+        assert connection.execute(
+            "SELECT provisioning_state, identity_sync_state, identity_desired_enabled "
+            "FROM quezo.accounts WHERE id = %s", (other_id,),
+        ).fetchone() == ("complete", "in_sync", False)
 
 
 def test_failed_identity_upgrade_preserves_actual_prior_revision(empty_database: IsolatedDatabase) -> None:

@@ -61,7 +61,12 @@ async def provision_account(
         ):
             raise ApiError(ErrorCode.UNAUTHENTICATED)
         await connection.execute(
-            "INSERT INTO quezo.accounts (id, status) VALUES (%s, 'active')", (account_id,),
+            """
+            INSERT INTO quezo.accounts
+                (id, status, username, email, identity_desired_enabled)
+            VALUES (%s, 'active', %s, %s, true)
+            """,
+            (account_id, account.username, f"{account.username}@example.invalid"),
         )
         await connection.execute(
             "INSERT INTO quezo.identity_mappings (issuer, subject, account_id, active) "

@@ -69,6 +69,10 @@ def test_openapi_describes_only_implemented_contracts(client: TestClient) -> Non
         "/api/v1/attempts/{attempt_id}/responses/{question_id}",
         "/api/v1/attempts/{attempt_id}/submission",
         "/api/v1/attempts/{attempt_id}/result",
+        "/api/v1/admin/accounts",
+        "/api/v1/admin/accounts/{account_id}/roles",
+        "/api/v1/admin/accounts/{account_id}/activate",
+        "/api/v1/admin/accounts/{account_id}/deactivate",
     }
     schema = document["paths"]["/health/live"]["get"]["responses"]["200"]["content"][
         "application/json"

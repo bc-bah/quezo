@@ -16,6 +16,10 @@ bounded request bodies and a generated TypeScript client for implemented routes.
 F03 adds server-only OIDC and durable web sessions with navigation. I01 adds
 independent JWT validation, live application authorization and `/api/v1/me`.
 Explicit local synthetic provisioning is required; sign-in never grants access.
+A01 adds administrator-only account listing, disabled-user provisioning,
+application-role changes and activation/deactivation. The dedicated local
+Keycloak service credential is server-only and separate from the web OIDC
+credential; A01 never stores or provisions passwords.
 
 D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
 D03 adds metadata-only submission, immutable grading through S01, request-triggered
@@ -2403,11 +2407,14 @@ HTTPX distribution was introduced.
 ### Configuration and validation
 
 Export `QUEZO_OIDC_ISSUER` and `QUEZO_API_AUDIENCE` to the API process, in
-addition to its restricted `QUEZO_DATABASE_URL`. Issuer must be an exact
+addition to its restricted `QUEZO_DATABASE_URL`. A01 also requires
+`QUEZO_ACCOUNT_ADMIN_CLIENT_ID` and `QUEZO_ACCOUNT_ADMIN_CLIENT_SECRET`; these
+belong only in the API process and ignored local configuration. Issuer must be an exact
 Keycloak realm URL without trailing slash, credentials, query or fragment;
 HTTPS is required except for loopback HTTP. The defaults used by the local
 realm/F03 web configuration are `http://localhost:8080/realms/quezo-local`
-and `quezo-api`. Neither the API nor web receives Keycloak admin credentials.
+and `quezo-api`. Neither the API nor web receives bootstrap `master` admin
+credentials; the web never receives the A01 service secret.
 See [`infra/keycloak/README.md`](../infra/keycloak/README.md) for exact client,
 redirect/logout, synthetic-account and explicit provisioning steps.
 
@@ -2776,6 +2783,42 @@ and the generated schema; backend writes must resolve live actor/roles inside
 their transaction before operation/ownership checks. The repeatable navigation/
 restart demonstration works, but no question, quiz or attempt route is supplied.
 
+## A01 account administration
+
+The administrator workspace at `/admin/accounts` is backed by the live
+administrator-role check in the web facade and independently by each FastAPI
+account endpoint. It lists application-linked account profiles and provides
+disabled identity provisioning, PostgreSQL application-role changes, and
+activation/deactivation. Administrators do not receive assessment-answer access.
+The API never stores passwords or returns Keycloak subjects, tokens or secrets.
+
+The local API uses only the `quezo-account-admin` confidential client-credentials
+identity described in [`infra/keycloak/README.md`](../infra/keycloak/README.md).
+The service secret remains server-side and is not passed to the web container.
+Keycloak users are created disabled with an application ownership marker; exact
+username lookup plus that marker makes an incomplete create safely retryable
+without adopting a foreign account. Provisioning retries repeat the same
+username/email. Roles are authoritative only in PostgreSQL. Activation enables
+the identity first and grants application access only after success; deactivation
+revokes the database mapping/status before attempting identity disable, so an
+identity-service outage cannot preserve application access. The account list
+exposes failed/in-sync state and a failed provision can be retried. No account
+delete, credential-reset or password endpoint exists.
+
+Migration `0011_account_administration` follows the verified C03 baseline
+`0010_author_workspace`, adds profile/provisioning/sync state and a restricted
+administrator integrity-event table. A transaction-scoped advisory lock
+serializes last-active-administrator checks with role/status changes. Do not
+rewrite any applied revision.
+
+Focused A01 tests cover the three application roles, incomplete provisioning
+and safe retry, duplicate refusal, last-admin protection, live role/status
+revocation, provider-sync failure and administrator denial from learner results.
+A temporary synthetic user was also created, profile-read/updated,
+enabled/disabled, and removed using the verified local Keycloak service
+identity. These cases are a subset of AT-02 and AT-01; they are not full
+AT-01/AT-02 acceptance or the complete browser/authorization catalogue.
+
 ## Phase 2 completion and remaining review gates
 
 C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
@@ -2789,11 +2832,13 @@ recording D03 acceptance. R01 is now accepted/integrated at `8976371` (PR #14);
 B.C. directed T01 execution after reconciliation on 23 October, then requested
 milestone acceptance/tracking. T01 is accepted at `df06ccc` (PR #15), closing
 Phase 2. C03 is subsequently accepted/integrated at local dev `2eba9eb`, head
-`0010_author_workspace`, on 27 October. A01/D04/R02 are ready for separate explicit
-dispatch in that order after the scoped DEC-06 and DEC-09/02/05 approvals.
-Exact Keycloak permissions must be verified/recorded before privileged A01
-implementation. B.C. owns integration/review/merge and serializes shared-file/
-contract/migration windows. Each later consumer must
+`0010_author_workspace`, on 27 October. A01 is active in its explicitly
+dispatched checkout, with migration head `0011_account_administration`; it
+remains unaccepted pending B.C.'s integration/review. D04/R02 remain ready for
+separate sequential dispatch after A01 integration. The exact local Keycloak
+permissions were recorded and verified before privileged implementation. B.C.
+owns integration/review/merge and serializes shared-file/contract/migration
+windows. Each later consumer must
 first verify its own integrated producer
 evidence in the backlog. The [Phase 2 prompts](implementation/PHASE-2-HANDOFFS.md)
 are now historical; [Phase 3 packages](implementation/03-COMPLETE-P0.md) record

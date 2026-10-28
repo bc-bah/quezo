@@ -1,10 +1,10 @@
 # Phase 3 coding-agent handoffs
 
 **State, 27 October 2026:** C03 accepted and locally integrated into `dev` at
-`2eba9eb`, head `0010_author_workspace`. A01/D04/R02 are ready for **separate
-explicit dispatch in that order**, not active or assigned implementation owners.
-B.C. owns integration/review/merge and serializes shared-file/contract/migration
-windows. The [approval record](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
+`2eba9eb`, head `0010_author_workspace`. A01 is explicitly dispatched to the
+current Copilot session; D04/R02 remain ready for **separate dispatch** in that
+order. B.C. owns integration/review/merge and serializes shared-file/contract/
+migration windows. The [approval record](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
 records scoped DEC-06 and DEC-09/02/05 amendments. Existing latest-finalized-attempt
 navigation remains partial AT-13 evidence, not full history/reporting acceptance.
 
@@ -110,10 +110,11 @@ successor dispatch or tracker acceptance.
 
 ## A01 dispatch prompt: Account administration
 
-**Dispatch state:** ready for first separate explicit dispatch; implementation
-owner assigned on dispatch. B.C. approved the scoped DEC-06 amendment on
-27 October. Exact least-privilege permission verification remains a mandatory
-entry step before privileged implementation, not permission to broaden rights.
+**Dispatch state:** A01 explicitly dispatched 27 October to the current Copilot
+session; B.C. owns integration/review/merge. B.C.'s scoped DEC-06 approval and
+follow-up amendment are recorded in the software specification and backlog.
+Exact effective permission verification remains a mandatory entry step before
+privileged implementation.
 
 ```text
 Implement Quezo work item A01: Account administration.
@@ -126,13 +127,22 @@ Read:
 - docs/PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md: identity and authorization seams.
 - docs/DEVELOPMENT.md and current package scripts for setup and validation.
 
-Approved boundary: dedicated local-realm identity limited to user provisioning,
-status/profile and required role mapping. Verify and record exact least-privilege
-Keycloak permissions before privileged implementation; escalate broader needs
-to B.C. No master/realm/client administration, credential storage, unrestricted
-proxy or external provisioning. Service secrets stay server-side in ignored
-configuration, never browser/logs/source. Application authorization remains live
-and authoritative. Do not provision credentials without explicit local setup.
+Approved boundary: dedicated local-realm identity for user provisioning,
+status/profile and required role mapping. B.C.'s 27 October follow-up approves
+the fine-grained Keycloak user `manage` capability, including user deletion and
+password-reset capability that Keycloak does not separate from `manage`; Quezo
+must not expose deletion or credential-reset operations. B.C. further approved
+`view-users` for account search/profile access, including its transitive
+read-only `query-groups` role; group mutation remains excluded. Verified on
+local Keycloak 26.4.7 before privileged implementation: `query-users` and
+`view-users` are scoped to the dedicated `quezo-account-admin` service account,
+and a client policy targeting only that client grants `view` and `manage` on the
+`Users` resource type. Use a client policy, not a user policy, for this
+client-credentials caller. No master/realm/client/group mutation administration,
+credential storage, unrestricted proxy or external provisioning. Service
+secrets stay server-side in ignored configuration, never browser/logs/source.
+Application authorization remains authoritative. Local setup is explicit; do
+not provision credentials outside it.
 Integrated prerequisite: T01 merge df06ccc; required checkout baseline C03
 2eba9eb, migration head 0010_author_workspace, plus this approval/tracking update
 (or a B.C.-recorded newer integrated baseline). Verify all before edits.

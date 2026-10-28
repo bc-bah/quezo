@@ -26,6 +26,7 @@ $runtime = New-LocalSecret
 $web = New-LocalSecret
 $admin = New-LocalSecret
 $client = New-LocalSecret
+$accountAdminClient = New-LocalSecret
 $synthetic = New-LocalSecret
 
 @"
@@ -42,6 +43,8 @@ QUEZO_WEB_DATABASE_URL=postgresql://quezo_web:${web}@127.0.0.1:5432/quezo
 KEYCLOAK_ADMIN=quezo-admin
 KEYCLOAK_ADMIN_PASSWORD=$admin
 QUEZO_OIDC_CLIENT_SECRET=$client
+QUEZO_ACCOUNT_ADMIN_CLIENT_ID=quezo-account-admin
+QUEZO_ACCOUNT_ADMIN_CLIENT_SECRET=$accountAdminClient
 QUEZO_SYNTHETIC_PASSWORD=$synthetic
 "@ | Set-Content -LiteralPath $destination -Encoding ascii
 

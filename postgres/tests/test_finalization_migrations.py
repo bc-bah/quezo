@@ -33,7 +33,7 @@ def test_actual_response_head_upgrade_preserves_accepted_saves(
     run_migrations(database.migration_url)
     run_migrations(database.migration_url)
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0010_author_workspace",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0011_account_administration",)
         assert connection.execute("SELECT * FROM quezo.attempt_responses ORDER BY question_id").fetchall() == responses
         assert connection.execute("SELECT * FROM quezo.response_commands").fetchall() == ledger
         assert connection.execute("SELECT count(*) FROM quezo.grades").fetchone() == (0,)
