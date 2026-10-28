@@ -1,8 +1,10 @@
 # Prototype scope
 
 **Date:** 20 October 2026  
-**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 not dispatched.
-Later decisions remain held in the specification. This is not a production-readiness claim.
+**Status (27 October 2026):** Foundations, Phase 2 lifecycle through T01, and
+C03 accepted; A01 dispatched; D04/R02 ready for separate sequential dispatch.
+Pilot, deployment, and other held decisions remain tracked in the specification.
+This is not a production-readiness claim.
 
 ## 1. Source and decision precedence
 

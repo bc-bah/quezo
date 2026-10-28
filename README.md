@@ -249,10 +249,11 @@ specifications or executable agent instructions.
 
 ## Development status
 
-**As of 23 October 2026:** working foundations and the Phase 2 lifecycle through
-T01 are accepted. Phase 3 has not been dispatched. The initial lifecycle is
-usable for the scoped synthetic-data demonstration, not evidence of full P0
-completion or deployment approval.
+**As of 27 October 2026:** working foundations, the Phase 2 lifecycle through
+T01, and C03 are accepted. A01 is dispatched; D04 and R02 are ready for
+separate sequential dispatch. The initial lifecycle is usable for the scoped
+synthetic-data demonstration, not evidence of full P0 completion or deployment
+approval.
 
 <details>
 <summary><strong>Acceptance history, remaining work, and decision gates</strong></summary>
@@ -283,16 +284,16 @@ merge `df06ccc`. Its migration head was `0009_finalization`. See the
 and [detailed execution evidence](docs/DEVELOPMENT.md#t01-first-lifecycle-acceptance).
 
 C03's complete author workspace was subsequently accepted after B.C.'s local
-app review and requested commit/merge on 27 October 2026. Local `dev` is at
-`2eba9eb`, current migration head `0010_author_workspace`; see the
+app review and requested commit/merge on 27 October 2026. The accepted local
+baseline is `2eba9eb`, migration `0010_author_workspace`; see the
 [C03 acceptance/evidence record](docs/implementation/BACKLOG.md#c03-acceptance-and-next-package-readiness-27-october-2026).
 This is package acceptance, not full catalogue AT-03/04/05, WCAG, hosted CI or
 pilot acceptance.
 
 ### Remaining gates
 
-- **Phase 3:** A01 administration, D04 delivery controls and R02 history/reporting
-  are ready for separate explicit dispatch in that order, not active. The
+- **Phase 3:** A01 administration is dispatched; D04 delivery controls and R02
+  history/reporting are ready for separate sequential dispatch. The
   [27 October approvals](docs/SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
   cover A01's limited local-realm identity and D04 pre-start timing adjust/off
   design. Verify exact Keycloak least privileges before privileged A01
@@ -318,7 +319,7 @@ an accepted timed learner UI or timed-accessibility conformance.
 frontend/quezo/          Next.js sessions, OIDC facade, author and learner workflows
 postgres/               Independent Python project and locked dependencies
 postgres/src/quezo_api/  Application, identity, and assessment modules
-postgres/migrations/    Ordered migrations through 0009_finalization
+postgres/migrations/    Ordered migrations through 0012_delivery_controls
 postgres/tests/         Database, identity, lifecycle, scoring, and contract checks
 tests/e2e/              Real-browser identity and initial lifecycle journeys
 infra/keycloak/         Explicit local synthetic realm/account provisioning

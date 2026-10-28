@@ -1,7 +1,8 @@
 # Prototype high-level architecture
 
 **Date:** 20 October 2026  
-**Status:** Working foundations and Phase 2 lifecycle through T01 accepted; Phase 3 not dispatched.
+**Status (27 October 2026):** Foundations, Phase 2 lifecycle through T01, and
+C03 accepted; A01 dispatched; D04/R02 ready for separate sequential dispatch.
 
 **Product baseline:** [PRD v0.1](reference/02-Product-Requirements.md), as scoped by
 [Prototype scope](PROTOTYPE-SCOPE.md).
