@@ -90,6 +90,11 @@ command acknowledgements. D01/D02 add assignment/start and durable responses;
 S01/D03 add scoring, immutable finalization and expiry; R01 adds policy-filtered
 results. T01 accepts the integrated initial lifecycle at merge `df06ccc`;
 shared documentation exposure remains a deployment decision.
+R02 extends the Results module with paginated learner history, owner-scoped
+participation/completion and per-finalized-attempt score summaries, and
+finalized submission inspection. It reads persisted attempts/Grades rather than
+inferring completion from elapsed deadlines or recomputing grades. Author
+reporting projections also enforce each attempt's pinned release policy.
 
 ## 4. Module responsibilities and interfaces
 
@@ -317,12 +322,15 @@ Proposed `/api/v1` resources:
 | `/attempts/{id}/submission` | Finalize saved answers | Attempt owner, replay-safe finalization |
 | `/attempts/{id}/result`, `/me/attempts`, `/quizzes/{id}/results` | Policy-filtered result, history and author report | Ownership and release checks before serialization |
 
-These are design sketches, not implemented endpoints. Define typed Pydantic
+These resource groups are design sketches, not an exhaustive implemented route
+inventory. R02 implements the history/report group and nested finalized
+submission inspection; consult the generated OpenAPI for exact current paths.
+Define typed Pydantic
 request/response models with each approved slice; FastAPI generates the OpenAPI
 contract. F02 generates types with openapi-typescript and uses openapi-fetch
 for the typed client, rather than manually duplicating Python types, and checks
-contract/client drift in CI. I01 implements /api/v1/me alongside liveness;
-the assessment routes above remain future work. Stable internal contracts and local
+contract/client drift in CI. I01 implements /api/v1/me alongside liveness.
+Stable internal contracts and local
 interactive documentation do not constitute the P1 supported external API.
 
 Use structured errors such as `{ code, message, requestId, details? }`, with safe

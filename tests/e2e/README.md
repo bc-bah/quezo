@@ -95,6 +95,28 @@ The final focused D04/C03/C02/D01/T01 selection passed all eight cases; the
 [executed-check record](../../docs/DEVELOPMENT.md#d04-executed-checks-27-october-2026)
 also retains intermediate failures and the earlier non-reproduced T01 timeout.
 
+### R02 history and author reporting
+
+Run `npm run test:e2e -- --grep "R02|R01 AT-12|D04"` for R02 and the directly
+related disclosure/timing regressions. The three R02 cases use real provider
+logins, persisted attempts and Grades, production server-rendered history/report/
+submission navigation, and direct authenticated API calls. They check multiple
+attempts/publications, distinct-learner participation/completion, in-progress
+score exclusion, explicit released/withheld states, incorrect versus unanswered
+submission outcomes, foreign-author guessed IDs and browser denial, private
+no-store responses, real dependency-outage error/retry, empty pages and
+26-attempt cursor navigation without missing or duplicated records.
+
+The HTTP/database suite additionally covers all 27 independent release-mode
+combinations immediately before/at/after the scheduled end, submitted versus
+expired completion, standard/adjusted/off timing snapshots, foreign nested IDs/
+cursors, service-level direct calls, current role/status/mapping revocation and
+an equally weighted score mean across different publication totals. Loading
+announcements and distinct zero/withheld/unfinished render states have focused
+web unit coverage. These are R02 AT-12/13 evidence, not tracker acceptance,
+full-suite readiness, load/performance or screen-reader conformance evidence.
+See [R02 implementation and checks](../../docs/DEVELOPMENT.md#r02-history-and-author-reporting).
+
 ## Fixture ownership, startup and cleanup
 
 `postgres/tests/run_browser.py` generates a unique `quezo-i02-<12 hex>` Compose
@@ -115,7 +137,8 @@ docker network rm <owned-project>_default
 ```
 
 `<OS-null-device>` is `NUL` on Windows, `/dev/null` on Linux. The command builds
-Next, migrates a fresh database to `0010_author_workspace`, and calls I01's allowlisted
+Next, migrates a fresh database to the current head (`0012_delivery_controls`
+for R02), and calls I01's allowlisted
 synthetic provisioner for administrator, author, learner, combined and empty
 roles, each with a separate generated password. Only the newly created realm's
 `quezo-web` client is configured with the exact chosen web origin and callback.

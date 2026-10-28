@@ -4,6 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { SessionShell } from "../src/app/session-shell";
 import type { components } from "../src/lib/api/schema";
+import { Score, ReleasedResult } from "../src/app/reporting";
+import LoadingHistory from "../src/app/learner/history/loading";
+import LoadingReport from "../src/app/author/quizzes/[quizId]/results/loading";
 
 const actor: components["schemas"]["Actor"] = {
   userId: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313", roles: [], status: "active",
@@ -50,4 +53,37 @@ test("combined/empty roles and signed-out, expired, disabled and errors are expl
   assert.match(html, /role="alert"/);
   assert.match(html, /Try again/);
   assert.doesNotMatch(html, /You are signed in/);
+});
+
+test("R02 loading and distinct score states are announced without fabricated grades", () => {
+  for (const Loading of [LoadingHistory, LoadingReport]) {
+    const html = renderToStaticMarkup(<Loading />);
+    assert.match(html, /id="main"/);
+    assert.match(html, /role="status"/);
+    assert.match(html, /Loading/);
+  }
+  const withheld = renderToStaticMarkup(<Score score={{ status: "withheld" }} />);
+  const unfinished = renderToStaticMarkup(<Score score={{ status: "not_finalized" }} />);
+  const zero = renderToStaticMarkup(<Score score={{ status: "released", earnedPoints: 0, possiblePoints: 10 }} />);
+  assert.match(withheld, /Score withheld/);
+  assert.match(unfinished, /No final score/);
+  assert.doesNotMatch(withheld + unfinished, /0\.0%|earnedPoints|possiblePoints/);
+  assert.match(zero, /0 \/ 10 points.*0\.0%/);
+});
+
+test("R02 shared result view retains independent R01 withheld states", () => {
+  const html = renderToStaticMarkup(<ReleasedResult result={{
+    title: "Synthetic result", versionId: actor.userId, attemptNumber: 1,
+    completion: {
+      attemptId: actor.userId, state: "finalized", completionReason: "expired",
+      finalizedAt: "2026-10-27T00:00:00Z",
+    },
+    serverTime: "2026-10-27T00:00:00Z",
+    score: { status: "released", earnedPoints: 0, possiblePoints: 10 },
+    answerKey: { status: "withheld" }, explanations: { status: "withheld" },
+  }} />);
+  assert.match(html, /0 \/ 10 points/);
+  assert.match(html, /Answer key and item outcomes withheld/);
+  assert.match(html, /Explanations withheld/);
+  assert.doesNotMatch(html, /correctOption|Outcome:|feedback/);
 });

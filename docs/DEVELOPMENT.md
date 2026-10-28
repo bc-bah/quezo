@@ -128,8 +128,9 @@ including submitted or expired attempts with no starts remaining. These links
 remain available while another attempt is in progress; **Resume attempt** still
 opens the active attempt. Results continue to honor the published release policy:
 navigation does not release withheld scores, answer keys or explanations. This
-is a return path for the latest completed attempt, not the deferred full attempt
-history/reporting workspace.
+is a return path for the latest completed attempt, not full history by itself.
+R02 adds **Attempt history** and the author quiz's **Participation and results**
+workspace; see [R02 contracts and evidence](#r02-history-and-author-reporting).
 
 For the C01 author workflow, migration and consumer contract, see
 [C01 versioned objective questions](#c01-versioned-objective-questions).
@@ -171,7 +172,7 @@ no `/health/ready` or raw grade routes. FastAPI exposes local interactive docs a
 `http://localhost:4000/docs` and the generated contract at
 `http://localhost:4000/openapi.json`; liveness, `GET /api/v1/me`, C01 question
 authoring, C02 quiz publication, D01 assignment/start, D02 response saving,
-D03 submission and R01 filtered results are implemented.
+D03 submission, R01 filtered results and R02 history/owner reporting are implemented.
 Shared actor, error and pagination schemas are also exported. This is not the
 deferred supported public API. Stop each foreground process with Ctrl+C.
 
@@ -2924,6 +2925,161 @@ not establish the exact cause. No timeout or product threshold was relaxed.
 The unchanged full eight-case selector then passed on fresh owned services,
 including T01 score-only in 25.524 seconds. The earlier timeout remains recorded,
 not relabelled as a diagnosed environment failure.
+
+## R02 history and author reporting
+
+### Baseline and boundaries
+
+B.C. confirmed clean integrated commit
+`d43d89351a1740c7c5143144ee78829240e26ead`, migration head
+`0012_delivery_controls`, and the exclusive R02 router/generated-contract/index
+or migration window before implementation. This checkout includes T01
+`df06ccc`, C03 `2eba9eb`, A01 and D04. This is implementation/review evidence
+only; no tracker acceptance, commit/PR, successor dispatch or pilot approval.
+
+R02 extends the existing Results module, not scoring or finalization. Reads use
+the persisted attempt state and immutable Grade, never a reconstructed score or
+an inferred expiry. An overdue but not-yet-finalized attempt remains in progress
+until the existing expiry worker or attempt finalization reconciles it. Timing
+choice, adjusted duration and deadline are read from the D04 attempt snapshot;
+availability end still independently controls each pinned disclosure policy.
+Close/archive retain history and do not release restricted results.
+
+### Contracts and navigation
+
+| HTTP read | Projection |
+| --- | --- |
+| `GET /api/v1/me/attempts` | Own learner attempt history, pinned title/version, assignment/attempt identity and number, start/deadline/completion/timing, released/withheld/not-finalized score |
+| `GET /api/v1/quizzes/{quiz_id}/results` | Owner-only summary plus paginated assigned learners, including those with no attempts |
+| `GET /api/v1/quizzes/{quiz_id}/results/attempts` | Owner-only attempt rows across all retained publications, including in-progress rows with no final score |
+| `GET /api/v1/quizzes/{quiz_id}/results/attempts/{attempt_id}` | Owner-only finalized saved responses and the shared R01 policy-filtered result projection; active attempts return `INVALID_STATE` |
+
+All list operations use existing `pageSize` (1-100, default 25) and opaque UUID
+`cursor` conventions. Rows are in stable UUID order, not a claimed chronological
+or best-attempt ordering. Cursors must belong to the same learner/quiz scope;
+foreign or absent IDs are concealed as 404, malformed cursors as 422. Nested
+submission IDs must belong to the specified owned quiz. Administrator privilege
+does not bypass author/learner roles or resource relationships. Current active
+mapping, account status and roles are resolved on every public service call.
+All result/report/history responses are private/no-store.
+
+The learner assignment workspace links to `/learner/history`; history links to
+the exact finalized result or active attempt. The quiz workspace links to
+`/author/quizzes/{quizId}/results`, which links to finalized submission inspection.
+These are server-only facade calls using regenerated OpenAPI/TypeScript
+contracts, not direct browser/database access. Learner and author result views
+share the same released-result renderer. Empty history/report pages, loading
+status announcements, explicit errors and retry/back links are provided.
+
+Participation/completion denominators are distinct assigned learners across the
+quiz's publications: at least one started/finalized attempt respectively.
+Submitted and expired are separate persisted completion reasons. Score summaries
+are per finalized attempt, never a learner's best attempt. The UI labels the
+mean as equally weighted attempt percentages among **released finalized
+attempts**, and shows both the total finalized count and the withheld count.
+An empty released-score denominator yields no mean, not zero. In-progress rows
+never enter score aggregates, even after scheduled availability end.
+Summary counters, score aggregates and the learner page share a repeatable-read
+snapshot within the summary HTTP request.
+
+Each attempt's pinned release policy is applied to history score, report score
+rows, aggregate score membership and submission score/key/explanation projections
+at current database time. The author submission view does not bypass release.
+R01's result projector is shared rather than sending private question objects or
+Grades to the web and hiding them. Saved selected answers/unanswered responses
+are distinct from released correctness/points; item outcomes remain gated with
+answer-key release. CSV/cohort/distribution analytics and manual grading/regrade
+controls remain excluded.
+
+### Evidence map and index observations
+
+| Evidence | R02 coverage |
+| --- | --- |
+| `postgres/tests/test_reporting.py` | Summary/history/detail identity and Grade agreement; two publications/multiple starts; idle assigned learner; close/archive retention; cursor traversal; all 27 release combinations at end minus/at/plus one microsecond; expired/submitted and D04 snapshots; roles/owners/nested IDs/cursors/direct service calls; live revocation; no best or pooled-point mean |
+| `postgres/tests/test_results.py` | Inherited R01 independent disclosure, zero score, exact release boundaries, finalization and frozen snapshot regression |
+| `postgres/tests/test_app.py`, `test_http_contract.py`, `test_contract_schemas.py`, contract-tool consumer | Implemented route inventories, fresh generated contracts, strict error/schema and typed discriminated score contracts |
+| `frontend/quezo/tests/navigation.test.tsx` | Loading announcements, explicit unfinished/withheld/released-zero states, shared independent R01 withheld rendering |
+| `tests/e2e/reporting.spec.ts` | Three actual-provider browser cases: released/withheld multi-version reporting and learner navigation; persisted Grade cross-checks; finalized response outcomes; author guessed-ID denial; empty/error/retry and 26-attempt pagination |
+
+`test_reporting_query_plans_reuse_existing_scoped_indexes` runs
+`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` against migrated PostgreSQL using
+history, quiz/assignment-attempt join and finalized question/Grade-item reads.
+Its tiny synthetic fixture is deliberately not a load benchmark. A separate
+transaction-local `enable_seqscan=off` probe demonstrates eligibility of
+`attempts_learner`, `assignments_quiz`, the assignment/attempt-number unique
+index and `grade_items_attempt`; it is not an application setting or evidence
+that a natural planner must always select them. Natural planner observations
+and executed checks are recorded below. Existing primary/unique/relationship
+indexes support these scoped reads; no new index, migration, backfill, privilege
+change or Grade/timing/publication rewrite is introduced. Head remains
+`0012_delivery_controls`; normal reviewed forward recovery procedures remain
+unchanged.
+
+### Executed checks
+
+Executed 27 October 2026 on Windows, Node 24.20.0, Python 3.12.10,
+PostgreSQL 17.11, locked Playwright 1.64.1/Chromium. Python checks used newly
+owned disposable local PostgreSQL projects and the existing isolated-database
+helpers. A session-only wrapper supplied random test-role secrets and a loopback
+control URL, ran the commands below from the repository root using the locked
+backend interpreter, and removed only its owned service/network in `finally`.
+Browser checks used the existing guarded launcher, new isolated database/realm
+and actual Keycloak 26.4.7. All owned services, contexts, pools and networks were
+cleaned up. No development data/volumes or credentials were retained.
+
+```powershell
+python -m pytest -c postgres\pyproject.toml postgres\tests\test_reporting.py postgres\tests\test_results.py postgres\tests\test_app.py postgres\tests\test_contract_schemas.py postgres\tests\test_http_contract.py -s --tb=short
+python -m pytest -c postgres\pyproject.toml postgres\tests\test_reporting.py -k query_plans -s --tb=short
+npm run typecheck
+npm run test:web
+npm run api:generate
+npm run api:check
+node --test postgres\scripts\test_contract_tools.mjs
+npm run test:e2e -- --grep "R02|R01 AT-12|D04"
+uv run --directory postgres --locked alembic heads
+git diff --check
+```
+
+| Check | Final result |
+| --- | --- |
+| Focused Python/API/contracts command | 171 passed in 389.58 seconds, including all 37 R02 cases |
+| Sanitized query-plan observation rerun | 1 passed, 36 deselected in 7.58 seconds |
+| `npm run typecheck` | Passed Next/TypeScript, strict mypy (96 sources), browser TypeScript |
+| `npm run test:web` | 14 passed, including 2 new reporting/loading/render cases |
+| Contract generation/freshness | OpenAPI and generated TypeScript current; no hand-edited generated schemas |
+| Contract-tool/client checks | Both passed, including new reporting consumer, protected-score narrowing and nested-ID typing assertions |
+| Focused browser command | Production build and all 7 cases passed: 3 R02, 3 R01, 1 D04; zero failures/timeouts/skips/interruptions |
+| Alembic head | Unchanged single head `0012_delivery_controls` |
+| Diff whitespace check | Passed |
+
+Final browser R02 durations were 8.138 seconds (released), 7.622 seconds
+(withheld), and 12.596 seconds (pagination/empty/error recovery), on owned project
+`quezo-i02-5520f51a6795`. These are observed test times, not product thresholds.
+In the tiny representative plan fixture (one assigned learner/attempt, two
+questions), natural history used `attempts_learner`, the assignment identity
+unique index and `grades_attempt_id_key` (Limit/Nested Loop; 0.117 ms).
+The quiz join used `assignments_quiz` plus an attempts sequential scan/Hash Join
+(0.044 ms). Finalized item inspection used `grade_items_attempt` and the
+attempt-question relationship unique index followed by Sort (0.035 ms).
+The separate index-eligibility probe also passed for the existing
+assignment/attempt-number unique index. These are local planner observations,
+not a load benchmark, numeric gate or proof of a larger-data plan.
+
+Intermediate failures were corrected and are not acceptance evidence: the first
+API fixture assumed unlimited attempts instead of the default single start; a
+tiny-plan assertion incorrectly required a specific join index; route inventories
+and an exported schema were stale during iteration. Browser iteration exposed an
+ambiguous alert locator (now scoped to the main landmark), a strict optional-prop
+type error in the shared renderer refactor (now explicitly nullable), and a
+pagination test collecting DOM text before the destination rows arrived (now
+awaiting the expected persisted IDs and row count). The final commands above
+passed after those corrections; no product timeout or disclosure boundary was
+relaxed.
+
+The full unfiltered browser suite, `--checks` umbrella, hosted matrix, larger-data
+performance/load checks and screen-reader/WCAG review were not run for R02.
+Those are not claimed here. R02 scope is ready for B.C.'s integration/review,
+not tracker acceptance or permission to dispatch a successor.
 
 ## Phase 2 completion and remaining review gates
 

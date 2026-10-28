@@ -21,6 +21,7 @@ export default async function QuizPage({ params, searchParams }: {
       })),
     ]);
     return <AuthorPage><h1>{quiz.title}</h1>
+      <a href={`/author/quizzes/${quizId}/results`}>Participation and results</a>
       <p>Draft revision: {quiz.draftRevision}</p>
       <Publication key={`${quiz.id}-${quiz.draftRevision}-${quiz.state}`} quiz={quiz} />
       {quiz.draft && choices && <Composition key={quiz.draftRevision} quiz={quiz} initial={quiz.draft} choices={choices} />}

@@ -10,6 +10,7 @@ export default async function LearnerPage({ searchParams }: { searchParams: Prom
     const { cursor } = await searchParams;
     const page = await apiData(client.GET("/api/v1/assignments", { params: { query: { cursor: cursor ?? null } } }));
     return <main id="main"><a href="/">Home</a><h1>My assignments</h1>
+      <a href="/learner/history">Attempt history</a>
       {page.items.length === 0 && <p>No assignments.</p>}
       {page.items.map((assignment) => <section key={assignment.id} aria-label={assignment.title}>
         <h2>{assignment.title}</h2>

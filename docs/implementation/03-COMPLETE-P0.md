@@ -130,10 +130,12 @@ per-learner accommodations not approved under DEC-09.
 
 ## R02: History and author reporting
 
-**Readiness:** ready for third separate dispatch after D04's exclusive window.
-This is integration scheduling, not a new domain dependency. Verify actual
-post-D04 snapshots/contracts/head; current baseline is `2eba9eb` /
-`0010_author_workspace`. Full AT-13 remains unimplemented/unaccepted.
+**Dispatch baseline:** B.C. confirmed the separate post-D04 R02 window at
+`d43d893` / `0012_delivery_controls`, superseding the original C03 baseline
+`2eba9eb` / `0010_author_workspace`. This is integration scheduling, not a new
+domain dependency. Implementation and focused evidence are recorded in
+[DEVELOPMENT.md](../DEVELOPMENT.md#r02-history-and-author-reporting); full AT-13
+tracker acceptance remains B.C.'s review decision.
 
 **Rules:** RESULT-01/02, IAM-02; AT-12/13.
 **Surfaces:** result/history/report queries and projections; learner history and

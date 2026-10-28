@@ -157,6 +157,15 @@ assembly, generated-contract and forward-migration window. The checkout contains
 T01 `df06ccc` and C03 `2eba9eb`. This records the consumer baseline and write
 coordination only; it does not mark A01/D04 tracker acceptance or dispatch R02.
 
+For the separately dispatched R02 session, B.C. subsequently confirmed the
+post-D04 integrated baseline `d43d89351a1740c7c5143144ee78829240e26ead`,
+migration head `0012_delivery_controls`, and explicitly authorized the exclusive
+R02 shared router/generated-contract/index or migration write window. The
+checkout was clean at dispatch; T01 `df06ccc` and C03 `2eba9eb` are ancestors.
+This records baseline/write coordination only, not package acceptance or a
+successor dispatch. R02 returns implementation and section 3 handoff evidence
+for B.C.'s integration/review; no automatic commit or PR.
+
 The pre-C03 integrated checkout included `354da49`, which adds learner-workspace
 links to view the most recent finalized attempt and its policy-filtered result.
 The behavior and its browser scenario are documented in

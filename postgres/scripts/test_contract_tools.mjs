@@ -80,6 +80,28 @@ async function typesOnly() {
   if (assignments.data) {
     const items: components["schemas"]["Assignment"][] = assignments.data.items;
   }
+  const history = await client.GET("/api/v1/me/attempts", { params: { query: { pageSize: 1 } } });
+  if (history.data) {
+    const items: components["schemas"]["AttemptHistoryItem"][] = history.data.items;
+    for (const item of items) {
+      if (item.score.status === "released") {
+        const points: number = item.score.earnedPoints;
+      } else {
+        // @ts-expect-error Withheld and unfinished scores omit protected values.
+        const points: number = item.score.earnedPoints;
+      }
+    }
+  }
+  const report = await client.GET("/api/v1/quizzes/{quiz_id}/results", {
+    params: { path: { quiz_id: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313" } },
+  });
+  if (report.data) {
+    const denominator: "released_finalized_attempts" = report.data.summary.scoreDenominator;
+  }
+  await client.GET("/api/v1/quizzes/{quiz_id}/results/attempts/{attempt_id}", {
+    // @ts-expect-error Finalized submission inspection requires the owning quiz ID as well.
+    params: { path: { attempt_id: "b852a646-70ed-4ab9-aae4-d7fc2e0ca313" } },
+  });
   // @ts-expect-error D01 does not implement grades.
   await client.GET("/api/v1/grades");
   // @ts-expect-error Start requires an idempotency header.

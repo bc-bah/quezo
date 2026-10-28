@@ -14,7 +14,7 @@ export default class SafeReporter implements Reporter {
     this.counts[result.status]++;
     console.log(`${result.status.toUpperCase()}: ${test.title} (${result.duration}ms)`);
     for (const error of result.errors) {
-      const line = error.stack?.match(/(?:access|questions|quizzes|author-workspace|attempts|delivery-controls|responses|finalization|results|lifecycle)\.spec\.ts:\d+:\d+/)?.[0];
+      const line = error.stack?.match(/(?:access|questions|quizzes|author-workspace|attempts|delivery-controls|responses|finalization|results|reporting|lifecycle)\.spec\.ts:\d+:\d+/)?.[0];
       console.log(`Failure location: ${line ?? "fixture/setup"}; raw error/call log withheld.`);
       if (error.message?.includes("strict mode violation")) console.log("Failure kind: ambiguous locator");
       else if (error.message?.includes("Timeout")) console.log("Failure kind: timeout");
