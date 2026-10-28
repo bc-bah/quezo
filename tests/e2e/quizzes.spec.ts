@@ -79,7 +79,7 @@ test("C02 AT-04/05 author composes previews publishes and explicitly revises imm
   await page.getByRole("link", { name: "Preview saved draft" }).click();
   await expect(page.getByRole("heading", { name: `Preview: ${title}`, exact: true })).toBeVisible();
   await expect(page.getByText("Possible points: 10", { exact: true })).toBeVisible();
-  await expect(page.locator("main fieldset").first()).toContainText(prompts[1]!);
+  await expect(page.getByRole("group", { name: /^Question 1:/ })).toContainText(prompts[1]!);
   await page.getByLabel("True", { exact: true }).check();
   const previewHtml = await page.content();
   expect(previewHtml.includes("C02 private feedback sentinel") || previewHtml.includes("correctOptionId"),

@@ -1,5 +1,6 @@
 import { apiData, questionClient } from "../../../../../lib/server/questions";
 import { AuthorError, AuthorPage } from "../../../shared";
+import { TimingPreview } from "../../../../../lib/timing-controls";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ quizId
         No assignment, attempt or allowance is created or consumed.</p>
       <p className="plain-text">{preview.instructions}</p>
       <p>Possible points: {preview.possiblePoints}</p>
+      <TimingPreview authoredDuration={quiz.draft?.policy?.durationSeconds ?? null} />
       {preview.questions.map((item) => <fieldset key={item.position}>
         <legend>Question {item.position}: {item.effectivePoints} points</legend>
         <p className="plain-text">{item.prompt}</p>

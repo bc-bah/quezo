@@ -2819,6 +2819,112 @@ enabled/disabled, and removed using the verified local Keycloak service
 identity. These cases are a subset of AT-02 and AT-01; they are not full
 AT-01/AT-02 acceptance or the complete browser/authorization catalogue.
 
+## D04 configurable delivery controls
+
+Execution baseline: B.C. explicitly confirmed integrated `40d667d`, migration
+head `0011_account_administration`, and the exclusive D04 settings/assembly/
+contract/migration window. This is a consumer-baseline record, not tracker
+acceptance. T01 `df06ccc` and C03 `2eba9eb` are ancestors. No commit/PR, R02
+dispatch or acceptance update is automatic.
+
+C03's composition/publication wrapper now embeds complete delivery settings:
+explicit unlimited duration/attempts, bounded integer values, independent order
+flags, IANA zone and optional availability bounds, plus independent score/key/
+explanation release modes. The existing two release presets remain shortcuts.
+Schedule entry is explicitly **UTC**, with an IANA-zoned confirmation of each
+instant; it never guesses which repeated local hour the author intended or
+normalizes a nonexistent local wall time. For a repeated local time choose its
+distinct UTC instant. The zone is stored with UTC bounds; backend policy validation
+still rejects invalid zones, schedules, limits and release-after-end without an
+end. Saving/publishing does not reassign any learner.
+
+Before a new start, every eligible learner can use labelled native keyboard
+controls for standard, adjusted (60-6048000 seconds, initially ten times the
+authored duration), or off. The same controls can be tried in author preview
+without writing assignments, attempts or grades. Assignment cards explain state,
+remaining starts, availability and authoritative server eligibility. Attempts show
+their frozen timing and deadline, with no post-start extension controls.
+After a dispatched start, retries retain the original body/key; a concurrent
+start/resume cannot replace the winning snapshot's choice.
+The new settings/timing fieldsets stay disabled until client handlers are ready,
+so early native keyboard changes cannot be lost before hydration.
+
+`StartCommand` adds optional `timingChoice` (standard by default) and
+`adjustedDurationSeconds` (required only for adjusted). The server rejects coercion,
+unknown modes, inappropriate durations and client-selected deadlines.
+Attempt responses expose those frozen timing fields. Assignment responses add
+authored duration and scheduling zone without questions or keys. OpenAPI and the
+generated TypeScript contract are regenerated.
+
+Forward migration `0012_delivery_controls` follows the actual A01 head. It
+preserves old snapshots/deadlines and empty-payload replay fingerprints. Application
+and database validation both retain the new-start cutoff in every mode; adjusted
+deadlines are not capped by availability end, and off has neither bound.
+Existing parent-lock/post-lock database-time admission, expiry reconciliation,
+finalization and result filtering are reused, not replaced. Closing is not expiry
+or release. Release after availability end still needs finalization and the
+original pinned authored end.
+
+### D04 case-level evidence map
+
+| Catalogue scope | New D04 cases | Retained evidence, not new implementation |
+| --- | --- | --- |
+| AT-05 (settings/preview) | `test_policy_revision_only_explicit_new_assignment_and_preview`; `test_preview_independent_order_flags` (all four flag combinations); browser `D04 AT-05/06/09/12` covers saved/reloaded settings, explicit UTC repeated-hour choices, non-persisting preview and native labelled timing controls | C03 composition/lifecycle and C02 preview ownership/private-field allowlist remain their prior scope |
+| AT-06 (distribution/order/start limits) | `test_concurrent_choices_resume_replay_and_limit` checks competing choices, same-key replay/conflict, active resume, finalized replay and concurrent limit denial; revision test checks old assignment/attempt unchanged and explicit new assignment; browser tests all three timing modes and refresh/resume | D01's four independent question/option flag combinations, disabled paths, refresh-stable snapshots and assignment races remain D01 coverage |
+| AT-09 (timing) | `test_exact_timing_and_start_cutoff` checks exact lower/end boundaries in each mode; `test_queued_cutoff_every_mode` waits on the real assignment lock across end; `test_near_end_and_close_are_not_adjusted_expiry` checks standard expiry versus continuing adjusted/off, accepted post-end saves and completion; `test_off_without_availability_has_no_deadline`; invalid HTTP choices and direct database snapshot rejection | D02/D03 lock-safe save/submit expiry and periodic reconciliation remain prior evidence |
+| AT-12 (release protection) | Near-end tests require finalization even after scheduled end for adjusted/off, then retain key withholding while releasing configured score/explanation; ordinary snapshots remain filtered | R01's 27 independent release-mode combinations and boundary filtering are rerun unchanged, not counted as new D04 coverage; T01's accepted lifecycle remains prior evidence |
+| Migration compatibility | Actual post-A01 active/finalized and timed/untimed snapshots, accepted responses/ledger, legacy empty-body fingerprint, repeat head, failed-DDL rollback and immutable timing columns | Foundation clean-head/earlier-producer upgrades are retained checks |
+
+These are scoped case-level claims, not full catalogue AT-05/06/09/12 completion.
+Native keyboard interaction and accessible-name/role assertions are representative
+assistive-technology semantics, not a manual screen-reader audit. No WCAG
+conformance or AT-14 completion is claimed. Random subsets, grace, reset/reopening
+and individualized accommodations remain excluded.
+
+### D04 executed checks (27 October 2026)
+
+Environment: Windows, Node 24.20.0, Python 3.12.10, PostgreSQL 17.11, locked
+Playwright 1.64.1/Chromium. Database checks used newly owned disposable PostgreSQL
+projects and the existing guarded isolated-database helpers, not development data.
+A session-only wrapper supplied random test-role secrets and a loopback control
+URL, invoked the following pytest commands from the repository root, and removed
+only its named service/network in `finally`. No credentials or raw assessment
+payload logs are retained.
+
+```powershell
+python -m pytest -c postgres\pyproject.toml postgres\tests\test_delivery_controls.py postgres\tests\test_delivery_migrations.py postgres\tests\test_attempts.py postgres\tests\test_attempt_migrations.py postgres\tests\test_finalization_migrations.py postgres\tests\test_results.py postgres\tests\test_migrations.py --tb=short
+python -m pytest -c postgres\pyproject.toml postgres\tests\test_delivery_controls.py postgres\tests\test_delivery_migrations.py postgres\tests\test_finalization_migrations.py postgres\tests\test_response_migrations.py postgres\tests\test_identity_migrations.py postgres\tests\test_question_migrations.py postgres\tests\test_quiz_migrations.py postgres\tests\test_quizzes.py postgres\tests\test_contract_schemas.py postgres\tests\test_http_contract.py --tb=short
+```
+
+| Check | Result |
+| --- | --- |
+| First focused Python command | 108 passed in 534.68 seconds; this preceded expansion of the new preview/database-boundary/migration cases |
+| Final expanded Python command | 200 passed in 638.57 seconds; includes all 43 new D04 cases, prior-head migration regressions, policy and HTTP/schema contracts |
+| `npm run typecheck` | Passed Next/TypeScript, strict mypy (95 sources), browser TypeScript |
+| `npm run test:web` | Existing 12 web unit checks passed |
+| `npm run api:generate` / `npm run api:check` | Generated OpenAPI/client; freshness check passed |
+| `node --test postgres\scripts\test_contract_tools.mjs` | Both contract tooling/client cases passed |
+| `npm run test:e2e -- --grep "D04\|C03\|C02 AT-04/05\|D01 AT-06\|T01 AT-03"` | Final rerun passed production build and all 8 real-provider browser cases: 1 new D04 (18.812 seconds), 3 inherited C03, 1 C02, 1 D01 and 2 T01; zero failures/skips/interruptions |
+| `uv run --directory postgres --locked alembic heads` | Single forward head `0012_delivery_controls` |
+| `git diff --check` | Passed |
+
+During browser iteration, the added timing fieldset exposed an old "first
+fieldset" preview assertion; it now addresses the first question group explicitly.
+Early keyboard interaction also reproduced a pre-hydration lost change, fixed
+with readiness-disabled new fieldsets. Native datetime-local test inputs use
+canonical browser values (zero seconds omitted), and the score selector uses
+its full labelled-control semantics rather than an incorrect exact label-text
+assumption. The runner's explicit test allowlist and safe failure-location
+allowlist now include D04. These failed intermediate runs are not acceptance
+evidence. The full unfiltered browser/umbrella check and hosted matrix were not
+run for D04; only the recorded focused commands are claimed.
+The preceding eight-case run passed D04 and six inherited cases but timed out
+in the score-only T01 journey at its 180-second case limit; the safe report did
+not establish the exact cause. No timeout or product threshold was relaxed.
+The unchanged full eight-case selector then passed on fresh owned services,
+including T01 score-only in 25.524 seconds. The earlier timeout remains recorded,
+not relabelled as a diagnosed environment failure.
+
 ## Phase 2 completion and remaining review gates
 
 C01 is accepted and integrated at `e66f459`; C02 is accepted and integrated
@@ -2832,10 +2938,11 @@ recording D03 acceptance. R01 is now accepted/integrated at `8976371` (PR #14);
 B.C. directed T01 execution after reconciliation on 23 October, then requested
 milestone acceptance/tracking. T01 is accepted at `df06ccc` (PR #15), closing
 Phase 2. C03 is subsequently accepted/integrated at local dev `2eba9eb`, head
-`0010_author_workspace`, on 27 October. A01 is active in its explicitly
-dispatched checkout, with migration head `0011_account_administration`; it
-remains unaccepted pending B.C.'s integration/review. D04/R02 remain ready for
-separate sequential dispatch after A01 integration. The exact local Keycloak
+`0010_author_workspace`, on 27 October. At A01's implementation checkpoint its
+head was `0011_account_administration` and tracker acceptance remained pending
+B.C.'s integration/review. B.C.'s subsequent D04 consumer-baseline and exclusive
+window confirmation is recorded above without changing tracker acceptance;
+R02 is not dispatched. The exact local Keycloak
 permissions were recorded and verified before privileged implementation. B.C.
 owns integration/review/merge and serializes shared-file/contract/migration
 windows. Each later consumer must
@@ -2847,8 +2954,9 @@ Preserve `Database.transaction`, live actor checks, generated client/error
 conventions, the I02 fixtures and secret-safe browser reporting.
 
 The [approved demo defaults](SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-keep existing learner interaction untimed until D04 implements the
-[27 October approved timing approach](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
+originally kept learner interaction untimed pending D04. D04 now supplies the
+[27 October approved timing approach](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
+for explicit new starts, without changing old assignments or attempts.
 Backend deadline/release
 boundary tests and controlled expired-attempt fixtures are still required;
 they do not establish timed UX acceptance. No automatic database retry policy

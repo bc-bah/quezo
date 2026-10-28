@@ -1,4 +1,6 @@
-from typing import Literal
+from typing import Annotated, Literal
+
+from pydantic import Field, StrictInt
 
 from quezo_api.modules.quizzes.schemas import Title
 from quezo_api.schemas import ApiModel, NonNegativeInteger, PublicId, UtcTimestamp
@@ -28,3 +30,5 @@ class Assignment(ApiModel):
     latest_completed_attempt_id: PublicId | None
     availability_start: UtcTimestamp | None
     availability_end: UtcTimestamp | None
+    duration_seconds: Annotated[StrictInt, Field(ge=60, le=604800)] | None
+    time_zone: str

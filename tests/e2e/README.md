@@ -74,6 +74,27 @@ Filtered runs are not complete AT-01 evidence. The `browser` CI job runs the
 unfiltered command on Ubuntu/Node 22/Python 3.12 without duplicating the existing
 Node/Python check matrices. A configured job is not a claimed hosted result.
 
+### D04 delivery controls
+
+Run `npm run test:e2e -- --grep D04` for the scoped delivery journey.
+It uses the actual provider, production web facade, API and migrated database.
+The author saves/reloads duration/unlimited attempts, independent order flags,
+all three release-mode values and an IANA zone, and explicitly distinguishes
+the two UTC instants of a repeated local hour. Preview exercises the same
+labelled native timing controls without consuming allowance or writing reporting
+data. Learner standard/adjusted/off starts are keyboard-operated; assertions
+cover names/roles, ten-times maximum duration, pinned deadlines/choice, no
+post-start timing editor, protected-field omission, refresh and resume.
+
+Rerun D01/T01/R01 cases separately as inherited lifecycle/disclosure evidence;
+do not label their original coverage as new D04 tests. These browser assertions
+do not establish full AT-05/06/09/12, AT-14 or screen-reader/WCAG conformance.
+See the [case-level map](../../docs/DEVELOPMENT.md#d04-case-level-evidence-map)
+for HTTP/database boundary, concurrency and compatibility cases.
+The final focused D04/C03/C02/D01/T01 selection passed all eight cases; the
+[executed-check record](../../docs/DEVELOPMENT.md#d04-executed-checks-27-october-2026)
+also retains intermediate failures and the earlier non-reproduced T01 timeout.
+
 ## Fixture ownership, startup and cleanup
 
 `postgres/tests/run_browser.py` generates a unique `quezo-i02-<12 hex>` Compose

@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { components } from "../../../lib/api/schema";
 import { availableQuestions, exactQuestion, saveQuiz } from "./actions";
-import { demoPolicy, PolicySettings, supportsDemoPolicy } from "./policy-settings";
+import { demoPolicy, PolicySettings } from "./policy-settings";
 
 type S = components["schemas"];
 type Selection = S["Selection"];
@@ -41,9 +41,6 @@ export function Composition({ quiz, initial, choices }: {
   const [error, setError] = useState<S["ErrorEnvelope"] | string | null>(null);
   const selected = body.questions ?? [];
   const policy = body.policy ?? demoPolicy;
-  if (!supportsDemoPolicy(policy)) return <p role="alert">
-    This draft uses advanced policies. Editing is unavailable here; its saved policy has not been changed.
-  </p>;
   function add(item: Selection) {
     if (selected.some((entry) => entry.questionId === item.questionId)) {
       setError("This question is already selected. Remove it before explicitly selecting another revision."); return;

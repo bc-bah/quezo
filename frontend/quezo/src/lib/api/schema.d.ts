@@ -675,6 +675,8 @@ export interface components {
             availabilityEnd: string | null;
             /** Availabilitystart */
             availabilityStart: string | null;
+            /** Durationseconds */
+            durationSeconds: number | null;
             /**
              * Id
              * Format: uuid
@@ -697,6 +699,8 @@ export interface components {
              * @enum {string}
              */
             state: "not_yet_available" | "available" | "in_progress" | "completed_remaining" | "exhausted" | "closed";
+            /** Timezone */
+            timeZone: string;
             /** Title */
             title: string;
             /**
@@ -725,6 +729,8 @@ export interface components {
         };
         /** Attempt */
         Attempt: {
+            /** Adjusteddurationseconds */
+            adjustedDurationSeconds: number | null;
             /**
              * Assignmentid
              * Format: uuid
@@ -757,6 +763,11 @@ export interface components {
              * @enum {string}
              */
             state: "in_progress" | "finalized";
+            /**
+             * Timingchoice
+             * @enum {string}
+             */
+            timingChoice: "standard" | "adjusted" | "off";
             /** Title */
             title: string;
             /**
@@ -1529,7 +1540,16 @@ export interface components {
             versionId: string;
         };
         /** StartCommand */
-        StartCommand: Record<string, never>;
+        StartCommand: {
+            /** Adjusteddurationseconds */
+            adjustedDurationSeconds?: number | null;
+            /**
+             * Timingchoice
+             * @default standard
+             * @enum {string}
+             */
+            timingChoice?: "standard" | "adjusted" | "off";
+        };
         /** SubmissionCommand */
         SubmissionCommand: Record<string, never>;
         /** ValidationDetails */

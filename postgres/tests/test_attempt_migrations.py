@@ -30,7 +30,7 @@ def test_actual_publication_head_upgrade_preserves_history(author: TestClient, d
     run_migrations(database.migration_url)
     assert author.get(path).json() == original
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0011_account_administration",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0012_delivery_controls",)
         assert connection.execute("SELECT count(*) FROM quezo.assignments").fetchone() == (0,)
 
 

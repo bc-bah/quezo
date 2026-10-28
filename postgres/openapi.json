@@ -332,6 +332,19 @@
             ],
             "title": "Availabilitystart"
           },
+          "durationSeconds": {
+            "anyOf": [
+              {
+                "maximum": 604800.0,
+                "minimum": 60.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Durationseconds"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -371,6 +384,10 @@
             "title": "State",
             "type": "string"
           },
+          "timeZone": {
+            "title": "Timezone",
+            "type": "string"
+          },
           "title": {
             "maxLength": 200,
             "minLength": 1,
@@ -396,7 +413,9 @@
           "activeAttemptId",
           "latestCompletedAttemptId",
           "availabilityStart",
-          "availabilityEnd"
+          "availabilityEnd",
+          "durationSeconds",
+          "timeZone"
         ],
         "title": "Assignment",
         "type": "object"
@@ -431,6 +450,19 @@
       "Attempt": {
         "additionalProperties": false,
         "properties": {
+          "adjustedDurationSeconds": {
+            "anyOf": [
+              {
+                "maximum": 6048000.0,
+                "minimum": 60.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusteddurationseconds"
+          },
           "assignmentId": {
             "format": "uuid",
             "title": "Assignmentid",
@@ -504,6 +536,15 @@
             "title": "State",
             "type": "string"
           },
+          "timingChoice": {
+            "enum": [
+              "standard",
+              "adjusted",
+              "off"
+            ],
+            "title": "Timingchoice",
+            "type": "string"
+          },
           "title": {
             "maxLength": 200,
             "minLength": 1,
@@ -528,6 +569,8 @@
           "policy",
           "startedAt",
           "deadline",
+          "timingChoice",
+          "adjustedDurationSeconds",
           "possiblePoints",
           "questions"
         ],
@@ -2519,7 +2562,31 @@
       },
       "StartCommand": {
         "additionalProperties": false,
-        "properties": {},
+        "properties": {
+          "adjustedDurationSeconds": {
+            "anyOf": [
+              {
+                "maximum": 6048000.0,
+                "minimum": 60.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusteddurationseconds"
+          },
+          "timingChoice": {
+            "default": "standard",
+            "enum": [
+              "standard",
+              "adjusted",
+              "off"
+            ],
+            "title": "Timingchoice",
+            "type": "string"
+          }
+        },
         "title": "StartCommand",
         "type": "object"
       },

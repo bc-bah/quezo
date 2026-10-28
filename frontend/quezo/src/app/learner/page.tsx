@@ -14,6 +14,17 @@ export default async function LearnerPage({ searchParams }: { searchParams: Prom
       {page.items.map((assignment) => <section key={assignment.id} aria-label={assignment.title}>
         <h2>{assignment.title}</h2>
         <p>State: {assignment.state.replaceAll("_", " ")}</p>
+        <p>{({
+          not_yet_available: "The scheduled start has not arrived.",
+          available: "You may start an attempt.",
+          in_progress: "Resume your existing attempt with its original timing.",
+          completed_remaining: "You have completed an attempt and may start another.",
+          exhausted: "All allowed starts have been used; expired attempts also count.",
+          closed: "New starts are closed by the quiz state or scheduled end.",
+        })[assignment.state]}</p>
+        <p>Availability ({assignment.timeZone}): {assignment.availabilityStart ?? "no start bound"}
+          {" to "}{assignment.availabilityEnd ?? "no end bound"} (UTC instants).
+          The server decides eligibility at start.</p>
         <p>Started: {assignment.attemptsStarted}; completed: {assignment.attemptsCompleted};
           remaining: {assignment.attemptsRemaining ?? "unlimited"}</p>
         <StartAttempt assignment={assignment} />

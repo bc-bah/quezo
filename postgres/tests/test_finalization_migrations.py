@@ -5,12 +5,14 @@ import pytest
 from fastapi.testclient import TestClient
 
 from db_helpers import IsolatedDatabase, run_migrations
-from finalization_helpers import prior_schema_lifespan, submit
+from finalization_helpers import prior_schema_lifespan, submit, legacy_opened
 from identity_helpers import SigningPeer
 from test_identity_access import identity_client, peer
 from test_questions import author
 from test_attempts import headers
-from test_responses import command, opened, path
+from test_responses import command, path
+
+opened = legacy_opened
 
 
 @pytest.fixture
@@ -33,7 +35,7 @@ def test_actual_response_head_upgrade_preserves_accepted_saves(
     run_migrations(database.migration_url)
     run_migrations(database.migration_url)
     with psycopg.connect(database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0011_account_administration",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0012_delivery_controls",)
         assert connection.execute("SELECT * FROM quezo.attempt_responses ORDER BY question_id").fetchall() == responses
         assert connection.execute("SELECT * FROM quezo.response_commands").fetchall() == ledger
         assert connection.execute("SELECT count(*) FROM quezo.grades").fetchone() == (0,)

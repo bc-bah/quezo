@@ -25,7 +25,7 @@ def test_actual_f03_head_upgrade_preserves_sessions(empty_database: IsolatedData
     seed_account(empty_database)
     run_migrations(empty_database.migration_url)
     with psycopg.connect(empty_database.migration_url) as connection:
-        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0011_account_administration",)
+        assert connection.execute("SELECT version_num FROM public.alembic_version").fetchone() == ("0012_delivery_controls",)
         assert connection.execute("SELECT count(*) FROM quezo.accounts").fetchone() == (1,)
 
 

@@ -70,6 +70,7 @@ async def get_assignment(
         **row, "state": state, "attemptsStarted": started, "attemptsCompleted": completed,
         "attemptsRemaining": remaining, "activeAttemptId": active,
         "availabilityStart": policy.availability_start, "availabilityEnd": policy.availability_end,
+        "durationSeconds": policy.duration_seconds, "timeZone": policy.time_zone,
     })
 
 

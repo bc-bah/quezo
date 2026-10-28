@@ -15,6 +15,10 @@ export default async function AttemptPage({ params }: { params: Promise<{ attemp
       <h1>{attempt.title}</h1><p>Attempt {attempt.attemptNumber}</p>
       <p className="plain-text">{attempt.instructions}</p>
       <p>Possible points: {attempt.possiblePoints}</p>
+      <p>Frozen timing: {attempt.timingChoice}
+        {attempt.adjustedDurationSeconds != null ? ` (${attempt.adjustedDurationSeconds} seconds)` : ""}.
+        {attempt.deadline ? ` Server deadline: ${attempt.deadline}.` : " No attempt deadline."}
+        {" "}Timing cannot be changed after start. The server enforces expiry.</p>
       <ResponseEditor attempt={attempt} />
     </main>;
   } catch (error) {

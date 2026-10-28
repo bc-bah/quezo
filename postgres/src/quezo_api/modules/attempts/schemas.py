@@ -1,6 +1,6 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 
-from pydantic import Field, StrictInt
+from pydantic import Field, StrictInt, model_validator
 
 from quezo_api.modules.quizzes.policies import QuizPolicy
 from quezo_api.modules.quizzes.schemas import Instructions, PreviewQuestion, Title
@@ -8,7 +8,14 @@ from quezo_api.schemas import ApiModel, PublicId, UtcTimestamp
 
 
 class StartCommand(ApiModel):
-    pass
+    timing_choice: Literal["standard", "adjusted", "off"] = "standard"
+    adjusted_duration_seconds: Annotated[StrictInt, Field(ge=60, le=6048000)] | None = None
+
+    @model_validator(mode="after")
+    def timing_duration(self) -> Self:
+        if (self.timing_choice == "adjusted") != (self.adjusted_duration_seconds is not None):
+            raise ValueError("Only adjusted timing requires a chosen duration")
+        return self
 
 
 ResponseRevision = Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
@@ -69,5 +76,7 @@ class Attempt(ApiModel):
     policy: QuizPolicy
     started_at: UtcTimestamp
     deadline: UtcTimestamp | None
+    timing_choice: Literal["standard", "adjusted", "off"]
+    adjusted_duration_seconds: Annotated[StrictInt, Field(ge=60, le=6048000)] | None
     possible_points: Annotated[StrictInt, Field(ge=1, le=2000000)]
     questions: Annotated[list[AttemptQuestion], Field(min_length=1, max_length=200)]

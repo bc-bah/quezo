@@ -150,6 +150,13 @@ this documentation task. DEC-08/10 and release/date/budget holds remain.
 
 ### Phase 3 checkout baseline and partial AT-13 evidence: 27 October 2026
 
+B.C. confirmed the post-A01 integrated baseline for this explicitly dispatched
+D04 session as `40d667de27ca8d740ae9016d853604b36ba8d584`, migration head
+`0011_account_administration`, and authorized the exclusive D04 settings,
+assembly, generated-contract and forward-migration window. The checkout contains
+T01 `df06ccc` and C03 `2eba9eb`. This records the consumer baseline and write
+coordination only; it does not mark A01/D04 tracker acceptance or dispatch R02.
+
 The pre-C03 integrated checkout included `354da49`, which adds learner-workspace
 links to view the most recent finalized attempt and its policy-filtered result.
 The behavior and its browser scenario are documented in

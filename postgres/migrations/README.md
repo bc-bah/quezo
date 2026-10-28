@@ -22,6 +22,8 @@ Its Alembic baseline is `base`, not a fictional deployed revision.
 | `0008_responses` | `0007_attempt_start` | Revision-zero responses, response CAS constraints and retained save acknowledgement ledger |
 | `0009_finalization` | `0008_responses` | Atomic completion reason/time, one immutable Grade and item results, minimal completion event |
 | `0010_author_workspace` | `0009_finalization` | Current question category/tags with database bounds; no immutable content/history changes |
+| `0011_account_administration` | `0010_author_workspace` | Account profile/provisioning/sync state and restricted administration integrity events |
+| `0012_delivery_controls` | `0011_account_administration` | Immutable pre-start timing choice/adjusted seconds and mode-specific deadline validation |
 
 Only `public.alembic_version` records migration state. C01 adds question tables;
 C02 adds quiz publication, acknowledgement and publication-event tables, but no
@@ -42,9 +44,35 @@ I01 additionally tests `0003_web_sessions -> 0004_identity`, preserving a stored
 F03 session, repeat-head execution, constraint/privilege enforcement and failure
 rollback to the actual prior revision. Applied F01/F03 migrations are unchanged.
 
+### D04 delivery timing storage
+
+The D04 forward head is `0012_delivery_controls`, following B.C.'s confirmed
+post-A01 baseline `40d667d` / `0011_account_administration`. No applied revision
+is rewritten. Run the existing migrator before starting the updated application;
+the application does not silently support an unmigrated schema.
+
+Existing rows acquire standard timing metadata and null adjusted seconds, without
+changing their deadline, policy, content, responses, completion or retained command
+fingerprint. Empty/explicit-standard start payloads keep the legacy empty-payload
+fingerprint. New requests freeze standard/adjusted/off and adjusted seconds with
+the snapshot under the assignment lock. The insert trigger independently checks
+the chosen mode, bounds, effective deadline and published start window. The
+existing whole-row immutability trigger protects the added columns too.
+Adjusted uses start plus 60-6048000 seconds; off requires a null deadline;
+standard retains the earlier present bound. Authored policy bounds are unchanged.
+No release-policy or grading schema changes.
+
+Test clean `base -> head`, actual `0011_account_administration -> head` for
+active/finalized timed/untimed history, repeat head, and failed-upgrade atomicity.
+Historical D03 migration tests seed the actual old schema using SQL rather than
+running the current D04 start contract against it. Recover unapplied failures by
+correcting the cause and rerunning; applied corrections require another reviewed
+forward revision. No reset, reopening, backfill regrade or development-data
+migration is performed by tests.
+
 ### C03 author organization storage
 
-The current head is `0010_author_workspace`, appended after the verified
+The C03 head was `0010_author_workspace`, appended after the verified
 `0009_finalization` integration baseline under B.C.'s exclusive C03 migration
 window. It adds nullable `questions.category` (1-100 characters when supplied)
 and `questions.tags` (0-20 non-null tags, each 1-50 characters), using the existing

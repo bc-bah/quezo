@@ -18,10 +18,16 @@ from quezo_api.modules.quizzes.policies import QuizPolicy
 from quezo_api.schemas import Role
 
 
-def admit(policy: QuizPolicy, now: datetime) -> datetime | None:
+def admit(policy: QuizPolicy, now: datetime, choice: StartCommand | None = None) -> datetime | None:
     if ((policy.availability_start is not None and now < policy.availability_start)
             or (policy.availability_end is not None and now >= policy.availability_end)):
         raise ApiError(ErrorCode.ASSESSMENT_UNAVAILABLE)
+    if choice is not None:
+        if choice.timing_choice == "off":
+            return None
+        if choice.timing_choice == "adjusted":
+            assert choice.adjusted_duration_seconds is not None
+            return now + timedelta(seconds=choice.adjusted_duration_seconds)
     bounds = [bound for bound in (
         policy.availability_end,
         now + timedelta(seconds=policy.duration_seconds) if policy.duration_seconds is not None else None,
@@ -36,7 +42,8 @@ async def get_attempt(connection: Connection, identity: VerifiedIdentity, attemp
         await cursor.execute(
             'SELECT id, assignment_id AS "assignmentId", version_id AS "versionId", '
             'attempt_number AS "attemptNumber", state, title, instructions, policy, '
-            'started_at AS "startedAt", deadline, possible_points AS "possiblePoints" '
+            'started_at AS "startedAt", deadline, timing_choice AS "timingChoice", '
+            'adjusted_duration_seconds AS "adjustedDurationSeconds", possible_points AS "possiblePoints" '
             "FROM quezo.attempts WHERE id = %s", (attempt_id,),
         )
         row = await cursor.fetchone()
@@ -74,9 +81,10 @@ async def start(
         # A queued command must not retain privileges revoked while it waited.
         actor = await resolve_actor(connection, identity)
         require_owner(actor, assignment["learner_id"], Role.LEARNER)
+        # Standard timing retains the pre-D04 empty-payload replay fingerprint.
         fingerprint = hashlib.sha256(json.dumps({
             "actor": str(actor.user_id), "target": str(assignment_id), "operation": "start",
-            "key": str(request_id), "payload": body.model_dump(mode="json"),
+            "key": str(request_id), "payload": body.model_dump(mode="json", exclude_defaults=True),
         }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         await cursor.execute(
             "SELECT fingerprint, attempt_id FROM quezo.attempt_start_commands "
@@ -115,7 +123,7 @@ async def start(
             clock = await cursor.fetchone()
             assert clock is not None
             now = clock["now"]
-            deadline = admit(policy, now)
+            deadline = admit(policy, now, body)
             await cursor.execute("SELECT count(*) AS count FROM quezo.attempts WHERE assignment_id = %s", (assignment_id,))
             count = await cursor.fetchone()
             assert count is not None
@@ -125,10 +133,12 @@ async def start(
             attempt_id = uuid4()
             await cursor.execute(
                 "INSERT INTO quezo.attempts (id, assignment_id, learner_id, version_id, attempt_number, "
-                "title, instructions, policy, started_at, deadline, possible_points) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "title, instructions, policy, started_at, deadline, possible_points, "
+                "timing_choice, adjusted_duration_seconds) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (attempt_id, assignment_id, actor.user_id, version["id"], number, version["title"],
-                 version["instructions"], Jsonb(version["policy"]), now, deadline, version["possible_points"]),
+                 version["instructions"], Jsonb(version["policy"]), now, deadline, version["possible_points"],
+                 body.timing_choice, body.adjusted_duration_seconds),
             )
             await cursor.execute(
                 "SELECT * FROM quezo.quiz_questions WHERE quiz_version_id = %s ORDER BY position", (version["id"],),
