@@ -70,13 +70,15 @@ not a production-ready service or a high-stakes exam platform.
    an immutable grade. The learner result page shows only what the release
    policy allows.
 
-The initial UI uses **untimed quizzes, one successful start per assignment, and
-authored question/option order**. Authors choose either **score after
-finalization** or **fully withheld results**; both presets withhold answer keys
-and explanations. The backend supports additional policy cases, but advanced
-timing, availability, ordering, and release controls are not yet accepted UI
-features. See the [demo defaults](docs/SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-and [repeatable browser walkthrough](tests/e2e/README.md).
+The original demo defaults are **untimed quizzes, one successful start per
+assignment, and authored question/option order**. The current UI also exposes
+duration/attempt limits, availability, randomization and independent result
+release settings, with pre-start standard/adjusted/off timing choices.
+Learner history and owner-only participation/results reports are implemented.
+These later packages remain under acceptance review; their presence is not
+full P0 or accessibility approval. See the
+[browser walkthrough](tests/e2e/README.md) and
+[mission gap audit](docs/implementation/MISSION-ALIGNMENT.md).
 
 ## Get started
 
@@ -237,6 +239,7 @@ When changing HTTP contracts, use `npm run api:generate` and verify with
 | [Development setup](docs/DEVELOPMENT.md) | Local services, configuration, migrations, checks, and detailed acceptance evidence. |
 | [Browser runbook](tests/e2e/README.md) | Repeatable author-to-result demo, real-browser checks, and scoped acceptance matrix. |
 | [Prototype scope](docs/PROTOTYPE-SCOPE.md) | Intended requirements, exclusions, demonstration criteria, and open decisions. |
+| [Mission gap audit and priorities](docs/implementation/MISSION-ALIGNMENT.md) | Customer workflow coverage, missing class/flight/pass-fail capabilities, prioritized packages and synthetic demonstration target. |
 | [High-level architecture](docs/PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) | Technology choices, module responsibilities, lifecycle, and reliability design. |
 | [Software specification](docs/SOFTWARE-SPECIFICATION.md) | Testable behavior, permissions, contracts, decision register, and requirement coverage. |
 | [Domain vocabulary](CONTEXT.md) | Shared assessment terminology. |
@@ -249,11 +252,15 @@ specifications or executable agent instructions.
 
 ## Development status
 
-**As of 27 October 2026:** working foundations, the Phase 2 lifecycle through
-T01, and C03 are accepted. A01 is dispatched; D04 and R02 are ready for
-separate sequential dispatch. The initial lifecycle is usable for the scoped
-synthetic-data demonstration, not evidence of full P0 completion or deployment
-approval.
+**As of 9 November 2026:** working foundations, the Phase 2 lifecycle through
+T01, and C03 are accepted. A01 administration, D04 delivery controls and R02
+history/reporting have implementations and evidence records; acceptance remains
+under review. The customer audit prioritizes training iterations/rosters and
+bulk assignment, explicit pass/fail, and instructor/leadership reporting with
+an agreed result handoff. Cross-iteration comparison follows; diagnostic metrics
+and content/follow-up workflows require customer validation. See the
+[mission backlog](docs/implementation/BACKLOG.md#mission-alignment-backlog).
+This is planning direction, not implementation dispatch or pilot approval.
 
 <details>
 <summary><strong>Acceptance history, remaining work, and decision gates</strong></summary>
@@ -292,12 +299,15 @@ pilot acceptance.
 
 ### Remaining gates
 
-- **Phase 3:** A01 administration is dispatched; D04 delivery controls and R02
-  history/reporting are ready for separate sequential dispatch. The
+- **Phase 3:** reconcile A01/D04/R02 implementation and evidence with their full
+  acceptance criteria before marking them done. The
   [27 October approvals](docs/SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026)
   cover A01's limited local-realm identity and D04 pre-start timing adjust/off
-  design. Verify exact Keycloak least privileges before privileged A01
-  implementation; D04 controls/accessibility evidence remain undelivered.
+  design. Scoped implementation evidence exists; full package acceptance and
+  Q02 accessibility evidence remain open.
+- **Mission alignment:** M01-M07 are planned additions, not delivered features.
+  Class/flight context, pass/fail and leadership reporting address the largest
+  gaps; detailed policy decisions remain open in DEC-12 through DEC-18.
 - **Quality and operations:** full accessibility, integrity/security hardening,
   measured load, readiness checks, production deployment, and restore evidence
   remain later work. Local application containers are available for development

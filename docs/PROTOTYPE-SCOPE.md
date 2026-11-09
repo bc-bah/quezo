@@ -1,8 +1,12 @@
 # Prototype scope
 
 **Date:** 20 October 2026  
-**Status (27 October 2026):** Foundations, Phase 2 lifecycle through T01, and
-C03 accepted; A01 dispatched; D04/R02 ready for separate sequential dispatch.
+**Updated:** 9 November 2026
+
+**Status:** Foundations, Phase 2 lifecycle through T01, and C03 accepted;
+A01/D04/R02 implemented with scoped evidence and tracked for acceptance review.
+The [mission audit and roadmap](implementation/MISSION-ALIGNMENT.md) adds planned
+customer-alignment work; no new feature dispatch or acceptance is implied.
 Pilot, deployment, and other held decisions remain tracked in the specification.
 This is not a production-readiness claim.
 
@@ -21,9 +25,11 @@ preserved unchanged.
 
 The user confirmed **single-organization, low-stakes P0 prototype** on
 20 October 2026. All P0 requirements remain in the target prototype; the first
-vertical slice is a delivery sequence, not a reduction of that scope. P1 and P2
-remain deferred except for minimal integrity records described below. Proposed
-rules in the architecture require review before implementation.
+vertical slice is a delivery sequence, not a reduction of that scope. The
+9 November mission roadmap selectively brings previously deferred cohort,
+comparison, export and analytics capabilities into planning, subject to the
+decision gates below. It does not generally promote all PRD P1/P2 requirements.
+Proposed rules require review before implementation.
 
 ## 2. Outcome and audience
 
@@ -37,11 +43,16 @@ organization:
 The product is assessment-first, not a learning management system. The prototype
 uses synthetic questions and test identities. It does not establish suitability
 for formal exams, certification, sensitive institutional records, or public SaaS.
-The first real customer segment remains unconfirmed.
+The 526th IS DOT notes now supply the planning context for IQT/MQT assessments,
+recurring 80-100-person classes and flight-level reporting. A real-data pilot
+audience and approval remain unconfirmed under DEC-10.
 
 ## 3. P0 coverage
 
-All rows describe **planned work**, not capabilities delivered by this scaffold.
+These rows define the original P0 target, not its completion status. Consult the
+[backlog](implementation/BACKLOG.md) for acceptance and the
+[audit coverage matrix](implementation/MISSION-ALIGNMENT.md#2-workflow-coverage)
+for implemented behavior versus mission gaps.
 
 | PRD requirements | Prototype scope | Evidence expected at review/demo |
 | --- | --- | --- |
@@ -58,25 +69,37 @@ prototype distribution is an author assigning named active learners, with a link
 that locates the quiz but never grants access by itself. Self-enrollment and
 public/guest links are not implicitly included.
 
-FR-004 must eventually have a basic in-app administration workflow; the Keycloak
-console alone is not completion of that P0 requirement. The implementation should
-use a narrowly privileged Keycloak administration adapter for identity changes
-and application-owned account/access records for assessment authorization.
+FR-004 has an A01 in-app administration implementation using a narrowly
+privileged local Keycloak adapter and application-owned access records.
+Implementation and scoped evidence do not yet establish full package acceptance.
 
 ## 4. Explicit deferrals and reconciled inconsistencies
 
-| Deferred scope | PRD references / interpretation |
+The original baseline exclusions below distinguish delivered scope from planned
+mission extensions. M01-M07 are defined in the
+[mission roadmap](implementation/MISSION-ALIGNMENT.md#3-prioritized-implementation-packages);
+their detailed rules remain open under DEC-12 through DEC-18.
+
+| Baseline deferral / mission planning change | PRD references / interpretation |
 | --- | --- |
-| Multiple organizations, group/cohort management and group comparisons | FR-005, FR-055; one deployment serves one organization; no tenant isolation claim |
+| Multiple organizations | Remains deferred; one deployment serves one organization; no tenant isolation claim |
+| Group/cohort management and comparisons | FR-005, FR-055; planned lightweight class/flight/iteration scope in M01/M03/M04, not a general group-management or LMS capability |
 | General audit browser, audit export, grade correction and regrading | FR-006, FR-045-046; retain minimal publication, access-change and finalization records for integrity, without promising full audit reporting |
 | Multiple-answer, short-answer and essay questions; manual grading | FR-016, FR-044; PRD journey 3's written-grading step is conditional and excluded here |
-| Question import/export and results CSV export | FR-017, FR-053; PRD section 10's export criterion applies only when enabled, not to this prototype |
+| Question import/export and results CSV export | FR-017, FR-053; M03 plans a validated results handoff if the tracker remains required; M06 conditionally plans structured content import. General question export and arbitrary document extraction remain deferred |
 | Quiz duplication, random selection from pools | FR-027-028; randomizing the order of all selected questions/options remains P0 |
 | Guests and anonymous attempts | FR-039 |
-| Question-level analytics | FR-054 |
+| Question-level analytics | FR-054; M05 plans agreed diagnostic metrics only after customer validation |
 | Supported public API, third-party credentials and compatibility commitment | FR-060; internal REST contracts are documented as developed, with FR-061 authorization from day one |
 | QTI/LTI, AI authoring, proctoring, LMS features, native apps | FR-063-064 and PRD non-goals |
 | Microservices, message brokers, Redis, WebSockets, media/CDN pipelines, subscriptions | Not required by the prototype's assessment workflow |
+
+**Additional mission gaps:** M02 adds explicit pass/fail policy rather than
+equating completion with passing. M03 adds scoped leadership reporting; current
+owner reports exclude withheld scores and average all released finalized attempts.
+M07 follow-up tracking depends on an agreed review/action process. These are
+planned scope additions, not existing behavior or implicit changes to release
+authorization.
 
 ## 5. Demonstration and acceptance
 
@@ -102,6 +125,12 @@ The PRD's 100 active learners, p95 reads <=300 ms, p75 usable UI <=2.5 seconds,
 99.5% availability, and WCAG 2.2 AA are proposed targets. Workload, environment,
 measurement method, and operating commitments must be agreed before adoption.
 
+The [mission demonstration](implementation/MISSION-ALIGNMENT.md#4-readiness-and-proposed-demonstration)
+adds a synthetic 100-person class with flight attribution, batch assignment,
+automatic pass/fail and reconciled report/handoff, followed by a second training
+iteration. A batch assignment demonstration does not prove concurrent capacity.
+Q01/Q02/O01/Q03 remain parallel readiness work and gates before real-class use.
+
 ## 6. Proposed delivery sequence after approval
 
 The [software specification](SOFTWARE-SPECIFICATION.md) expands this scope into
@@ -110,6 +139,11 @@ is the delivery source of truth: baseline approval, working foundations, first
 complete lifecycle, parallel P0 completion, hardening/operations and acceptance.
 Its [backlog](implementation/BACKLOG.md) records actual package prerequisites,
 ownership, status and evidence.
+
+The mission sequence is M01 roster/iteration context, M02 pass/fail and M03
+reporting/handoff first; M04 comparison next; M05 diagnostics after validation;
+M06 content onboarding and M07 follow-up only where customer needs justify them.
+Priority order does not add hidden prerequisite edges: use the mission backlog.
 
 Each feature slice includes its migrations, interface contract, UI, authorization
 and tests. Detailed product decisions remain proposed until recorded as approved
@@ -123,9 +157,10 @@ creation of these documents.
 | Audience, organization scope, priority coverage | Single-organization, low-stakes, all P0; confirmed by user | Product; confirmed 20 October 2026 |
 | Technology stack | Next.js/React, Python/FastAPI, PostgreSQL, Keycloak and Docker; two-language stack explicitly accepted | Confirmed 20 October 2026 |
 | Exact versions, packages, module layout | Foundations through I02 integrated and locked, including Playwright browser evidence; Phase 2 reuses these tools | B.C.; Phase 2 assignment 21 October 2026; production suitability still requires review |
-| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01-05 baseline implemented through T01; C03 author workspace accepted; D04 timing adjust/off approved as scoped DEC-02/05/09 amendments, not yet implemented; reporting remains R02 | B.C.; baseline 20 October, T01 acceptance 23 October, C03 and scoped amendments 27 October 2026 |
+| Assignment, deadline/closure, attempt accounting, scoring, result-release semantics | DEC-01-05 baseline implemented through T01; C03 accepted; D04 controls and R02 reporting implemented, acceptance under review | B.C.; historical approvals retained; 9 November implementation reconciliation does not confer acceptance |
 | Keycloak realm/provider, login claims, administration privileges | I02 local identity/session boundary accepted; scoped local-realm least-privilege A01 service identity approved; exact permissions must be verified/recorded before privileged implementation | B.C.; DEC-06 scoped amendment 27 October 2026; no production/external provisioning or broader administration approval |
-| Timed learner accessibility | Pre-start standard/adjusted/off choice with pinned deadline and availability cutoff distinction approved; D04 implementation and Q02 evidence pending | B.C.; DEC-09 approved 27 October 2026; no WCAG conformance claim |
+| Timed learner accessibility | Pre-start standard/adjusted/off controls implemented with scoped evidence; D04 acceptance and Q02 evidence remain open | B.C.; DEC-09 approved 27 October 2026; no WCAG conformance claim |
+| Mission-aligned scope and reporting rules | M01-M07 planned; roster/assignment identity, passing rules, reporting access, comparisons, metric definitions, import and follow-up decisions remain open | B.C.; DEC-12 through DEC-18 before affected implementation |
 | First customer, pilot data policy, retention/deletion obligations | DEC-10 held; synthetic data only meanwhile | B.C. to obtain product/privacy review before pilot |
 | Hosting, workload, recovery objectives, availability commitment | DEC-08/10 held; local Docker is not hosting approval | B.C. to obtain engineering/operations review before applicable operational gates |
 | Delivery date, budget, release approver | DEC-11 later commitments held; B.C. owns foundation, Phase 2 and C03/A01/D04/R02 integration/review/merge | B.C. before scheduling/release commitment |
@@ -134,7 +169,7 @@ creation of these documents.
 I02 and EX-I02-01 closure remain accepted. See the
 [27 October readiness record](SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026):
 C03 is accepted at local dev `2eba9eb`, head `0010_author_workspace`.
-A01/D04/R02 are ready for separate explicit dispatch in that order, not active.
-B.C. serializes shared writes/migrations. Existing UI remains untimed until
-D04 implements approved timing controls. No automatic dispatch, deployment or
-pilot is authorized by milestone acceptance.
+A01/D04/R02 now have code and scoped evidence in this checkout; review acceptance
+rather than redispatching their original implementation. B.C. serializes shared
+writes/migrations. New mission packages remain planned behind their decision
+and prerequisite gates. No automatic dispatch, deployment or pilot is authorized.

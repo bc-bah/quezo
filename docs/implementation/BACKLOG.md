@@ -13,7 +13,15 @@ work is available but not yet accepted.
 owner, PR/commit and evidence links as work progresses. A blocked item records the
 specific decision or predecessor, not a generic "waiting."
 
-**Current state (27 October 2026):** I02 is `done`; EX-I02-01 is closed after
+**Current state (9 November 2026):** foundations, Phase 2 through T01 and C03
+retain their accepted status. A01/D04/R02 code and scoped handoff evidence are
+present in the audited checkout at `1f8b4d1`; their rows are reconciled to
+`review`, not `done`. This is not a new acceptance or test result. The
+[mission audit](MISSION-ALIGNMENT.md) adds the planned
+[mission-alignment backlog](#mission-alignment-backlog); no new package is
+dispatched. Readiness/pilot holds remain.
+
+**Historical checkpoint (27 October 2026):** I02 is `done`; EX-I02-01 is closed after
 B.C.'s completion confirmation and review of merged browser/CI evidence.
 C01 is `done` following B.C.'s explicit acceptance/integration confirmation.
 C02 is also `done` at B.C.'s explicit direction, accepting the verified local
@@ -102,14 +110,45 @@ Shared writes and migration ordering remain serialized by B.C.
 | R01 | 2 | [Policy-filtered result](02-CORE-LIFECYCLE.md#r01-policy-filtered-result) | D03 | done | B.C. | Acceptance/tracking directed 23 October 2026; [PR #14](https://github.com/bc-bah/quezo/pull/14), merge `8976371`, implementation `bb19468`, verified on live main and in T01 ancestry. [Accepted handoff/evidence](../DEVELOPMENT.md#r01-policy-filtered-result): 648 Python / 283 database-suite / 30 browser cases; 27 independent policy combinations/boundaries. No migration; head `0009_finalization`. |
 | T01 | 2 | [First lifecycle acceptance](02-CORE-LIFECYCLE.md#t01-first-lifecycle-acceptance) | R01, I02 | done | B.C. | Accepted 23 October 2026 following B.C.'s tracking direction; [PR #15](https://github.com/bc-bah/quezo/pull/15), merge `df06ccc`, implementation `300bbc4`; [accepted handoff](../DEVELOPMENT.md#t01-first-lifecycle-acceptance), [AT matrix/demo](../../tests/e2e/README.md#lifecycle-acceptance-matrix), [hosted browser/matrix CI](https://github.com/bc-bah/quezo/actions/runs/39949405839). Recorded unfiltered gate: 648 Python / 283 database-suite / 33 browser cases, zero skipped; reproducible six-case demo passed. No runtime contract/migration changes; head `0009_finalization`. Phase 2 milestone only, not full P0/pilot acceptance. |
 | C03 | 3 | [Complete author workspace](03-COMPLETE-P0.md#c03-complete-author-workspace) | T01 | done | B.C. | Accepted/integrated 27 October 2026 after local app review; local dev fast-forward `2eba9eb`; head `0010_author_workspace`; [case-level evidence and check limitations](../DEVELOPMENT.md#c03-complete-author-workspace), [acceptance record below](#c03-acceptance-and-next-package-readiness-27-october-2026). No remote PR/push or hosted CI claimed. |
-| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | active | Copilot A01 session; B.C. integration/review | Explicitly dispatched 27 October. B.C. approved local FGAP `manage` and `view-users` (including transitive read-only `query-groups`); Quezo exposes no delete/reset or group mutation. Verified Keycloak 26.4.7: dedicated `quezo-account-admin` client policy, `Users` resource type, `view` + `manage`; scoped `query-users`/`view-users` service-account roles. Disabled create, profile read/update and exact search passed before implementation. Code/migration now in the A01 checkout, current head 0011; focused checks do not constitute full AT-01/02 or acceptance. Starting baseline `2eba9eb`, migration `0010_author_workspace`, plus approval/tracking update. |
-| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | ready | Unassigned; B.C. integration/review | Second separate dispatch, after A01's serialized write window. DEC-09 and scoped DEC-02/05 timing amendments approved 27 October; implement pre-start adjust/off, immutable choice and start-cutoff/deadline distinction. Reverify integrated baseline/head after A01. |
-| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | ready | Unassigned; B.C. integration/review | Third separate dispatch after D04's serialized write window; reverify actual head/contracts. Latest-completed-attempt link remains partial AT-13 only; full history/reporting not implemented or accepted. |
+| A01 | 3 | [Account administration](03-COMPLETE-P0.md#a01-account-administration) | T01 | review | B.C. integration/review | Code and migration `0011_account_administration` present at audited `1f8b4d1`; [implementation and scoped evidence](../DEVELOPMENT.md#a01-account-administration). Local FGAP permissions verified under the 27 October approvals; no Quezo delete/reset/group mutation. Full AT-01/02 and package acceptance not established by this reconciliation. |
+| D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | review | B.C. integration/review | Controls and migration `0012_delivery_controls` present at audited `1f8b4d1`; [implementation](../DEVELOPMENT.md#d04-configurable-delivery-controls), [case-level evidence](../DEVELOPMENT.md#d04-case-level-evidence-map). Standard/adjusted/off, schedules, ordering and release settings implemented; package acceptance and Q02 remain open. |
+| R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | review | B.C. integration/review | Paginated history, owner summary and finalized submission review present at audited `1f8b4d1`; [implementation/evidence](../DEVELOPMENT.md#r02-history-and-author-reporting). No longer just latest-attempt navigation; full AT-13/package acceptance remains open. No mission cohort/pass-fail/export capability implied. |
 | Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |
 | Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 approved 27 October; D04 implementation and actual accessibility/workflow evidence still required |
 | O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
 | Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | B.C. | DEC-08 benchmark/gates required |
 | G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | B.C. | DEC-11 later approvers/release commitments and release evidence required; DEC-10 gates any pilot |
+
+## Mission-alignment backlog
+
+The [9 November audit and package definitions](MISSION-ALIGNMENT.md) supply
+customer traceability and acceptance targets. Priorities below are mission
+delivery priorities, not changes to original PRD priority IDs. All rows are
+`planned` and unassigned; B.C. retains backlog/integration ownership. Open
+DEC-12 through DEC-18 gates must be resolved and prerequisite packages accepted
+before execution. Priority order does not introduce additional dependencies.
+
+| ID | Priority | Package | Prerequisites | Status | Decision gate / evidence needed |
+| --- | --- | --- | --- | --- | --- |
+| M01 | Essential | Training iterations, rosters and bulk assignment | A01, D01 | planned | DEC-12; 100-person synthetic batch, explicit recipient failures, retry safety and historical flight attribution |
+| M02 | Essential | Explicit pass/fail outcomes | C02, S01, D03, R01 | planned | DEC-13; threshold boundaries, versioned rules, retakes and explicit historical/unfinished handling |
+| M03 | Essential | Instructor/leadership reporting and result handoff | M01, M02, R02 | planned | DEC-14; scoped access, denominators, reconciliation to grades and agreed tracker handoff without score re-entry |
+| M04 | Next | Repeatability and cross-iteration comparison | M03 | planned | DEC-15; two distinct iterations, repeat assignment semantics and visible version/policy comparability limits |
+| M05 | Validate first | Diagnostic metrics | M03, D04 | planned | DEC-16; agreed duration, versioned sections and question metrics with populations/sample sizes and known-data calculations |
+| M06 | Conditional | Structured content onboarding | C03 | planned | DEC-17; validated format, explicit invalid/duplicate handling and review before publication |
+| M07 | Conditional | Review and follow-up | M03 | planned | DEC-18; defined actions, scoped owner/closure workflow without changing immutable grades |
+
+M01 and M02 have independent feature prerequisites; M06 need not wait for
+analytics if validated import needs justify it. Shared-file/migration ownership
+still applies. Do not start a package merely because its code dependencies exist
+while its acceptance or product-decision gates remain unresolved.
+
+Q01/Q02/O01/Q03 remain the readiness track, with coverage extended as new mission
+surfaces are delivered. The first mission demonstration combines M01-M03;
+M04 adds a second iteration. G01's original acceptance does not automatically
+accept this extension or authorize real-class use. Record explicit mission
+acceptance evidence against the [demonstration target](MISSION-ALIGNMENT.md#4-readiness-and-proposed-demonstration)
+and keep DEC-08/10/11 operational and pilot gates.
 
 ## Review findings and completion exceptions
 

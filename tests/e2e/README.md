@@ -21,6 +21,14 @@ route inventories; exact separate successful checks and limitations are in the
 Future assigned packages extend these accepted lifecycle fixtures.
 Keep the existing identity regressions and secret-safe reporting intact.
 
+**9 November audit reconciliation:** D04 and R02 have implementation and scoped
+evidence described below; A01 evidence is in the development guide. Their
+backlog status is `review`, not accepted/done. Historical pending-dispatch
+statements do not describe current code. The
+[mission roadmap](../../docs/implementation/MISSION-ALIGNMENT.md) adds future
+class/flight/pass-fail/reporting coverage; no existing case establishes that
+scope or 100-learner concurrent capacity.
+
 ## Install and run
 
 From the repository root, with Node 22+/npm 10+, uv 0.12.17, Python 3.12+ and
@@ -188,9 +196,10 @@ See the [C03 evidence map](../../docs/DEVELOPMENT.md#c03-complete-author-workspa
 for inherited/new/partial/out-of-package catalogue scenarios. A filtered C03 run
 alone is not full AT-03/04/05 acceptance or D04/Q02 readiness.
 The package is accepted, not a blanket full-catalogue or WCAG claim.
-A01/D04/R02 are ready for separate explicit dispatch in that order; B.C. owns
-integration/review/merge with one shared writer. DEC-09 timing design is approved,
-but D04 controls and Q02 accessibility evidence are still pending.
+At C03 acceptance, A01/D04/R02 were awaiting their separate implementation
+windows. Those implementations now exist with scoped evidence; B.C. retains
+integration/review ownership. D04 controls are present, while package acceptance
+and Q02 accessibility evidence remain open.
 
 ## Acceptance scenarios
 

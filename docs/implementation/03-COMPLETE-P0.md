@@ -1,12 +1,18 @@
 # Phase 3: Complete the P0 workflows
 
-These packages share the T01 prerequisite. The approved execution order is now
+These packages share the T01 prerequisite. Their original execution order used
 separate sequential A01, D04, R02 dispatches under the shared-file rules in
 the [plan](README.md#4-integration-and-ownership-rules). Each is a vertical slice.
 Dependencies/status live in [BACKLOG.md](BACKLOG.md); exact requirements live in
 the [software specification](../SOFTWARE-SPECIFICATION.md).
 
-**Readiness checkpoint, 27 October 2026:** T01 is accepted at merge `df06ccc`
+**Current state, 9 November 2026:** C03 remains accepted. A01/D04/R02 have
+implementations and scoped evidence in the checkout and are tracked as `review`,
+not `done`. The contracts below and dated checkpoint retain original scope;
+do not redispatch their first implementation. New customer gaps are separate
+[mission packages](MISSION-ALIGNMENT.md), not missing R02 baseline features.
+
+**Historical readiness checkpoint, 27 October 2026:** T01 is accepted at merge `df06ccc`
 ([milestone evidence](BACKLOG.md#t01-milestone-acceptance-23-october-2026));
 the current integrated local `dev` baseline is C03 `2eba9eb` (migration head
 `0010_author_workspace`). C03 is accepted/done after B.C.'s local app review
@@ -100,14 +106,15 @@ Wire every setting to immutable publication and attempt snapshots. Resolve
 ambiguous schedule input, explain eligibility/remaining attempts and implement the
 approved accessible timing behavior.
 
-**Approval/readiness:** ready for second separate dispatch, after A01's exclusive
-window. Every learner can choose standard, adjusted (at least 10 times the authored
+**Approved design:** originally the second separate dispatch after A01's
+exclusive window; controls and scoped evidence are now implemented, with
+acceptance pending. Every learner can choose standard, adjusted (at least 10 times the authored
 duration supported, ceiling 6048000 seconds), or off before start. Availability
 end always gates new starts; it does not cap an explicitly adjusted attempt,
 and off removes both deadline bounds. Pin the choice/deadline; preserve existing
 attempts. Authored duration bounds remain unchanged. No post-start extension,
 reset or reopening; result-release policy is unchanged. This approves a design,
-not delivered controls or WCAG conformance.
+not by itself package acceptance or WCAG conformance.
 
 **Done:** changed settings affect only explicitly new published assignments;
 randomized order remains stable on refresh; limits survive concurrent starts;

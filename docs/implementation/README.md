@@ -1,11 +1,12 @@
 # Phased implementation plan
 
-**Date:** 27 October 2026
+**Updated:** 9 November 2026
 
 **Status:** Working foundations including I02 accepted; EX-I02-01 closed.
 C01/C02/D01/D02/S01/D03/R01/T01 accepted and integrated. Phase 2 is complete;
-C03 is accepted and integrated locally; A01/D04/R02 are ready for separate
-sequential dispatch under the approved 27 October boundaries.
+C03 is accepted and integrated locally; A01/D04/R02 have implementations and
+scoped evidence and are tracked for acceptance review. The mission audit adds
+planned customer-alignment packages, not automatic implementation dispatch.
 
 ## 1. Start here
 
@@ -14,7 +15,16 @@ acceptance IDs; the [HLA](../PROTOTYPE-HIGH-LEVEL-ARCHITECTURE.md) defines archi
 the [scope](../PROTOTYPE-SCOPE.md) defines inclusion/exclusion. This bundle turns
 those into individually assignable work packages.
 
-**Current checkpoint, 27 October 2026:** B.C. confirmed I02 completion; merged
+**Current planning direction:** the [mission audit and roadmap](MISSION-ALIGNMENT.md)
+prioritizes M01 training iterations/rosters/bulk assignment, M02 explicit
+pass/fail and M03 instructor/leadership reporting with an agreed result handoff.
+M04 adds cross-iteration reuse/comparison; M05 diagnostics requires customer
+validation; M06 content onboarding and M07 follow-up are conditional. See the
+[mission backlog](BACKLOG.md#mission-alignment-backlog) for prerequisites and
+DEC-12 through DEC-18 gates. Keep Q01/Q02/O01/Q03 readiness work alongside
+assigned features. No real-data or pilot approval is implied.
+
+**Historical checkpoint, 27 October 2026:** B.C. confirmed I02 completion; merged
 PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
 B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
 retaining their dependency execution gates. All eight are now accepted and
@@ -34,7 +44,7 @@ AT-13 acceptance. Use the
 [prepared, gate-aware Phase 3 prompts](PHASE-3-HANDOFFS.md); the
 [eight Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve historical assignments.
 The [Phase 2 defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
-remain the implemented demo boundary until D04 delivers the
+were the initial demo boundary before D04 implemented the
 [27 October approved timing amendments](../SOFTWARE-SPECIFICATION.md#c03-acceptance-and-phase-3-approvals-27-october-2026).
 B.C. is tracker coordinator and integration/review/merge owner; implementation
 owners are named on each separate dispatch. A01 must verify/record exact Keycloak
@@ -49,9 +59,9 @@ commitments remain held. No successor implementation is started by this update.
 5. Demonstrate each milestone; record evidence in the backlog before releasing
    more work. A phase label does not itself authorize deployment or real data.
 
-The existing scaffold is the starting point, not completion of a foundation or
-assessment work item. No issues, PRs, child sessions, coding agents or external
-resources are created by this plan.
+Use current integrated code and the backlog, not historical dispatch prompts,
+as the starting point. Code presence alone is not package acceptance. No issues,
+PRs, child sessions, coding agents or external resources are created by this plan.
 
 ## 2. Phases and exit gates
 
@@ -69,6 +79,13 @@ someone explicitly assigns it; for example S01 can run alongside identity work.
 | 4. Hardening and operations | Q01, Q02, O01, Q03 | Integrity/security failure evidence, accessible flows, reproducible deployment/restore, and measured load/multi-process behavior |
 | 5. Prototype acceptance | G01 | Complete traceability, reviewed evidence and explicit acceptance or named blockers; pilot remains gated separately |
 
+The [mission extension](MISSION-ALIGNMENT.md#3-prioritized-implementation-packages)
+is a separate planned track, not a renumbering of these historical phases.
+Its first target is a synthetic 100-person class/flight assessment with automatic
+pass/fail and reconciled report/handoff, followed by a second iteration.
+M01-M07 dependencies are in the backlog; the diagram below retains the original
+P0/readiness graph. Original G01 acceptance does not automatically accept M01-M07.
+
 Detailed packages are grouped by what an assignee needs to read:
 
 - [Foundation packages](01-FOUNDATIONS.md): G00 and identity/platform work.
@@ -77,6 +94,8 @@ Detailed packages are grouped by what an assignee needs to read:
 - [Phase 3 handoffs](PHASE-3-HANDOFFS.md): prepared prompts with explicit
   assignment and decision gates; not authorization to dispatch.
 - [Readiness packages](04-READINESS.md): hardening, operations and final acceptance.
+- [Mission gap audit and roadmap](MISSION-ALIGNMENT.md): customer workflow gaps,
+  essential/next/conditional packages and demonstration criteria.
 
 ## 3. Dependency and parallelism view
 
@@ -156,7 +175,7 @@ An integration owner coordinates these shared surfaces:
 | FastAPI app/router registration | Domain routers stay local; integration owner resolves registration/lifespan changes without duplicate initialization |
 | OpenAPI export/generated TypeScript client | Server models are authoritative; regenerate after producer merges; no hand-editing generated output |
 | Root web layout/session facade/shared navigation | Web foundation owner or designated integrator changes these; feature owners work in their route subtree |
-| Quiz editor route and quiz-module assembly | C03 integrated composition/lifecycle and its wrapper; D04 is next sole settings/wrapper writer during its separate dispatch. B.C. serializes A01, D04, R02 shared writes; preserve C03 behavior |
+| Quiz editor route and quiz-module assembly | C03 composition/lifecycle and D04 settings are implemented. Assign one writer for subsequent shared changes; preserve existing behavior and serialize contracts/migrations under B.C. |
 | Shared test fixtures and tracker | Integrator maintains common fixtures and merges evidence/status updates; package tests live in feature-specific files |
 
 Within a feature, prefer a vertical slice: migration + backend + UI + tests.
