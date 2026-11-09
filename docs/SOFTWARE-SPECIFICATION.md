@@ -2,7 +2,11 @@
 
 **Version:** 0.1  
 **Date:** 20 October 2026  
-**Status:** Foundations, Phase 2 and C03 accepted; A01 explicitly dispatched under the 27 October scoped DEC-06 approvals; D04/R02 remain ready for separate sequential dispatch.
+**Updated:** 9 November 2026
+
+**Status:** Foundations, Phase 2 and C03 accepted; A01/D04/R02 implementations
+and scoped evidence are available for acceptance review. Mission-alignment
+packages M01-M07 are planned, with detailed decisions open.
 
 **Scope:** Single-organization, low-stakes, authenticated objective assessment.
 
@@ -28,13 +32,20 @@ contracts, F03 server sessions/navigation/facade, and I01 token validation,
 current-actor `/me` and controlled local provisioning. I02's combined real-browser
 identity gate is accepted and EX-I02-01 closed. Phase 2 adds versioned questions,
 immutable publication, assignment/start, durable saves, scoring/finalization and
-policy-filtered results. T01 accepts the integrated initial lifecycle; this is
-not full P0 or pilot approval.
+policy-filtered results. C03 adds the accepted author workspace; A01 account
+administration, D04 delivery controls and R02 history/owner reporting are also
+implemented with scoped evidence. T01 accepts the integrated initial lifecycle;
+later code presence is not full package, P0 or pilot approval.
 
-**Excluded:** multiple tenants, cohorts, anonymous access, written/manual grading,
-regrading, CSV/import/export, pool selection, external API support, LMS integration,
-AI/proctoring and media/community features. Minimal integrity events are included;
-a general audit-management product is not.
+**Baseline exclusions:** multiple tenants, cohorts, anonymous access,
+written/manual grading, regrading, CSV/import/export, pool selection, external API
+support, LMS integration, AI/proctoring and media/community features. Minimal
+integrity events are included; a general audit-management product is not.
+The [9 November mission roadmap](implementation/MISSION-ALIGNMENT.md) plans
+selected cohort/comparison/reporting/handoff extensions and conditional analytics,
+content import and follow-up. Those additions are not implemented or approved
+behavioral amendments merely because they appear in the roadmap. The open
+decisions below must be resolved before changing affected rules.
 
 ## 2. Decision register
 
@@ -53,9 +64,16 @@ approval means the decision is not approved.
 | DEC-06 | Server-side web sessions; application roles/status authoritative on each request; Keycloak owns identity; local realm, confidential web client, exact redirects, code + PKCE, state/nonce and dedicated API audience; openid-client for web OIDC; PyJWT with cryptography and async HTTPX for backend validation; separately scoped least-privilege A01 administration adapter | Identity implementation | B.C. | F03/I01 approved 20 October 2026; local provisioning only in those packages. A01 local-realm boundary approved 27 October 2026. B.C. follow-up approval 27 October 2026 permits the local A01 service identity's fine-grained user `manage` capability, including Keycloak user deletion/password-reset capability that Keycloak does not separate from `manage`; Quezo must not expose deletion or credential-reset operations. Exact effective permissions must be verified and recorded before privileged implementation; no other realm/group/client administration is approved. |
 | DEC-07 | Psycopg 3 async/pooling; Alembic with SQLAlchemy Core, no ORM; openapi-typescript + openapi-fetch; node-postgres (pg) for restricted PostgreSQL server sessions; PyJWT with cryptography and repository-convention HTTPX for I01 | Foundation implementation; session choice before F03 | B.C. | F01/F02 tools approved; F03 npm-locked dependencies and I01 uv-locked dependencies approved by B.C., 20 October 2026 |
 | DEC-08 | Approve benchmark environment/profile, performance gates, logging/metric tooling, bounded retry and rate-limit settings | Hardening/load work | B.C. | Held; close before hardening/load gates and O01 operational targets; no approved numeric performance gates |
-| DEC-09 | Pre-start learner timing adjustment/off choice, pinned per attempt, with explicit scheduled-availability interaction | Timed UX implementation | B.C. | Approved 27 October 2026 as specified in the Phase 3 record below; implementation and Q02 verification still required, no WCAG conformance claim |
+| DEC-09 | Pre-start learner timing adjustment/off choice, pinned per attempt, with explicit scheduled-availability interaction | Timed UX implementation | B.C. | Approved 27 October 2026 as specified in the Phase 3 record below; controls now implemented with scoped evidence, D04 acceptance and Q02 verification remain open; no WCAG conformance claim |
 | DEC-10 | Name first pilot audience; approve hosting, data retention/deletion, incident ownership, backup RPO/RTO and any availability commitment | Real-data/shared pilot | B.C. | Held; close before O01 operational targets and any real-data/shared pilot; synthetic local work only |
 | DEC-11 | Name review/merge/release approvers and assign delivery dates/budget | Scheduling and release commitment | B.C. | B.C. owns foundation/Phase 2 and, confirmed 27 October 2026, C03/A01/D04/R02 integration/review/merge. Sequential separate dispatch A01 then D04 then R02; release approval, dates and budget remain held |
+| DEC-12 | Define IQT/MQT training iteration, class roster and flight attribution; historical membership, allowed readable learner fields, batch failure/retry behavior and repeated learner/version assignment identity | M01 | B.C. | Open; 9 November planning direction only. DEC-01 uniqueness is unchanged until an explicit amendment is approved |
+| DEC-13 | Define versioned passing threshold, comparison/rounding, retake selection, expired/unfinished states and treatment of historical grades without a passing rule | M02 | B.C. | Open; no threshold or historical pass/fail outcome inferred |
+| DEC-14 | Define staff/leadership report scope and permissions, relation to learner disclosure, denominators/attempt selection and whether the existing tracker needs an agreed CSV handoff | M03 | B.C. | Open; existing owner-only access and release filtering remain in force |
+| DEC-15 | Define assessment reuse across iterations and comparability rules for changed questions, quiz versions, passing rules and retakes | M04 | B.C. | Open; retained history is not proof of comparable assessments |
+| DEC-16 | Validate demand and definitions for elapsed duration, section/objective success and question-level metrics; version mappings, populations and sample-size/zero-denominator handling | M05 | B.C. | Open; potential interests in customer notes, not approved metric formulas |
+| DEC-17 | Validate content-migration need and select a structured import format, supported types, review and duplicate/retry rules | M06 | B.C. | Open; arbitrary Word/PDF extraction and AI authoring remain deferred |
+| DEC-18 | Define who reviews results, permitted follow-up actions, ownership, access and closure | M07 | B.C. | Open; the supplied workflow leaves review/action undefined |
 
 An authorized synthetic-data development wave can proceed once its relevant
 decisions are approved; unresolved pilot commitments do not authorize real data.
@@ -351,7 +369,7 @@ B.C. explicitly approved these additional synthetic local-development decisions:
   may integrate its settings through the existing wrapper without redesigning
   C03 composition/lifecycle.
 
-A01 is `active` for the explicitly dispatched session; D04/R02 remain `ready`
+At this historical checkpoint A01 was `active`; D04/R02 remained `ready`
 for separate dispatch after A01's integration window. The [handoff
 packet](implementation/PHASE-3-HANDOFFS.md) carries these contracts. DEC-08/10
 and release/date/budget commitments remain held.
@@ -370,6 +388,28 @@ returned 204, and exact username search found the synthetic fixture. No
 `manage-users`, role-mapping, group-mutation, client, or realm-administration
 permission is granted. Keycloak `manage` still carries its approved delete and
 password-reset effects; no Quezo endpoint exposes either operation.
+
+### Mission-alignment planning update: 9 November 2026
+
+The user requested documentation of the customer-note audit and prioritized
+implementation approach. The [audit](implementation/MISSION-ALIGNMENT.md)
+records current capability evidence, missing features and M01-M07 acceptance
+targets. Prioritize roster/iteration context and bulk assignment, explicit
+pass/fail, and instructor/leadership reporting with an agreed handoff; follow with
+iteration comparison, then validated diagnostics and conditional import/follow-up.
+Keep existing P0 and readiness obligations rather than replacing them.
+
+This update authorizes documentation of that direction, not new implementation
+dispatch, numeric passing/performance rules, role grants, external integration,
+real data or pilot use. DEC-12 through DEC-18 record the remaining choices;
+amend the relevant behavioral and contract sections when each decision is
+approved. In particular DEC-01 learner/version uniqueness and RESULT-01/02
+owner/release/aggregation rules continue to govern current behavior.
+
+A01/D04/R02 have implementations and scoped evidence in the current checkout.
+Their [backlog](implementation/BACKLOG.md) status is reconciled to `review`,
+not `done`; the earlier dated dispatch records above remain historical.
+DEC-08/10 and remaining DEC-11 operational/release commitments remain held.
 
 ## 3. Actors and authorization
 

@@ -24,8 +24,13 @@ credential; A01 never stores or provisions passwords.
 D02 adds durable response saving, explicit clear, resume and conflict/retry UI.
 D03 adds metadata-only submission, immutable grading through S01, request-triggered
 expiry and a lifespan-managed bounded expiry worker. R01 adds independent
-policy-filtered learner results and a minimal result page. History/reporting,
-real readiness checks and production deployment remain absent. An opt-in
+policy-filtered learner results and a minimal result page. D04 adds configurable
+delivery/timing controls; R02 adds paginated learner history, owner-only
+participation/score reporting and finalized submission inspection. A01/D04/R02
+have scoped evidence below but remain under acceptance review. Class/flight/
+iteration context, explicit pass/fail, leadership reporting and result export
+remain gaps in the [mission roadmap](implementation/MISSION-ALIGNMENT.md).
+Real readiness checks and production deployment remain absent. An opt-in
 [full local Docker stack](#full-app-with-docker-desktop) runs the accepted app.
 A configured local Keycloak can be
 used by the web OIDC adapter; combined Keycloak/browser/backend acceptance is

@@ -5,6 +5,14 @@ Use [BACKLOG.md](BACKLOG.md) for prerequisites and the
 [software specification](../SOFTWARE-SPECIFICATION.md) for acceptance IDs/gates.
 Run destructive/failure exercises only against explicitly isolated synthetic data.
 
+**Mission-alignment update, 9 November 2026:** the
+[customer roadmap](MISSION-ALIGNMENT.md) does not replace these gates. Extend
+integrity/access and accessibility coverage to new roster, outcome, report,
+export and follow-up surfaces as they are delivered. Readiness can proceed
+alongside assigned mission features; Q03 still depends on O01/Q01 and approved
+DEC-08 parameters. A 100-person roster or successful batch assignment is not
+100-concurrent-learner evidence.
+
 ## Q01: Integrity and access failure suite
 
 **Rules:** IAM-01/02/03, ATT-01 through ATT-04, RESULT-01, QUAL-01/02/04.
@@ -85,6 +93,12 @@ Compare actual results with approved thresholds; investigate failures rather tha
 weakening them silently. Re-run affected correctness cases after tuning.
 Store reproducible scripts and sanitized summarized results, not learner data.
 
+The mission notes describe classes of 80-100 students. Include a proposed
+100-concurrent-learner scenario with realistic answer saves and submission bursts
+when agreeing DEC-08, and assert no lost acknowledged answers or duplicate
+grades alongside performance measurements. Agree workload, hardware and numeric
+gates before claiming capacity; class size alone approves none of them.
+
 **Excluded:** generic framework benchmarks, unapproved load against shared systems,
 or interpreting a load-test pass as monthly availability evidence.
 
@@ -103,6 +117,12 @@ tracker links an acceptance record with date, integrated revision and evidence.
 If pilot approval is sought, DEC-10/11 must also be closed and operating ownership
 assigned. Distinguish "prototype accepted for synthetic demo" from "approved for
 real-data pilot." Integrity or disclosure failures block acceptance.
+
+For mission-aligned acceptance, additionally record the M01-M03 class/flight
+demonstration and M04 cross-iteration evidence against the
+[mission target](MISSION-ALIGNMENT.md#4-readiness-and-proposed-demonstration).
+State which optional packages were included and which remain deferred; original
+P0 acceptance alone is not acceptance of these new capabilities.
 
 Do not announce deployment, production readiness or completed work based solely
 on an agent report, a generated checklist or green scaffold tests.
