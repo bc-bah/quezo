@@ -4,6 +4,11 @@ Use this document when assigning or completing a package from
 [BACKLOG.md](BACKLOG.md). It is an on-demand execution guide, not an instruction
 to launch agents or implement the entire backlog.
 
+For mission M01-M07, readiness Q01/Q02/O01/Q03, or read-only acceptance/decision
+preparation, copy the corresponding [current prompt](MISSION-HANDOFFS.md).
+Sections 1-3 here remain the generic assignment/return format. The dated
+foundation prompts in later sections are historical, not current dispatches.
+
 ## 1. Coordinator preparation
 
 Select a dependency-ready package; verify its decisions and integrated input
@@ -69,7 +74,7 @@ Work item: <ID>
 State: ready for review | blocked
 Changes: <behavior and relevant file paths>
 Requirement coverage: <SRS rules and PRD IDs>
-Acceptance: <each assigned AT ID, scenarios covered, result/evidence link>
+Acceptance: <each assigned AT ID or mission-package criterion, scenarios covered, result/evidence link>
 Checks: <exact commands, environment and outcomes>
 Contracts: <new/changed endpoints, schemas, generated-client updates>
 Data: <migration IDs, clean/upgrade results, recovery implications>
@@ -86,9 +91,9 @@ raw logs, credentials and assessment payloads out of committed documents.
 ## 4. Approved first-wave prompts
 
 **Historical assignments:** F01/F02 are now accepted and integrated. Do not
-redispatch these prompts. Use [section 5](#5-active-second-wave-prompts) for the
-current F03/I01 assignments; the original approval and execution instructions
-below are retained as evidence of first-wave scope.
+redispatch these prompts. Section 5 also preserves historical F03/I01 assignments;
+the original approval and execution instructions below are retained as evidence
+of first-wave scope. Use the current backlog and handoff packet for new work.
 
 **Approval:** B.C., 20 October 2026; see the
 [G00 approval record](../SOFTWARE-SPECIFICATION.md#g00-approval-record-20-october-2026).

@@ -74,6 +74,11 @@ need explicit treatment before duration is reported.
 
 ## 3. Prioritized implementation packages
 
+For read-only gate preparation or dispatch of any package below, use
+[Mission and readiness handoffs](MISSION-HANDOFFS.md). It provides copy-ready
+prompts and parallel-stream/write-allocation guidance; this roadmap remains the
+source of package scope and acceptance targets.
+
 These are mission priorities, not a renumbering of the original PRD P0/P1/P2
 requirements. Existing P0 and readiness obligations remain. The
 [backlog](BACKLOG.md#mission-alignment-backlog) owns status, prerequisites and

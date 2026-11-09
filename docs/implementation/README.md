@@ -24,6 +24,11 @@ validation; M06 content onboarding and M07 follow-up are conditional. See the
 DEC-12 through DEC-18 gates. Keep Q01/Q02/O01/Q03 readiness work alongside
 assigned features. No real-data or pilot approval is implied.
 
+**Agent dispatch:** use [Mission and readiness handoffs](MISSION-HANDOFFS.md)
+for copy-ready prompts and the parallel-stream map. Start with its read-only
+gate review while acceptance/decisions remain open; use individual implementation
+prompts only after their recorded gates and write allocations are satisfied.
+
 **Historical checkpoint, 27 October 2026:** B.C. confirmed I02 completion; merged
 PR #7 (`553a2c8`) and browser/CI evidence support acceptance and EX-I02-01 closure.
 B.C. assigned C01, C02, D01, D02, S01, D03, R01 and T01 as `active`, explicitly
@@ -41,7 +46,7 @@ prepare separate explicit dispatches in order A01, D04, R02, single shared-file/
 contract/migration writer at a time. Latest-attempt navigation is not full
 AT-13 acceptance. Use the
 [Phase 3 package definitions](03-COMPLETE-P0.md); the
-[prepared, gate-aware Phase 3 prompts](PHASE-3-HANDOFFS.md); the
+[historical Phase 3 prompts](PHASE-3-HANDOFFS.md); the
 [eight Phase 2 prompts](PHASE-2-HANDOFFS.md) preserve historical assignments.
 The [Phase 2 defaults](../SOFTWARE-SPECIFICATION.md#phase-2-assignment-and-demo-defaults)
 were the initial demo boundary before D04 implemented the
@@ -51,10 +56,11 @@ owners are named on each separate dispatch. A01 must verify/record exact Keycloa
 permissions before privileged implementation. DEC-08/10 and release/date/budget
 commitments remain held. No successor implementation is started by this update.
 
-1. Review **G00** and approve the decisions needed for the first development wave.
-2. Assign a human integration owner and update the [backlog](BACKLOG.md).
-3. Assign work using the [agent handoff](AGENT-HANDOFF.md); begin implementation
-   only when its execution gate is satisfied.
+1. Review current acceptance gaps and the decisions needed for the selected wave.
+2. Record the assignee, baseline and write allocation in the [backlog](BACKLOG.md)
+   or linked assignment under B.C.'s integration ownership.
+3. Assign work using the [current handoffs](MISSION-HANDOFFS.md); begin
+   implementation only when its execution gate is satisfied.
 4. Merge tested producer interfaces before completing their consumers.
 5. Demonstrate each milestone; record evidence in the backlog before releasing
    more work. A phase label does not itself authorize deployment or real data.
@@ -91,11 +97,13 @@ Detailed packages are grouped by what an assignee needs to read:
 - [Foundation packages](01-FOUNDATIONS.md): G00 and identity/platform work.
 - [Core lifecycle packages](02-CORE-LIFECYCLE.md): the first end-to-end assessment.
 - [P0 completion packages](03-COMPLETE-P0.md): parallel feature-completion tracks.
-- [Phase 3 handoffs](PHASE-3-HANDOFFS.md): prepared prompts with explicit
-  assignment and decision gates; not authorization to dispatch.
+- [Phase 3 handoffs](PHASE-3-HANDOFFS.md): historical implementation prompts,
+  retained for provenance rather than redispatch.
 - [Readiness packages](04-READINESS.md): hardening, operations and final acceptance.
 - [Mission gap audit and roadmap](MISSION-ALIGNMENT.md): customer workflow gaps,
   essential/next/conditional packages and demonstration criteria.
+- [Mission and readiness handoffs](MISSION-HANDOFFS.md): copy-ready gate review,
+  M01-M07 and Q01/Q02/O01/Q03 prompts, stream map and shared-write boundaries.
 
 ## 3. Dependency and parallelism view
 

@@ -1,6 +1,12 @@
 # Phase 3 coding-agent handoffs
 
-**State, 27 October 2026:** C03 accepted and locally integrated into `dev` at
+**Historical packet:** A01/D04/R02 now have implementations and scoped evidence
+and are tracked for acceptance review. Preserve these original prompts as
+provenance, not current assignments. For acceptance/decision preparation, mission
+packages or readiness work, use [the current handoffs](MISSION-HANDOFFS.md).
+The live [backlog](BACKLOG.md) takes precedence over dated states below.
+
+**Historical state, 27 October 2026:** C03 accepted and locally integrated into `dev` at
 `2eba9eb`, head `0010_author_workspace`. A01 is explicitly dispatched to the
 current Copilot session; D04/R02 remain ready for **separate dispatch** in that
 order. B.C. owns integration/review/merge and serializes shared-file/contract/
@@ -8,9 +14,8 @@ migration windows. The [approval record](../SOFTWARE-SPECIFICATION.md#c03-accept
 records scoped DEC-06 and DEC-09/02/05 amendments. Existing latest-finalized-attempt
 navigation remains partial AT-13 evidence, not full history/reporting acceptance.
 
-Use the common execution contract and then exactly one package prompt per
-isolated session. The [backlog](BACKLOG.md) is authoritative for prerequisites
-and status; this file does not assign work or approve decisions.
+The common contract and prompts below document the original execution windows;
+they do not authorize redispatch or approve decisions.
 
 ## Common execution contract
 

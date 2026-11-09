@@ -5,6 +5,11 @@ Use [BACKLOG.md](BACKLOG.md) for prerequisites and the
 [software specification](../SOFTWARE-SPECIFICATION.md) for acceptance IDs/gates.
 Run destructive/failure exercises only against explicitly isolated synthetic data.
 
+For Q01/Q02/O01/Q03 assignments, copy the corresponding
+[readiness prompt](MISSION-HANDOFFS.md#5-readiness-prompts) after checking current
+prerequisites and decisions. These package definitions remain authoritative for
+criteria; the handoff packet supplies execution gates and return requirements.
+
 **Mission-alignment update, 9 November 2026:** the
 [customer roadmap](MISSION-ALIGNMENT.md) does not replace these gates. Extend
 integrity/access and accessibility coverage to new roster, outcome, report,

@@ -11,6 +11,8 @@ implementations and scoped evidence in the checkout and are tracked as `review`,
 not `done`. The contracts below and dated checkpoint retain original scope;
 do not redispatch their first implementation. New customer gaps are separate
 [mission packages](MISSION-ALIGNMENT.md), not missing R02 baseline features.
+Use the [current gate-review prompt](MISSION-HANDOFFS.md#gate-review) for
+acceptance preparation; the dated implementation prompts below are historical.
 
 **Historical readiness checkpoint, 27 October 2026:** T01 is accepted at merge `df06ccc`
 ([milestone evidence](BACKLOG.md#t01-milestone-acceptance-23-october-2026));

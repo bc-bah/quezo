@@ -244,6 +244,7 @@ When changing HTTP contracts, use `npm run api:generate` and verify with
 | [Software specification](docs/SOFTWARE-SPECIFICATION.md) | Testable behavior, permissions, contracts, decision register, and requirement coverage. |
 | [Domain vocabulary](CONTEXT.md) | Shared assessment terminology. |
 | [Implementation plan](docs/implementation/README.md) and [backlog](docs/implementation/BACKLOG.md) | Dependency-ordered work packages, assignments, delivery gates, and evidence. |
+| [Agent handoffs](docs/implementation/MISSION-HANDOFFS.md) | Copy-ready mission/readiness prompts, parallel streams, decision gates and shared-file ownership. |
 | [Product slicksheet](docs/QUEZO-SLICKSHEET.html) | Branded, print-friendly product overview; download and open in a browser. It describes intended scope, not release readiness. |
 | [Original product references](docs/reference/00-Start-Here.md) | Preserved ideation documents, including the [original PRD](docs/reference/02-Product-Requirements.md), the source of requirement IDs. |
 

@@ -114,12 +114,16 @@ Shared writes and migration ordering remain serialized by B.C.
 | D04 | 3 | [Configurable delivery controls](03-COMPLETE-P0.md#d04-configurable-delivery-controls) | T01 | review | B.C. integration/review | Controls and migration `0012_delivery_controls` present at audited `1f8b4d1`; [implementation](../DEVELOPMENT.md#d04-configurable-delivery-controls), [case-level evidence](../DEVELOPMENT.md#d04-case-level-evidence-map). Standard/adjusted/off, schedules, ordering and release settings implemented; package acceptance and Q02 remain open. |
 | R02 | 3 | [History and author reporting](03-COMPLETE-P0.md#r02-history-and-author-reporting) | T01 | review | B.C. integration/review | Paginated history, owner summary and finalized submission review present at audited `1f8b4d1`; [implementation/evidence](../DEVELOPMENT.md#r02-history-and-author-reporting). No longer just latest-attempt navigation; full AT-13/package acceptance remains open. No mission cohort/pass-fail/export capability implied. |
 | Q01 | 4 | [Integrity and access failure suite](04-READINESS.md#q01-integrity-and-access-failure-suite) | C03, A01, D04, R02 | planned | B.C. | - |
-| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 approved 27 October; D04 implementation and actual accessibility/workflow evidence still required |
+| Q02 | 4 | [Accessibility and workflow acceptance](04-READINESS.md#q02-accessibility-and-workflow-acceptance) | C03, A01, D04, R02 | planned | B.C. | DEC-09 approved 27 October; D04 implemented with scoped evidence, package acceptance and actual Q02 accessibility/workflow evidence still required |
 | O01 | 4 | [Deployment observability and recovery](04-READINESS.md#o01-deployment-observability-and-recovery) | C03, A01, D04, R02 | planned | B.C. | DEC-08/DEC-10 operational targets required; synthetic local rehearsal allowed |
 | Q03 | 4 | [Load and multi-process evidence](04-READINESS.md#q03-load-and-multi-process-evidence) | O01, Q01 | planned | B.C. | DEC-08 benchmark/gates required |
 | G01 | 5 | [Prototype acceptance and pilot decision](04-READINESS.md#g01-prototype-acceptance-and-pilot-decision) | Q01, Q02, O01, Q03 | planned | B.C. | DEC-11 later approvers/release commitments and release evidence required; DEC-10 gates any pilot |
 
 ## Mission-alignment backlog
+
+For parallel-stream selection, read-only gate preparation and individual
+mission/readiness dispatches, use [the current handoff packet](MISSION-HANDOFFS.md).
+Its prompts consume this table; their existence changes no status or approval.
 
 The [9 November audit and package definitions](MISSION-ALIGNMENT.md) supply
 customer traceability and acceptance targets. Priorities below are mission
